@@ -23,8 +23,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const MAX_ROWS = 6;
-
 interface Row {
   N: number;
   holes: number;
@@ -44,27 +42,26 @@ function buildRows(
   L: number,
   Ds: number,
   De: number,
-  pasMax: number,
+  maxIntervals: number,
   integers: boolean,
-): { rows: Row[]; Lu: number; Nmin: number } {
+): { rows: Row[]; Lu: number; Nmax: number } {
   const Lu = L - Ds - De;
-  if (!isFinite(Lu) || Lu <= 0 || !isFinite(pasMax) || pasMax <= 0) {
-    return { rows: [], Lu, Nmin: 0 };
+  const Nmax = Math.max(0, Math.floor(maxIntervals));
+  if (!isFinite(Lu) || Lu <= 0 || !isFinite(Nmax) || Nmax <= 0) {
+    return { rows: [], Lu, Nmax: 0 };
   }
-  const Nmin = Math.max(1, Math.ceil(Lu / pasMax));
   const rows: Row[] = [];
-  for (let k = 0; k < MAX_ROWS; k++) {
-    const N = Nmin + k;
-    const pitch = Lu / N;
-    if (pitch <= 0) break;
+  for (let N = 1; N <= Nmax; N++) {
+    const rawPitch = Lu / N;
+    const pitch = integers ? Math.round(rawPitch) : rawPitch;
     const positions: number[] = [];
     for (let i = 0; i <= N; i++) {
-      const p = Ds + i * pitch;
+      const p = Ds + i * rawPitch;
       positions.push(integers ? Math.round(p) : p);
     }
     rows.push({ N, holes: N + 1, pitch, positions });
   }
-  return { rows, Lu, Nmin };
+  return { rows, Lu, Nmax };
 }
 
 function PositionsList({
