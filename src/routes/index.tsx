@@ -23,8 +23,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const MAX_ROWS = 6;
-
 interface Row {
   N: number;
   holes: number;
@@ -44,27 +42,26 @@ function buildRows(
   L: number,
   Ds: number,
   De: number,
-  pasMax: number,
+  maxIntervals: number,
   integers: boolean,
-): { rows: Row[]; Lu: number; Nmin: number } {
+): { rows: Row[]; Lu: number; Nmax: number } {
   const Lu = L - Ds - De;
-  if (!isFinite(Lu) || Lu <= 0 || !isFinite(pasMax) || pasMax <= 0) {
-    return { rows: [], Lu, Nmin: 0 };
+  const Nmax = Math.max(0, Math.floor(maxIntervals));
+  if (!isFinite(Lu) || Lu <= 0 || !isFinite(Nmax) || Nmax <= 0) {
+    return { rows: [], Lu, Nmax: 0 };
   }
-  const Nmin = Math.max(1, Math.ceil(Lu / pasMax));
   const rows: Row[] = [];
-  for (let k = 0; k < MAX_ROWS; k++) {
-    const N = Nmin + k;
-    const pitch = Lu / N;
-    if (pitch <= 0) break;
+  for (let N = 1; N <= Nmax; N++) {
+    const rawPitch = Lu / N;
+    const pitch = integers ? Math.round(rawPitch) : rawPitch;
     const positions: number[] = [];
     for (let i = 0; i <= N; i++) {
-      const p = Ds + i * pitch;
+      const p = Ds + i * rawPitch;
       positions.push(integers ? Math.round(p) : p);
     }
     rows.push({ N, holes: N + 1, pitch, positions });
   }
-  return { rows, Lu, Nmin };
+  return { rows, Lu, Nmax };
 }
 
 function PositionsList({
@@ -162,7 +159,7 @@ function Index() {
   const [Ds, setDs] = useState<number>(50);
   const [De, setDe] = useState<number>(50);
   const [sameEnd, setSameEnd] = useState(true);
-  const [pasMax, setPasMax] = useState<number>(300);
+  const [maxIntervals, setMaxIntervals] = useState<number>(5);
   const [integers, setIntegers] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
@@ -176,9 +173,9 @@ function Index() {
 
   const effectiveDe = sameEnd ? Ds : De;
 
-  const { rows, Lu, Nmin } = useMemo(
-    () => buildRows(L, Ds, effectiveDe, pasMax, integers),
-    [L, Ds, effectiveDe, pasMax, integers],
+  const { rows, Lu, Nmax } = useMemo(
+    () => buildRows(L, Ds, effectiveDe, maxIntervals, integers),
+    [L, Ds, effectiveDe, maxIntervals, integers],
   );
 
   const copy = async (r: Row, idx: number) => {
@@ -273,9 +270,11 @@ function Index() {
               <div className="space-y-4">
                 <NumberField
                   id="pm"
-                  label="Intervalles max (pas ≤)"
-                  value={isFinite(pasMax) ? pasMax : ""}
-                  onChange={setPasMax}
+                  label="Intervalles max"
+                  value={isFinite(maxIntervals) ? maxIntervals : ""}
+                  onChange={setMaxIntervals}
+                  suffix="int."
+                  step="1"
                 />
                 <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
                   <span className="text-xs font-medium text-foreground">
@@ -297,8 +296,8 @@ function Index() {
                 <div className="my-2 h-px bg-border" />
                 <Row label="Longueur utile" value={`${fmt(Lu)} mm`} strong />
                 <Row
-                  label="Intervalles min."
-                  value={Nmin > 0 ? String(Nmin) : "—"}
+                  label="Intervalles max."
+                  value={Nmax > 0 ? String(Nmax) : "—"}
                 />
               </dl>
             </section>
@@ -311,7 +310,7 @@ function Index() {
                 Répartitions possibles
               </h2>
               <span className="text-xs text-muted-foreground">
-                Pas ≤ {fmt(pasMax)} mm · {rows.length} proposition
+                1 → {Nmax} intervalles · {rows.length} proposition
                 {rows.length > 1 ? "s" : ""}
               </span>
             </div>
