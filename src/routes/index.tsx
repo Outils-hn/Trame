@@ -246,10 +246,6 @@ function Index() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   useEffect(() => {
-    const m = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDark(m);
-  }, []);
-  useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
