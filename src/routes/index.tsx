@@ -296,8 +296,8 @@ function Index() {
                 <div className="my-2 h-px bg-border" />
                 <Row label="Longueur utile" value={`${fmt(Lu)} mm`} strong />
                 <Row
-                  label="Intervalles min."
-                  value={Nmin > 0 ? String(Nmin) : "—"}
+                  label="Intervalles max."
+                  value={Nmax > 0 ? String(Nmax) : "—"}
                 />
               </dl>
             </section>
