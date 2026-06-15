@@ -560,8 +560,8 @@ function IntervalsTable({
               <li
                 key={r.N}
                 className={cn(
-                  "px-5 py-4 transition-colors hover:bg-muted/30",
-                  idx === 0 && "bg-muted/20",
+                  "px-5 py-4 transition-colors hover:bg-muted/50",
+                  idx % 2 === 1 && "bg-muted/30",
                 )}
               >
                 <div className="grid gap-3 md:grid-cols-[60px_60px_110px_1fr_90px] md:items-center md:gap-4">
@@ -656,8 +656,8 @@ function PitchTable({
               <li
                 key={idx}
                 className={cn(
-                  "px-5 py-4 transition-colors hover:bg-muted/30",
-                  idx === 0 && "bg-muted/20",
+                  "px-5 py-4 transition-colors hover:bg-muted/50",
+                  idx % 2 === 1 && "bg-muted/30",
                 )}
               >
                 <div className="grid gap-3 md:grid-cols-[1.2fr_50px_90px_90px_90px_1.4fr_90px] md:items-center md:gap-4">
