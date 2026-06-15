@@ -310,7 +310,7 @@ function Index() {
                 Répartitions possibles
               </h2>
               <span className="text-xs text-muted-foreground">
-                Pas ≤ {fmt(pasMax)} mm · {rows.length} proposition
+                1 → {Nmax} intervalles · {rows.length} proposition
                 {rows.length > 1 ? "s" : ""}
               </span>
             </div>
