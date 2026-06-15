@@ -32,8 +32,9 @@ interface Row {
 
 function fmt(n: number, d = 1) {
   if (!isFinite(n)) return "—";
-  return n.toLocaleString("fr-FR", {
-    minimumFractionDigits: d,
+  const cleaned = Number(n.toFixed(d));
+  return cleaned.toLocaleString("fr-FR", {
+    minimumFractionDigits: 0,
     maximumFractionDigits: d,
   });
 }
