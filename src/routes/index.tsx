@@ -159,7 +159,7 @@ function Index() {
   const [Ds, setDs] = useState<number>(50);
   const [De, setDe] = useState<number>(50);
   const [sameEnd, setSameEnd] = useState(true);
-  const [pasMax, setPasMax] = useState<number>(300);
+  const [maxIntervals, setMaxIntervals] = useState<number>(5);
   const [integers, setIntegers] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
