@@ -1,16 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Moon, Sun, Copy, Check, ChevronDown } from "lucide-react";
+import { Moon, Sun, Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -18,29 +12,24 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Répartition de Perçages — Calculateur" },
+      { title: "Répartition de Perçages — Calculateur Façade" },
       {
         name: "description",
         content:
-          "Calculateur en temps réel pour la répartition de perçages : entraxe cible, entraxe max, pair, impair et reste à la fin.",
+          "Calculateur métier pour la répartition de perçages en façade : pas maximum, intervalles, positions cumulées.",
       },
     ],
   }),
   component: Index,
 });
 
-type Mode = "target" | "max";
+const MAX_ROWS = 6;
 
-interface Variant {
-  title: string;
-  subtitle: string;
-  N: number; // intervals
-  pitch: number; // entraxe
+interface Row {
+  N: number;
+  holes: number;
+  pitch: number;
   positions: number[];
-  realStart: number;
-  realEnd: number;
-  valid: boolean;
-  note?: string;
 }
 
 function fmt(n: number, d = 1) {
@@ -51,301 +40,50 @@ function fmt(n: number, d = 1) {
   });
 }
 
-function buildPositions(start: number, pitch: number, N: number) {
-  const arr: number[] = [];
-  for (let i = 0; i <= N; i++) arr.push(start + i * pitch);
-  return arr;
-}
-
-function computeVariants(
+function buildRows(
   L: number,
   Ds: number,
   De: number,
-  mode: Mode,
-  pitchInput: number,
-): Variant[] {
+  pasMax: number,
+  integers: boolean,
+): { rows: Row[]; Lu: number; Nmin: number } {
   const Lu = L - Ds - De;
-  const variants: Variant[] = [];
-
-  const make = (title: string, subtitle: string, N: number): Variant => {
-    if (!isFinite(L) || !isFinite(Ds) || !isFinite(De) || !isFinite(pitchInput)) {
-      return {
-        title,
-        subtitle,
-        N: 0,
-        pitch: NaN,
-        positions: [],
-        realStart: Ds,
-        realEnd: De,
-        valid: false,
-      };
-    }
-    if (Lu <= 0 || N < 1) {
-      return {
-        title,
-        subtitle,
-        N: 0,
-        pitch: NaN,
-        positions: [],
-        realStart: Ds,
-        realEnd: De,
-        valid: false,
-        note: Lu <= 0 ? "Longueur utile invalide" : "Aucun intervalle possible",
-      };
-    }
+  if (!isFinite(Lu) || Lu <= 0 || !isFinite(pasMax) || pasMax <= 0) {
+    return { rows: [], Lu, Nmin: 0 };
+  }
+  const Nmin = Math.max(1, Math.ceil(Lu / pasMax));
+  const rows: Row[] = [];
+  for (let k = 0; k < MAX_ROWS; k++) {
+    const N = Nmin + k;
     const pitch = Lu / N;
-    const positions = buildPositions(Ds, pitch, N);
-    return {
-      title,
-      subtitle,
-      N,
-      pitch,
-      positions,
-      realStart: Ds,
-      realEnd: De,
-      valid: true,
-    };
-  };
-
-  // Variant 1: Optimisée
-  let Nopt = 1;
-  if (mode === "target") {
-    Nopt = Math.max(1, Math.round(Lu / pitchInput));
-  } else {
-    Nopt = Math.max(1, Math.ceil(Lu / pitchInput));
-  }
-  variants.push(
-    make(
-      "Optimisée",
-      mode === "target" ? "Entraxe le plus proche de la cible" : "Min. d'intervalles ≤ max",
-      Nopt,
-    ),
-  );
-
-  // Variant 2: PAIR
-  let Npair: number;
-  if (mode === "target") {
-    const base = Math.max(2, Math.round(Lu / pitchInput));
-    if (base % 2 === 0) Npair = base;
-    else {
-      const lower = base - 1;
-      const upper = base + 1;
-      const dLower = lower >= 2 ? Math.abs(Lu / lower - pitchInput) : Infinity;
-      const dUpper = Math.abs(Lu / upper - pitchInput);
-      Npair = dLower <= dUpper ? lower : upper;
-    }
-  } else {
-    const base = Math.max(2, Math.ceil(Lu / pitchInput));
-    Npair = base % 2 === 0 ? base : base + 1;
-  }
-  variants.push(make("Intervalles PAIR", "Nombre d'intervalles pair", Npair));
-
-  // Variant 3: IMPAIR
-  let Nimp: number;
-  if (mode === "target") {
-    const base = Math.max(1, Math.round(Lu / pitchInput));
-    if (base % 2 === 1) Nimp = base;
-    else {
-      const lower = base - 1;
-      const upper = base + 1;
-      const dLower = lower >= 1 ? Math.abs(Lu / lower - pitchInput) : Infinity;
-      const dUpper = Math.abs(Lu / upper - pitchInput);
-      Nimp = dLower <= dUpper ? lower : upper;
-    }
-  } else {
-    const base = Math.max(1, Math.ceil(Lu / pitchInput));
-    Nimp = base % 2 === 1 ? base : base + 1;
-  }
-  variants.push(
-    make("Intervalles IMPAIR", "Trou au centre de la barre", Nimp),
-  );
-
-  // Variant 4: Reste à la fin (entraxe strict)
-  const v4: Variant = (() => {
-    const title = "Reste à la fin";
-    const subtitle = "Entraxe strict — reste absorbé";
-    if (
-      !isFinite(L) ||
-      !isFinite(Ds) ||
-      !isFinite(pitchInput) ||
-      pitchInput <= 0 ||
-      L - Ds <= 0
-    ) {
-      return {
-        title,
-        subtitle,
-        N: 0,
-        pitch: NaN,
-        positions: [],
-        realStart: Ds,
-        realEnd: De,
-        valid: false,
-        note: "Valeurs invalides",
-      };
-    }
-    // Place holes at Ds, Ds+pitch, ... while position <= L - De ideally,
-    // but spec says "dernier entraxe absorbe le reste".
-    // Interpretation: place holes strictly with pitchInput from start;
-    // last hole is the one such that adding another would exceed L.
-    // Then last interval = L - lastHolePosition (real D_fin).
-    const usable = L - Ds;
-    const N = Math.max(1, Math.floor(usable / pitchInput));
+    if (pitch <= 0) break;
     const positions: number[] = [];
-    for (let i = 0; i <= N; i++) positions.push(Ds + i * pitchInput);
-    // Ensure last position <= L; if not, drop
-    while (positions.length > 1 && positions[positions.length - 1] > L) {
-      positions.pop();
+    for (let i = 0; i <= N; i++) {
+      const p = Ds + i * pitch;
+      positions.push(integers ? Math.round(p) : p);
     }
-    const last = positions[positions.length - 1];
-    const realEnd = L - last;
-    return {
-      title,
-      subtitle,
-      N: positions.length - 1,
-      pitch: pitchInput,
-      positions,
-      realStart: Ds,
-      realEnd,
-      valid: true,
-      note: `D_fin réel : ${fmt(realEnd)} mm`,
-    };
-  })();
-  variants.push(v4);
-
-  return variants;
+    rows.push({ N, holes: N + 1, pitch, positions });
+  }
+  return { rows, Lu, Nmin };
 }
 
-function VariantCard({ v, index }: { v: Variant; index: number }) {
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    const txt = v.positions.map((p) => fmt(p, 1).replace(/\s/g, "")).join("; ");
-    try {
-      await navigator.clipboard.writeText(txt);
-      setCopied(true);
-      toast.success("Cotes copiées");
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      toast.error("Impossible de copier");
-    }
-  };
-
-  const accent = ["bg-accent-1", "bg-accent-2", "bg-accent-3", "bg-accent-4"][index];
-
+function PositionsList({
+  positions,
+  integers,
+}: {
+  positions: number[];
+  integers: boolean;
+}) {
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-foreground/20">
-      <div className={cn("absolute inset-x-0 top-0 h-[2px]", accent)} />
-      <div className="p-5 sm:p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Variante {index + 1}
-            </div>
-            <h3 className="mt-1 text-base font-semibold text-foreground">{v.title}</h3>
-            <p className="text-xs text-muted-foreground">{v.subtitle}</p>
-          </div>
-          {v.valid && (
-            <div className="rounded-md border border-border bg-muted px-2 py-1 text-[11px] font-mono text-muted-foreground">
-              {v.N % 2 === 0 ? "PAIR" : "IMPAIR"}
-            </div>
+    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-xs leading-relaxed text-foreground/85">
+      {positions.map((p, i) => (
+        <span key={i} className="inline-flex items-center gap-1.5">
+          <span className="tabular-nums">{integers ? p : fmt(p, 1)}</span>
+          {i < positions.length - 1 && (
+            <span className="text-muted-foreground/50">•</span>
           )}
-        </div>
-
-        {!v.valid ? (
-          <p className="mt-6 text-sm text-destructive">{v.note ?? "—"}</p>
-        ) : (
-          <>
-            <div className="mt-5 flex items-baseline gap-2">
-              <span className="font-mono text-4xl font-bold tracking-tight text-foreground tabular-nums">
-                {fmt(v.pitch)}
-              </span>
-              <span className="text-sm text-muted-foreground">mm entraxe</span>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-              <Stat label="Perçages" value={String(v.positions.length)} />
-              <Stat label="Intervalles" value={String(v.N)} />
-            </div>
-
-            {v.note && (
-              <p className="mt-3 text-xs text-muted-foreground">{v.note}</p>
-            )}
-
-            <Collapsible open={open} onOpenChange={setOpen} className="mt-5">
-              <div className="flex items-center gap-2">
-                <CollapsibleTrigger asChild>
-                  <button className="flex flex-1 items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted">
-                    <span>Voir la liste des cotes cumulées</span>
-                    <ChevronDown
-                      className={cn(
-                        "size-4 transition-transform",
-                        open && "rotate-180",
-                      )}
-                    />
-                  </button>
-                </CollapsibleTrigger>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={copy}
-                  className="gap-1.5"
-                >
-                  {copied ? (
-                    <Check className="size-3.5" />
-                  ) : (
-                    <Copy className="size-3.5" />
-                  )}
-                  Copier
-                </Button>
-              </div>
-              <CollapsibleContent className="mt-2 overflow-hidden">
-                <div className="rounded-md border border-border bg-muted/40">
-                  <div className="max-h-64 overflow-auto">
-                    <table className="w-full text-xs">
-                      <thead className="sticky top-0 bg-muted/80 backdrop-blur">
-                        <tr className="text-left text-muted-foreground">
-                          <th className="px-3 py-2 font-medium">Trou</th>
-                          <th className="px-3 py-2 font-medium">Cote cumulée</th>
-                          <th className="px-3 py-2 font-medium text-right">Δ</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {v.positions.map((p, i) => (
-                          <tr key={i} className="border-t border-border/60">
-                            <td className="px-3 py-1.5 font-mono text-muted-foreground">
-                              #{i + 1}
-                            </td>
-                            <td className="px-3 py-1.5 font-mono tabular-nums text-foreground">
-                              {fmt(p)} mm
-                            </td>
-                            <td className="px-3 py-1.5 text-right font-mono tabular-nums text-muted-foreground">
-                              {i === 0 ? "—" : `+${fmt(p - v.positions[i - 1])}`}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-md border border-border bg-muted/40 px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
-      <div className="font-mono text-base font-semibold tabular-nums text-foreground">
-        {value}
-      </div>
+        </span>
+      ))}
     </div>
   );
 }
@@ -394,15 +132,39 @@ function NumberField({
   );
 }
 
+function Row({
+  label,
+  value,
+  strong,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd
+        className={cn(
+          "font-mono tabular-nums",
+          strong ? "text-foreground font-semibold" : "text-foreground/80",
+        )}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}
+
 function Index() {
   const [dark, setDark] = useState(false);
-  const [L, setL] = useState<number>(2000);
+  const [L, setL] = useState<number>(3094);
   const [Ds, setDs] = useState<number>(50);
   const [De, setDe] = useState<number>(50);
   const [sameEnd, setSameEnd] = useState(true);
-  const [mode, setMode] = useState<Mode>("target");
-  const [pitchTarget, setPitchTarget] = useState<number>(250);
-  const [pitchMax, setPitchMax] = useState<number>(300);
+  const [pasMax, setPasMax] = useState<number>(300);
+  const [integers, setIntegers] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   useEffect(() => {
     const m = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -413,13 +175,25 @@ function Index() {
   }, [dark]);
 
   const effectiveDe = sameEnd ? Ds : De;
-  const pitchInput = mode === "target" ? pitchTarget : pitchMax;
-  const Lu = (L || 0) - (Ds || 0) - (effectiveDe || 0);
 
-  const variants = useMemo(
-    () => computeVariants(L, Ds, effectiveDe, mode, pitchInput),
-    [L, Ds, effectiveDe, mode, pitchInput],
+  const { rows, Lu, Nmin } = useMemo(
+    () => buildRows(L, Ds, effectiveDe, pasMax, integers),
+    [L, Ds, effectiveDe, pasMax, integers],
   );
+
+  const copy = async (r: Row, idx: number) => {
+    const txt = r.positions
+      .map((p) => (integers ? String(p) : fmt(p, 1).replace(/\s/g, "")))
+      .join("; ");
+    try {
+      await navigator.clipboard.writeText(txt);
+      setCopiedIdx(idx);
+      toast.success(`Cotes copiées (${r.holes} trous)`);
+      setTimeout(() => setCopiedIdx(null), 1500);
+    } catch {
+      toast.error("Impossible de copier");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -435,7 +209,7 @@ function Index() {
                 Répartition de Perçages
               </h1>
               <p className="text-xs text-muted-foreground">
-                Calculateur d'entraxe — temps réel
+                Calculateur façade — pas max, temps réel
               </p>
             </div>
           </div>
@@ -495,29 +269,20 @@ function Index() {
             </section>
 
             <section className="rounded-xl border border-border bg-card p-5">
-              <h2 className="mb-3 text-sm font-semibold">Contrainte</h2>
-              <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="target">Entraxe cible</TabsTrigger>
-                  <TabsTrigger value="max">Entraxe max</TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <div className="mt-4">
-                {mode === "target" ? (
-                  <NumberField
-                    id="pt"
-                    label="Entraxe cible (≈)"
-                    value={isFinite(pitchTarget) ? pitchTarget : ""}
-                    onChange={setPitchTarget}
-                  />
-                ) : (
-                  <NumberField
-                    id="pm"
-                    label="Entraxe maximum strict"
-                    value={isFinite(pitchMax) ? pitchMax : ""}
-                    onChange={setPitchMax}
-                  />
-                )}
+              <h2 className="mb-3 text-sm font-semibold">Contrainte façade</h2>
+              <div className="space-y-4">
+                <NumberField
+                  id="pm"
+                  label="Intervalles max (pas ≤)"
+                  value={isFinite(pasMax) ? pasMax : ""}
+                  onChange={setPasMax}
+                />
+                <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+                  <span className="text-xs font-medium text-foreground">
+                    Mesures entières uniquement
+                  </span>
+                  <Switch checked={integers} onCheckedChange={setIntegers} />
+                </label>
               </div>
             </section>
 
@@ -530,10 +295,10 @@ function Index() {
                 <Row label="Marge début" value={`${fmt(Ds)} mm`} />
                 <Row label="Marge fin" value={`${fmt(effectiveDe)} mm`} />
                 <div className="my-2 h-px bg-border" />
+                <Row label="Longueur utile" value={`${fmt(Lu)} mm`} strong />
                 <Row
-                  label="Longueur utile"
-                  value={`${fmt(Lu)} mm`}
-                  strong
+                  label="Intervalles min."
+                  value={Nmin > 0 ? String(Nmin) : "—"}
                 />
               </dl>
             </section>
@@ -542,47 +307,99 @@ function Index() {
           {/* Résultats */}
           <section>
             <div className="mb-4 flex items-baseline justify-between">
-              <h2 className="text-sm font-semibold">Variantes calculées</h2>
+              <h2 className="text-sm font-semibold">
+                Répartitions possibles
+              </h2>
               <span className="text-xs text-muted-foreground">
-                Mode : {mode === "target" ? "Entraxe cible" : "Entraxe max"}
+                Pas ≤ {fmt(pasMax)} mm · {rows.length} proposition
+                {rows.length > 1 ? "s" : ""}
               </span>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {variants.map((v, i) => (
-                <VariantCard key={i} v={v} index={i} />
-              ))}
-            </div>
+
+            {rows.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
+                Saisissez des valeurs valides pour voir les répartitions.
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                {/* Header row */}
+                <div className="hidden grid-cols-[60px_60px_110px_1fr_90px] gap-4 border-b border-border bg-muted/40 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid">
+                  <div>Int.</div>
+                  <div>Trous</div>
+                  <div>Pas</div>
+                  <div>Positions (mm)</div>
+                  <div className="text-right">Action</div>
+                </div>
+
+                <ul className="divide-y divide-border">
+                  {rows.map((r, idx) => (
+                    <li
+                      key={r.N}
+                      className={cn(
+                        "px-5 py-4 transition-colors hover:bg-muted/30",
+                        idx === 0 && "bg-muted/20",
+                      )}
+                    >
+                      <div className="grid gap-3 md:grid-cols-[60px_60px_110px_1fr_90px] md:items-center md:gap-4">
+                        <div className="flex items-center gap-2 md:block">
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">
+                            Int.
+                          </span>
+                          <span className="font-mono text-base font-semibold tabular-nums">
+                            {r.N}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 md:block">
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">
+                            Trous
+                          </span>
+                          <span className="font-mono text-base font-semibold tabular-nums">
+                            {r.holes}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-mono text-lg font-bold tabular-nums text-foreground">
+                            {fmt(r.pitch)}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground">
+                            mm
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <PositionsList
+                            positions={r.positions}
+                            integers={integers}
+                          />
+                        </div>
+                        <div className="flex md:justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copy(r, idx)}
+                            className="gap-1.5"
+                          >
+                            {copiedIdx === idx ? (
+                              <Check className="size-3.5" />
+                            ) : (
+                              <Copy className="size-3.5" />
+                            )}
+                            Copier
+                          </Button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </section>
         </div>
 
         <footer className="mt-10 border-t border-border pt-4 text-center text-[11px] text-muted-foreground">
-          Toutes les cotes sont en millimètres · cumulées depuis le bord de départ
+          Cotes en millimètres · cumulées depuis le bord de départ · triées par pas
+          décroissant
         </footer>
       </main>
-    </div>
-  );
-}
-
-function Row({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd
-        className={cn(
-          "font-mono tabular-nums",
-          strong ? "text-foreground font-semibold" : "text-foreground/80",
-        )}
-      >
-        {value}
-      </dd>
     </div>
   );
 }
