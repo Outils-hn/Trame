@@ -246,10 +246,6 @@ function Index() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   useEffect(() => {
-    const m = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDark(m);
-  }, []);
-  useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
@@ -555,13 +551,16 @@ function IntervalsTable({
             <div className="text-right">Action</div>
           </div>
 
-          <ul className="divide-y divide-border">
+          <ul>
             {rows.map((r, idx) => (
               <li
                 key={r.N}
                 className={cn(
-                  "px-5 py-4 transition-colors hover:bg-muted/50",
-                  idx % 2 === 1 && "bg-muted/30",
+                  "px-5 py-4 border-b border-gray-300 dark:border-zinc-700 transition-colors",
+                  idx % 2 === 0
+                    ? "bg-white dark:bg-zinc-900"
+                    : "bg-slate-100 dark:bg-zinc-800",
+                  "hover:bg-slate-200 dark:hover:bg-zinc-700/70",
                 )}
               >
                 <div className="grid gap-3 md:grid-cols-[60px_60px_110px_1fr_90px] md:items-center md:gap-4">
@@ -651,13 +650,16 @@ function PitchTable({
             <div className="text-right">Action</div>
           </div>
 
-          <ul className="divide-y divide-border">
+          <ul>
             {rows.map((r, idx) => (
               <li
                 key={idx}
                 className={cn(
-                  "px-5 py-4 transition-colors hover:bg-muted/50",
-                  idx % 2 === 1 && "bg-muted/30",
+                  "px-5 py-4 border-b border-gray-300 dark:border-zinc-700 transition-colors",
+                  idx % 2 === 0
+                    ? "bg-white dark:bg-zinc-900"
+                    : "bg-slate-100 dark:bg-zinc-800",
+                  "hover:bg-slate-200 dark:hover:bg-zinc-700/70",
                 )}
               >
                 <div className="grid gap-3 md:grid-cols-[1.2fr_50px_90px_90px_90px_1.4fr_90px] md:items-center md:gap-4">
