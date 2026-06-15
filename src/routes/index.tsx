@@ -173,9 +173,9 @@ function Index() {
 
   const effectiveDe = sameEnd ? Ds : De;
 
-  const { rows, Lu, Nmin } = useMemo(
-    () => buildRows(L, Ds, effectiveDe, pasMax, integers),
-    [L, Ds, effectiveDe, pasMax, integers],
+  const { rows, Lu, Nmax } = useMemo(
+    () => buildRows(L, Ds, effectiveDe, maxIntervals, integers),
+    [L, Ds, effectiveDe, maxIntervals, integers],
   );
 
   const copy = async (r: Row, idx: number) => {
