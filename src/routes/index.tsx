@@ -270,9 +270,11 @@ function Index() {
               <div className="space-y-4">
                 <NumberField
                   id="pm"
-                  label="Intervalles max (pas ≤)"
-                  value={isFinite(pasMax) ? pasMax : ""}
-                  onChange={setPasMax}
+                  label="Intervalles max"
+                  value={isFinite(maxIntervals) ? maxIntervals : ""}
+                  onChange={setMaxIntervals}
+                  suffix="int."
+                  step="1"
                 />
                 <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
                   <span className="text-xs font-medium text-foreground">
