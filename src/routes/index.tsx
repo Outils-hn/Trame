@@ -68,18 +68,17 @@ function buildIntervalRows(
   const rows: IntervalRow[] = [];
   const integerDs = Number.isInteger(Ds);
   const integerLu = Number.isInteger(Lu);
-  const upper = integers ? Math.min(50, Math.max(Nmax, 50)) : Nmax;
+  const upper = Math.min(20, Nmax);
   for (let N = 1; N <= upper; N++) {
     const rawPitch = Lu / N;
     const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
     if (integers && !isIntegerPitch) continue;
-    const pitch = integers ? rawPitch : rawPitch;
+    const pitch = rawPitch;
     const positions: number[] = [];
     for (let i = 0; i <= N; i++) {
       positions.push(Ds + i * rawPitch);
     }
     rows.push({ kind: "intervals", N, holes: N + 1, pitch, positions });
-    if (integers && rows.length >= Nmax) break;
   }
   return { rows, Lu, Nmax };
 }
@@ -151,7 +150,7 @@ function buildMaxPitchRows(
   const integerDs = Number.isInteger(Ds);
   const integerLu = Number.isInteger(Lu);
   const target = 5;
-  const hardLimit = integers ? Nmin + 500 : Nmin + target - 1;
+  const hardLimit = integers ? 40 : Math.min(40, Nmin + target - 1);
   for (let N = Nmin; N <= hardLimit && rows.length < target; N++) {
     const rawPitch = Lu / N;
     const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
