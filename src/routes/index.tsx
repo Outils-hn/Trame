@@ -447,7 +447,7 @@ function Index() {
                   </dl>
                 </section>
               </>
-            ) : (
+            ) : mode === "pitch" ? (
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
@@ -516,6 +516,96 @@ function Index() {
                     {!symmetric && (
                       <SummaryRow label="Début" value={`${fmt(Dstart)} mm`} />
                     )}
+                  </dl>
+                </section>
+              </>
+            ) : (
+              <>
+                <section className="rounded-xl border border-border bg-card p-5">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-sm font-semibold">Paramètres</h2>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Entraxe max
+                    </span>
+                  </div>
+
+                  <div className="space-y-4">
+                    <NumberField
+                      id="L3"
+                      label="Longueur totale (L)"
+                      value={isFinite(L3) ? L3 : ""}
+                      onChange={setL3}
+                    />
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <NumberField
+                        id="ds3"
+                        label="Distance début"
+                        value={isFinite(Ds3) ? Ds3 : ""}
+                        onChange={setDs3}
+                      />
+                      <NumberField
+                        id="de3"
+                        label="Distance fin"
+                        value={
+                          sameEnd3
+                            ? isFinite(Ds3)
+                              ? Ds3
+                              : ""
+                            : isFinite(De3)
+                              ? De3
+                              : ""
+                        }
+                        onChange={setDe3}
+                        disabled={sameEnd3}
+                      />
+                    </div>
+
+                    <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+                      <span className="text-xs font-medium text-foreground">
+                        Identique au début
+                      </span>
+                      <Switch checked={sameEnd3} onCheckedChange={setSameEnd3} />
+                    </label>
+
+                    <NumberField
+                      id="emax"
+                      label="Entraxe maximum plafond (E_max)"
+                      value={isFinite(Emax) ? Emax : ""}
+                      onChange={setEmax}
+                    />
+                  </div>
+                </section>
+
+                <section className="rounded-xl border border-border bg-card p-5">
+                  <h2 className="mb-3 text-sm font-semibold">Options</h2>
+                  <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+                    <span className="text-xs font-medium text-foreground">
+                      Mesures entières uniquement
+                    </span>
+                    <Switch checked={integers} onCheckedChange={setIntegers} />
+                  </label>
+                </section>
+
+                <section className="rounded-xl border border-border bg-muted/40 p-5">
+                  <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Résumé
+                  </h2>
+                  <dl className="space-y-2 text-xs">
+                    <SummaryRow label="Longueur totale" value={`${fmt(L3)} mm`} />
+                    <SummaryRow label="Marge début" value={`${fmt(Ds3)} mm`} />
+                    <SummaryRow label="Marge fin" value={`${fmt(effectiveDe3)} mm`} />
+                    <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
+                    <div className="my-2 h-px bg-border" />
+                    <SummaryRow
+                      label="Longueur utile"
+                      value={`${fmt(maxPitchData.Lu)} mm`}
+                      strong
+                    />
+                    <SummaryRow
+                      label="Intervalles min."
+                      value={maxPitchData.Nmin > 0 ? String(maxPitchData.Nmin) : "—"}
+                    />
                   </dl>
                 </section>
               </>
