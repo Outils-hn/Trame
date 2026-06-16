@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Mode = "intervals" | "pitch";
+type Mode = "intervals" | "pitch" | "maxpitch";
 
 interface IntervalRow {
   kind: "intervals";
