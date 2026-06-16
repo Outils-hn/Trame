@@ -148,16 +148,19 @@ function buildMaxPitchRows(
   }
   const Nmin = Math.max(1, Math.ceil(Lu / Emax));
   const rows: IntervalRow[] = [];
-  for (let k = 0; k < 5; k++) {
-    const N = Nmin + k;
+  const integerDs = Number.isInteger(Ds);
+  const integerLu = Number.isInteger(Lu);
+  const target = 5;
+  const hardLimit = integers ? Nmin + 500 : Nmin + target - 1;
+  for (let N = Nmin; N <= hardLimit && rows.length < target; N++) {
     const rawPitch = Lu / N;
-    const pitch = integers ? Math.round(rawPitch) : rawPitch;
+    const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
+    if (integers && !isIntegerPitch) continue;
     const positions: number[] = [];
     for (let i = 0; i <= N; i++) {
-      const p = Ds + i * rawPitch;
-      positions.push(integers ? Math.round(p) : p);
+      positions.push(Ds + i * rawPitch);
     }
-    rows.push({ kind: "intervals", N, holes: N + 1, pitch, positions });
+    rows.push({ kind: "intervals", N, holes: N + 1, pitch: rawPitch, positions });
   }
   return { rows, Lu, Nmin };
 }
