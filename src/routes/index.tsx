@@ -721,3 +721,17 @@ function PitchTable({
     </>
   );
 }
+
+function EmptyIntegerNotice() {
+  return (
+    <div className="mx-auto max-w-2xl rounded-xl border border-amber-300/70 bg-amber-50 p-6 text-center text-sm text-amber-900 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+      <div className="mb-2 text-base font-semibold">Aucune répartition entière trouvée</div>
+      <p className="leading-relaxed">
+        Aucune répartition en millimètres entiers n'est possible avec ces dimensions
+        (dans la limite de 20 intervalles en Onglet 1 / 40 intervalles en Onglet 3).
+        Décochez l'option <span className="font-medium">« Mesures entières »</span> pour voir les
+        résultats précis avec décimales.
+      </p>
+    </div>
+  );
+}
