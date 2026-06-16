@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Répartition de Perçages — Calculateur Façade" },
+      { title: "DiviPro" },
       {
         name: "description",
         content:
@@ -79,13 +79,7 @@ function buildIntervalRows(
   return { rows, Lu, Nmax };
 }
 
-function buildPitchRows(
-  L: number,
-  E: number,
-  symmetric: boolean,
-  Dstart: number,
-  integers: boolean,
-): PitchRow[] {
+function buildPitchRows(L: number, E: number, symmetric: boolean, Dstart: number, integers: boolean): PitchRow[] {
   if (!isFinite(L) || !isFinite(E) || L <= 0 || E <= 0) return [];
   const rows: PitchRow[] = [];
 
@@ -163,21 +157,13 @@ function buildMaxPitchRows(
   return { rows, Lu, Nmin };
 }
 
-function PositionsList({
-  positions,
-  integers,
-}: {
-  positions: number[];
-  integers: boolean;
-}) {
+function PositionsList({ positions, integers }: { positions: number[]; integers: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-xs leading-relaxed text-foreground/85">
       {positions.map((p, i) => (
         <span key={i} className="inline-flex items-center gap-1.5">
           <span className="tabular-nums">{integers ? p : fmt(p, 1)}</span>
-          {i < positions.length - 1 && (
-            <span className="text-muted-foreground/50">•</span>
-          )}
+          {i < positions.length - 1 && <span className="text-muted-foreground/50">•</span>}
         </span>
       ))}
     </div>
@@ -228,24 +214,11 @@ function NumberField({
   );
 }
 
-function SummaryRow({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
+function SummaryRow({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className="flex items-center justify-between">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd
-        className={cn(
-          "font-mono tabular-nums",
-          strong ? "text-foreground font-semibold" : "text-foreground/80",
-        )}
-      >
+      <dd className={cn("font-mono tabular-nums", strong ? "text-foreground font-semibold" : "text-foreground/80")}>
         {value}
       </dd>
     </div>
@@ -302,9 +275,7 @@ function Index() {
   );
 
   const copy = async (positions: number[], idx: number, label: string) => {
-    const txt = positions
-      .map((p) => (integers ? String(p) : fmt(p, 1).replace(/\s/g, "")))
-      .join("; ");
+    const txt = positions.map((p) => (integers ? String(p) : fmt(p, 1).replace(/\s/g, ""))).join("; ");
     try {
       await navigator.clipboard.writeText(txt);
       setCopiedIdx(idx);
@@ -325,12 +296,8 @@ function Index() {
               <span className="font-mono text-sm font-bold">PD</span>
             </div>
             <div>
-              <h1 className="text-sm font-semibold leading-tight">
-                Répartition de Perçages
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Calculateur façade — temps réel
-              </p>
+              <h1 className="text-sm font-semibold leading-tight">Répartition de Perçages</h1>
+              <p className="text-xs text-muted-foreground">Calculateur façade — temps réel</p>
             </div>
           </div>
           <button
@@ -366,41 +333,21 @@ function Index() {
                   </div>
 
                   <div className="space-y-4">
-                    <NumberField
-                      id="L"
-                      label="Longueur totale (L)"
-                      value={isFinite(L) ? L : ""}
-                      onChange={setL}
-                    />
+                    <NumberField id="L" label="Longueur totale (L)" value={isFinite(L) ? L : ""} onChange={setL} />
 
                     <div className="grid grid-cols-2 gap-3">
-                      <NumberField
-                        id="ds"
-                        label="Distance début"
-                        value={isFinite(Ds) ? Ds : ""}
-                        onChange={setDs}
-                      />
+                      <NumberField id="ds" label="Distance début" value={isFinite(Ds) ? Ds : ""} onChange={setDs} />
                       <NumberField
                         id="de"
                         label="Distance fin"
-                        value={
-                          sameEnd
-                            ? isFinite(Ds)
-                              ? Ds
-                              : ""
-                            : isFinite(De)
-                              ? De
-                              : ""
-                        }
+                        value={sameEnd ? (isFinite(Ds) ? Ds : "") : isFinite(De) ? De : ""}
                         onChange={setDe}
                         disabled={sameEnd}
                       />
                     </div>
 
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                      <span className="text-xs font-medium text-foreground">
-                        Identique au début
-                      </span>
+                      <span className="text-xs font-medium text-foreground">Identique au début</span>
                       <Switch checked={sameEnd} onCheckedChange={setSameEnd} />
                     </label>
                   </div>
@@ -418,9 +365,7 @@ function Index() {
                       step="1"
                     />
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                      <span className="text-xs font-medium text-foreground">
-                        Mesures entières uniquement
-                      </span>
+                      <span className="text-xs font-medium text-foreground">Mesures entières uniquement</span>
                       <Switch checked={integers} onCheckedChange={setIntegers} />
                     </label>
                   </div>
@@ -435,11 +380,7 @@ function Index() {
                     <SummaryRow label="Marge début" value={`${fmt(Ds)} mm`} />
                     <SummaryRow label="Marge fin" value={`${fmt(effectiveDe)} mm`} />
                     <div className="my-2 h-px bg-border" />
-                    <SummaryRow
-                      label="Longueur utile"
-                      value={`${fmt(intervalsData.Lu)} mm`}
-                      strong
-                    />
+                    <SummaryRow label="Longueur utile" value={`${fmt(intervalsData.Lu)} mm`} strong />
                     <SummaryRow
                       label="Intervalles max."
                       value={intervalsData.Nmax > 0 ? String(intervalsData.Nmax) : "—"}
@@ -458,27 +399,12 @@ function Index() {
                   </div>
 
                   <div className="space-y-4">
-                    <NumberField
-                      id="L2"
-                      label="Longueur totale (L)"
-                      value={isFinite(L2) ? L2 : ""}
-                      onChange={setL2}
-                    />
-                    <NumberField
-                      id="E"
-                      label="Entraxe imposé (E)"
-                      value={isFinite(E) ? E : ""}
-                      onChange={setE}
-                    />
+                    <NumberField id="L2" label="Longueur totale (L)" value={isFinite(L2) ? L2 : ""} onChange={setL2} />
+                    <NumberField id="E" label="Entraxe imposé (E)" value={isFinite(E) ? E : ""} onChange={setE} />
 
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                      <span className="text-xs font-medium text-foreground">
-                        Rives symétriques (Début = Fin)
-                      </span>
-                      <Switch
-                        checked={symmetric}
-                        onCheckedChange={setSymmetric}
-                      />
+                      <span className="text-xs font-medium text-foreground">Rives symétriques (Début = Fin)</span>
+                      <Switch checked={symmetric} onCheckedChange={setSymmetric} />
                     </label>
 
                     {!symmetric && (
@@ -495,9 +421,7 @@ function Index() {
                 <section className="rounded-xl border border-border bg-card p-5">
                   <h2 className="mb-3 text-sm font-semibold">Options</h2>
                   <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                    <span className="text-xs font-medium text-foreground">
-                      Mesures entières uniquement
-                    </span>
+                    <span className="text-xs font-medium text-foreground">Mesures entières uniquement</span>
                     <Switch checked={integers} onCheckedChange={setIntegers} />
                   </label>
                 </section>
@@ -509,13 +433,8 @@ function Index() {
                   <dl className="space-y-2 text-xs">
                     <SummaryRow label="Longueur totale" value={`${fmt(L2)} mm`} />
                     <SummaryRow label="Entraxe imposé" value={`${fmt(E)} mm`} />
-                    <SummaryRow
-                      label="Mode"
-                      value={symmetric ? "Symétrique" : "Début fixé"}
-                    />
-                    {!symmetric && (
-                      <SummaryRow label="Début" value={`${fmt(Dstart)} mm`} />
-                    )}
+                    <SummaryRow label="Mode" value={symmetric ? "Symétrique" : "Début fixé"} />
+                    {!symmetric && <SummaryRow label="Début" value={`${fmt(Dstart)} mm`} />}
                   </dl>
                 </section>
               </>
@@ -530,41 +449,21 @@ function Index() {
                   </div>
 
                   <div className="space-y-4">
-                    <NumberField
-                      id="L3"
-                      label="Longueur totale (L)"
-                      value={isFinite(L3) ? L3 : ""}
-                      onChange={setL3}
-                    />
+                    <NumberField id="L3" label="Longueur totale (L)" value={isFinite(L3) ? L3 : ""} onChange={setL3} />
 
                     <div className="grid grid-cols-2 gap-3">
-                      <NumberField
-                        id="ds3"
-                        label="Distance début"
-                        value={isFinite(Ds3) ? Ds3 : ""}
-                        onChange={setDs3}
-                      />
+                      <NumberField id="ds3" label="Distance début" value={isFinite(Ds3) ? Ds3 : ""} onChange={setDs3} />
                       <NumberField
                         id="de3"
                         label="Distance fin"
-                        value={
-                          sameEnd3
-                            ? isFinite(Ds3)
-                              ? Ds3
-                              : ""
-                            : isFinite(De3)
-                              ? De3
-                              : ""
-                        }
+                        value={sameEnd3 ? (isFinite(Ds3) ? Ds3 : "") : isFinite(De3) ? De3 : ""}
                         onChange={setDe3}
                         disabled={sameEnd3}
                       />
                     </div>
 
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                      <span className="text-xs font-medium text-foreground">
-                        Identique au début
-                      </span>
+                      <span className="text-xs font-medium text-foreground">Identique au début</span>
                       <Switch checked={sameEnd3} onCheckedChange={setSameEnd3} />
                     </label>
 
@@ -580,9 +479,7 @@ function Index() {
                 <section className="rounded-xl border border-border bg-card p-5">
                   <h2 className="mb-3 text-sm font-semibold">Options</h2>
                   <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                    <span className="text-xs font-medium text-foreground">
-                      Mesures entières uniquement
-                    </span>
+                    <span className="text-xs font-medium text-foreground">Mesures entières uniquement</span>
                     <Switch checked={integers} onCheckedChange={setIntegers} />
                   </label>
                 </section>
@@ -597,11 +494,7 @@ function Index() {
                     <SummaryRow label="Marge fin" value={`${fmt(effectiveDe3)} mm`} />
                     <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
                     <div className="my-2 h-px bg-border" />
-                    <SummaryRow
-                      label="Longueur utile"
-                      value={`${fmt(maxPitchData.Lu)} mm`}
-                      strong
-                    />
+                    <SummaryRow label="Longueur utile" value={`${fmt(maxPitchData.Lu)} mm`} strong />
                     <SummaryRow
                       label="Intervalles min."
                       value={maxPitchData.Nmin > 0 ? String(maxPitchData.Nmin) : "—"}
@@ -623,12 +516,7 @@ function Index() {
                 copiedIdx={copiedIdx}
               />
             ) : mode === "pitch" ? (
-              <PitchTable
-                rows={pitchRows}
-                integers={integers}
-                copy={copy}
-                copiedIdx={copiedIdx}
-              />
+              <PitchTable rows={pitchRows} integers={integers} copy={copy} copiedIdx={copiedIdx} />
             ) : (
               <IntervalsTable
                 rows={maxPitchData.rows}
@@ -692,33 +580,21 @@ function IntervalsTable({
                 key={r.N}
                 className={cn(
                   "px-5 py-4 border-b border-gray-300 dark:border-zinc-700 transition-colors",
-                  idx % 2 === 0
-                    ? "bg-white dark:bg-zinc-900"
-                    : "bg-slate-100 dark:bg-zinc-800",
+                  idx % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-slate-100 dark:bg-zinc-800",
                   "hover:bg-slate-200 dark:hover:bg-zinc-700/70",
                 )}
               >
                 <div className="grid gap-3 md:grid-cols-[60px_60px_110px_1fr_90px] md:items-center md:gap-4">
                   <div className="flex items-center gap-2 md:block">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">
-                      Int.
-                    </span>
-                    <span className="font-mono text-base font-semibold tabular-nums">
-                      {r.N}
-                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">Int.</span>
+                    <span className="font-mono text-base font-semibold tabular-nums">{r.N}</span>
                   </div>
                   <div className="flex items-center gap-2 md:block">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">
-                      Trous
-                    </span>
-                    <span className="font-mono text-base font-semibold tabular-nums">
-                      {r.holes}
-                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">Trous</span>
+                    <span className="font-mono text-base font-semibold tabular-nums">{r.holes}</span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-mono text-lg font-bold tabular-nums text-foreground">
-                      {fmt(r.pitch)}
-                    </span>
+                    <span className="font-mono text-lg font-bold tabular-nums text-foreground">{fmt(r.pitch)}</span>
                     <span className="text-[11px] text-muted-foreground">mm</span>
                   </div>
                   <div className="min-w-0">
@@ -731,11 +607,7 @@ function IntervalsTable({
                       onClick={() => copy(r.positions, idx, `${r.holes} trous`)}
                       className="gap-1.5"
                     >
-                      {copiedIdx === idx ? (
-                        <Check className="size-3.5" />
-                      ) : (
-                        <Copy className="size-3.5" />
-                      )}
+                      {copiedIdx === idx ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
                       Copier
                     </Button>
                   </div>
@@ -791,28 +663,18 @@ function PitchTable({
                 key={idx}
                 className={cn(
                   "px-5 py-4 border-b border-gray-300 dark:border-zinc-700 transition-colors",
-                  idx % 2 === 0
-                    ? "bg-white dark:bg-zinc-900"
-                    : "bg-slate-100 dark:bg-zinc-800",
+                  idx % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-slate-100 dark:bg-zinc-800",
                   "hover:bg-slate-200 dark:hover:bg-zinc-700/70",
                 )}
               >
                 <div className="grid gap-3 md:grid-cols-[1.2fr_50px_90px_90px_90px_1.4fr_90px] md:items-center md:gap-4">
-                  <div className="text-xs font-medium text-foreground">
-                    {r.option}
-                  </div>
+                  <div className="text-xs font-medium text-foreground">{r.option}</div>
                   <div className="flex items-center gap-2 md:block">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">
-                      Int.
-                    </span>
-                    <span className="font-mono text-base font-semibold tabular-nums">
-                      {r.N}
-                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">Int.</span>
+                    <span className="font-mono text-base font-semibold tabular-nums">{r.N}</span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-mono text-base font-semibold tabular-nums">
-                      {fmt(r.rDebut)}
-                    </span>
+                    <span className="font-mono text-base font-semibold tabular-nums">{fmt(r.rDebut)}</span>
                     <span className="text-[11px] text-muted-foreground">mm</span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
@@ -822,9 +684,7 @@ function PitchTable({
                     <span className="text-[11px] text-muted-foreground">mm</span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-mono text-base font-semibold tabular-nums">
-                      {fmt(r.rFin)}
-                    </span>
+                    <span className="font-mono text-base font-semibold tabular-nums">{fmt(r.rFin)}</span>
                     <span className="text-[11px] text-muted-foreground">mm</span>
                   </div>
                   <div className="min-w-0">
@@ -837,11 +697,7 @@ function PitchTable({
                       onClick={() => copy(r.positions, idx, r.option)}
                       className="gap-1.5"
                     >
-                      {copiedIdx === idx ? (
-                        <Check className="size-3.5" />
-                      ) : (
-                        <Copy className="size-3.5" />
-                      )}
+                      {copiedIdx === idx ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
                       Copier
                     </Button>
                   </div>
