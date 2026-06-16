@@ -622,9 +622,17 @@ function Index() {
                 copy={copy}
                 copiedIdx={copiedIdx}
               />
-            ) : (
+            ) : mode === "pitch" ? (
               <PitchTable
                 rows={pitchRows}
+                integers={integers}
+                copy={copy}
+                copiedIdx={copiedIdx}
+              />
+            ) : (
+              <IntervalsTable
+                rows={maxPitchData.rows}
+                Nmax={maxPitchData.rows.length ? maxPitchData.rows[maxPitchData.rows.length - 1].N : 0}
                 integers={integers}
                 copy={copy}
                 copiedIdx={copiedIdx}
