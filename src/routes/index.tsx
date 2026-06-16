@@ -295,6 +295,12 @@ function Index() {
     [L2, E, symmetric, Dstart, integers],
   );
 
+  const effectiveDe3 = sameEnd3 ? Ds3 : De3;
+  const maxPitchData = useMemo(
+    () => buildMaxPitchRows(L3, Ds3, effectiveDe3, Emax, integers),
+    [L3, Ds3, effectiveDe3, Emax, integers],
+  );
+
   const copy = async (positions: number[], idx: number, label: string) => {
     const txt = positions
       .map((p) => (integers ? String(p) : fmt(p, 1).replace(/\s/g, "")))
