@@ -568,9 +568,13 @@ function IntervalsTable({
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
-          Saisissez des valeurs valides pour voir les répartitions.
-        </div>
+        integers ? (
+          <EmptyIntegerNotice />
+        ) : (
+          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
+            Saisissez des valeurs valides pour voir les répartitions.
+          </div>
+        )
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="hidden grid-cols-[60px_60px_110px_1fr_90px] gap-4 border-b border-border bg-muted/40 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid">
@@ -715,5 +719,19 @@ function PitchTable({
         </div>
       )}
     </>
+  );
+}
+
+function EmptyIntegerNotice() {
+  return (
+    <div className="mx-auto max-w-2xl rounded-xl border border-amber-300/70 bg-amber-50 p-6 text-center text-sm text-amber-900 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+      <div className="mb-2 text-base font-semibold">Aucune répartition entière trouvée</div>
+      <p className="leading-relaxed">
+        Aucune répartition en millimètres entiers n'est possible avec ces dimensions
+        (dans la limite de 20 intervalles en Onglet 1 / 40 intervalles en Onglet 3).
+        Décochez l'option <span className="font-medium">« Mesures entières »</span> pour voir les
+        résultats précis avec décimales.
+      </p>
+    </div>
   );
 }
