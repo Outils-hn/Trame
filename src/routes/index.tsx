@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Moon, Sun, Copy, Check } from "lucide-react";
+import { Moon, Sun, Copy, Check, Ruler } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -519,16 +519,27 @@ function Index() {
                 rows={intervalsData.rows}
                 Nmax={intervalsData.Nmax}
                 integers={integers}
+                onShowDecimals={() => setIntegers(false)}
+                emptyIntegerMessage="Aucune répartition en millimètres entiers trouvée pour les 5 premiers intervalles."
                 copy={copy}
                 copiedIdx={copiedIdx}
               />
             ) : mode === "pitch" ? (
-              <PitchTable rows={pitchRows} integers={integers} copy={copy} copiedIdx={copiedIdx} />
+              <PitchTable
+                rows={pitchRows}
+                integers={integers}
+                onShowDecimals={() => setIntegers(false)}
+                emptyIntegerMessage="Aucun entraxe fixe parfait trouvé avec ces dimensions."
+                copy={copy}
+                copiedIdx={copiedIdx}
+              />
             ) : (
               <IntervalsTable
                 rows={maxPitchData.rows}
                 Nmax={maxPitchData.rows.length ? maxPitchData.rows[maxPitchData.rows.length - 1].N : 0}
                 integers={integers}
+                onShowDecimals={() => setIntegers(false)}
+                emptyIntegerMessage="Aucune répartition en millimètres entiers trouvée sous la limite de 40 intervalles."
                 copy={copy}
                 copiedIdx={copiedIdx}
               />
@@ -548,12 +559,16 @@ function IntervalsTable({
   rows,
   Nmax,
   integers,
+  onShowDecimals,
+  emptyIntegerMessage,
   copy,
   copiedIdx,
 }: {
   rows: IntervalRow[];
   Nmax: number;
   integers: boolean;
+  onShowDecimals: () => void;
+  emptyIntegerMessage: string;
   copy: (positions: number[], idx: number, label: string) => void;
   copiedIdx: number | null;
 }) {
@@ -569,7 +584,7 @@ function IntervalsTable({
 
       {rows.length === 0 ? (
         integers ? (
-          <EmptyIntegerNotice />
+          <EmptyIntegerNotice message={emptyIntegerMessage} onShowDecimals={onShowDecimals} />
         ) : (
           <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
             Saisissez des valeurs valides pour voir les répartitions.
@@ -635,11 +650,15 @@ function IntervalsTable({
 function PitchTable({
   rows,
   integers,
+  onShowDecimals,
+  emptyIntegerMessage,
   copy,
   copiedIdx,
 }: {
   rows: PitchRow[];
   integers: boolean;
+  onShowDecimals: () => void;
+  emptyIntegerMessage: string;
   copy: (positions: number[], idx: number, label: string) => void;
   copiedIdx: number | null;
 }) {
@@ -653,9 +672,13 @@ function PitchTable({
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
-          Saisissez une longueur et un entraxe valides.
-        </div>
+        integers ? (
+          <EmptyIntegerNotice message={emptyIntegerMessage} onShowDecimals={onShowDecimals} />
+        ) : (
+          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
+            Saisissez une longueur et un entraxe valides.
+          </div>
+        )
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="hidden grid-cols-[1.2fr_50px_90px_90px_90px_1.4fr_90px] gap-4 border-b border-border bg-muted/40 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid">
@@ -722,16 +745,27 @@ function PitchTable({
   );
 }
 
-function EmptyIntegerNotice() {
+function EmptyIntegerNotice({
+  message,
+  onShowDecimals,
+}: {
+  message: string;
+  onShowDecimals: () => void;
+}) {
   return (
-    <div className="mx-auto max-w-2xl rounded-xl border border-amber-300/70 bg-amber-50 p-6 text-center text-sm text-amber-900 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
-      <div className="mb-2 text-base font-semibold">Aucune répartition entière trouvée</div>
-      <p className="leading-relaxed">
-        Aucune répartition en millimètres entiers n'est possible avec ces dimensions
-        (dans la limite de 20 intervalles en Onglet 1 / 40 intervalles en Onglet 3).
-        Décochez l'option <span className="font-medium">« Mesures entières »</span> pour voir les
-        résultats précis avec décimales.
+    <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+      <Ruler className="h-8 w-8 text-gray-400 dark:text-zinc-500" strokeWidth={1.5} />
+      <p className="max-w-sm text-sm font-medium text-gray-600 dark:text-zinc-300">{message}</p>
+      <p className="text-xs text-gray-400 dark:text-zinc-500">
+        Décochez l'option pour afficher les cotes avec décimales.
       </p>
+      <button
+        type="button"
+        onClick={onShowDecimals}
+        className="mt-1 rounded-md border border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+      >
+        Afficher avec décimales
+      </button>
     </div>
   );
 }
