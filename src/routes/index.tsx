@@ -136,6 +136,33 @@ function buildPitchRows(
   return rows;
 }
 
+function buildMaxPitchRows(
+  L: number,
+  Ds: number,
+  De: number,
+  Emax: number,
+  integers: boolean,
+): { rows: IntervalRow[]; Lu: number; Nmin: number } {
+  const Lu = L - Ds - De;
+  if (!isFinite(Lu) || Lu <= 0 || !isFinite(Emax) || Emax <= 0) {
+    return { rows: [], Lu, Nmin: 0 };
+  }
+  const Nmin = Math.max(1, Math.ceil(Lu / Emax));
+  const rows: IntervalRow[] = [];
+  for (let k = 0; k < 5; k++) {
+    const N = Nmin + k;
+    const rawPitch = Lu / N;
+    const pitch = integers ? Math.round(rawPitch) : rawPitch;
+    const positions: number[] = [];
+    for (let i = 0; i <= N; i++) {
+      const p = Ds + i * rawPitch;
+      positions.push(integers ? Math.round(p) : p);
+    }
+    rows.push({ kind: "intervals", N, holes: N + 1, pitch, positions });
+  }
+  return { rows, Lu, Nmin };
+}
+
 function PositionsList({
   positions,
   integers,
