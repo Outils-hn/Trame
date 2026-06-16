@@ -559,12 +559,16 @@ function IntervalsTable({
   rows,
   Nmax,
   integers,
+  onShowDecimals,
+  emptyIntegerMessage,
   copy,
   copiedIdx,
 }: {
   rows: IntervalRow[];
   Nmax: number;
   integers: boolean;
+  onShowDecimals: () => void;
+  emptyIntegerMessage: string;
   copy: (positions: number[], idx: number, label: string) => void;
   copiedIdx: number | null;
 }) {
@@ -580,7 +584,7 @@ function IntervalsTable({
 
       {rows.length === 0 ? (
         integers ? (
-          <EmptyIntegerNotice />
+          <EmptyIntegerNotice message={emptyIntegerMessage} onShowDecimals={onShowDecimals} />
         ) : (
           <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
             Saisissez des valeurs valides pour voir les répartitions.
