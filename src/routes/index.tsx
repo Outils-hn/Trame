@@ -519,16 +519,27 @@ function Index() {
                 rows={intervalsData.rows}
                 Nmax={intervalsData.Nmax}
                 integers={integers}
+                onShowDecimals={() => setIntegers(false)}
+                emptyIntegerMessage="Aucune répartition en millimètres entiers trouvée pour les 5 premiers intervalles."
                 copy={copy}
                 copiedIdx={copiedIdx}
               />
             ) : mode === "pitch" ? (
-              <PitchTable rows={pitchRows} integers={integers} copy={copy} copiedIdx={copiedIdx} />
+              <PitchTable
+                rows={pitchRows}
+                integers={integers}
+                onShowDecimals={() => setIntegers(false)}
+                emptyIntegerMessage="Aucun entraxe fixe parfait trouvé avec ces dimensions."
+                copy={copy}
+                copiedIdx={copiedIdx}
+              />
             ) : (
               <IntervalsTable
                 rows={maxPitchData.rows}
                 Nmax={maxPitchData.rows.length ? maxPitchData.rows[maxPitchData.rows.length - 1].N : 0}
                 integers={integers}
+                onShowDecimals={() => setIntegers(false)}
+                emptyIntegerMessage="Aucune répartition en millimètres entiers trouvée sous la limite de 40 intervalles."
                 copy={copy}
                 copiedIdx={copiedIdx}
               />
