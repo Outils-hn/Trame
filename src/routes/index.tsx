@@ -650,11 +650,15 @@ function IntervalsTable({
 function PitchTable({
   rows,
   integers,
+  onShowDecimals,
+  emptyIntegerMessage,
   copy,
   copiedIdx,
 }: {
   rows: PitchRow[];
   integers: boolean;
+  onShowDecimals: () => void;
+  emptyIntegerMessage: string;
   copy: (positions: number[], idx: number, label: string) => void;
   copiedIdx: number | null;
 }) {
@@ -668,9 +672,13 @@ function PitchTable({
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
-          Saisissez une longueur et un entraxe valides.
-        </div>
+        integers ? (
+          <EmptyIntegerNotice message={emptyIntegerMessage} onShowDecimals={onShowDecimals} />
+        ) : (
+          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
+            Saisissez une longueur et un entraxe valides.
+          </div>
+        )
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="hidden grid-cols-[1.2fr_50px_90px_90px_90px_1.4fr_90px] gap-4 border-b border-border bg-muted/40 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid">
