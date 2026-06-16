@@ -66,15 +66,20 @@ function buildIntervalRows(
     return { rows: [], Lu, Nmax: 0 };
   }
   const rows: IntervalRow[] = [];
-  for (let N = 1; N <= Nmax; N++) {
+  const integerDs = Number.isInteger(Ds);
+  const integerLu = Number.isInteger(Lu);
+  const upper = integers ? Math.min(50, Math.max(Nmax, 50)) : Nmax;
+  for (let N = 1; N <= upper; N++) {
     const rawPitch = Lu / N;
-    const pitch = integers ? Math.round(rawPitch) : rawPitch;
+    const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
+    if (integers && !isIntegerPitch) continue;
+    const pitch = integers ? rawPitch : rawPitch;
     const positions: number[] = [];
     for (let i = 0; i <= N; i++) {
-      const p = Ds + i * rawPitch;
-      positions.push(integers ? Math.round(p) : p);
+      positions.push(Ds + i * rawPitch);
     }
     rows.push({ kind: "intervals", N, holes: N + 1, pitch, positions });
+    if (integers && rows.length >= Nmax) break;
   }
   return { rows, Lu, Nmax };
 }
@@ -143,16 +148,19 @@ function buildMaxPitchRows(
   }
   const Nmin = Math.max(1, Math.ceil(Lu / Emax));
   const rows: IntervalRow[] = [];
-  for (let k = 0; k < 5; k++) {
-    const N = Nmin + k;
+  const integerDs = Number.isInteger(Ds);
+  const integerLu = Number.isInteger(Lu);
+  const target = 5;
+  const hardLimit = integers ? Nmin + 500 : Nmin + target - 1;
+  for (let N = Nmin; N <= hardLimit && rows.length < target; N++) {
     const rawPitch = Lu / N;
-    const pitch = integers ? Math.round(rawPitch) : rawPitch;
+    const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
+    if (integers && !isIntegerPitch) continue;
     const positions: number[] = [];
     for (let i = 0; i <= N; i++) {
-      const p = Ds + i * rawPitch;
-      positions.push(integers ? Math.round(p) : p);
+      positions.push(Ds + i * rawPitch);
     }
-    rows.push({ kind: "intervals", N, holes: N + 1, pitch, positions });
+    rows.push({ kind: "intervals", N, holes: N + 1, pitch: rawPitch, positions });
   }
   return { rows, Lu, Nmin };
 }
