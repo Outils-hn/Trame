@@ -568,9 +568,13 @@ function IntervalsTable({
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
-          Saisissez des valeurs valides pour voir les répartitions.
-        </div>
+        integers ? (
+          <EmptyIntegerNotice />
+        ) : (
+          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
+            Saisissez des valeurs valides pour voir les répartitions.
+          </div>
+        )
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="hidden grid-cols-[60px_60px_110px_1fr_90px] gap-4 border-b border-border bg-muted/40 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid">
