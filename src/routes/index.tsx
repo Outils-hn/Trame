@@ -745,16 +745,27 @@ function PitchTable({
   );
 }
 
-function EmptyIntegerNotice() {
+function EmptyIntegerNotice({
+  message,
+  onShowDecimals,
+}: {
+  message: string;
+  onShowDecimals: () => void;
+}) {
   return (
-    <div className="mx-auto max-w-2xl rounded-xl border border-amber-300/70 bg-amber-50 p-6 text-center text-sm text-amber-900 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
-      <div className="mb-2 text-base font-semibold">Aucune répartition entière trouvée</div>
-      <p className="leading-relaxed">
-        Aucune répartition en millimètres entiers n'est possible avec ces dimensions
-        (dans la limite de 20 intervalles en Onglet 1 / 40 intervalles en Onglet 3).
-        Décochez l'option <span className="font-medium">« Mesures entières »</span> pour voir les
-        résultats précis avec décimales.
+    <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+      <Ruler className="h-8 w-8 text-gray-400 dark:text-zinc-500" strokeWidth={1.5} />
+      <p className="max-w-sm text-sm font-medium text-gray-600 dark:text-zinc-300">{message}</p>
+      <p className="text-xs text-gray-400 dark:text-zinc-500">
+        Décochez l'option pour afficher les cotes avec décimales.
       </p>
+      <button
+        type="button"
+        onClick={onShowDecimals}
+        className="mt-1 rounded-md border border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+      >
+        Afficher avec décimales
+      </button>
     </div>
   );
 }
