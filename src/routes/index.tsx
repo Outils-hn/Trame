@@ -314,7 +314,7 @@ function Index() {
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
           <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-grid">
             <TabsTrigger value="intervals">Par Nbre d'intervalles</TabsTrigger>
-            <TabsTrigger value="pitch">Rives par Entraxe Fixe</TabsTrigger>
+            <TabsTrigger value="pitch">Par Entraxe Fixe</TabsTrigger>
             <TabsTrigger value="maxpitch">Par Entraxe Maximum</TabsTrigger>
           </TabsList>
         </Tabs>
