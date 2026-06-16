@@ -293,7 +293,7 @@ function Index() {
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-md bg-foreground text-background">
-              <span className="font-mono text-sm font-bold">PD</span>
+              <span className="font-mono text-sm font-bold">DP</span>
             </div>
             <div>
               <h1 className="text-sm font-semibold leading-tight">Répartition de Perçages</h1>
