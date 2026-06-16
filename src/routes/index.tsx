@@ -269,6 +269,13 @@ function Index() {
   const [symmetric, setSymmetric] = useState(true);
   const [Dstart, setDstart] = useState<number>(50);
 
+  // Mode 3 — max pitch ceiling
+  const [L3, setL3] = useState<number>(3094);
+  const [Ds3, setDs3] = useState<number>(50);
+  const [De3, setDe3] = useState<number>(50);
+  const [sameEnd3, setSameEnd3] = useState(true);
+  const [Emax, setEmax] = useState<number>(300);
+
   const [integers, setIntegers] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
