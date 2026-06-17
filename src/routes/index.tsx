@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DiviPro" },
+      { title: "Trame ·" },
       {
         name: "description",
         content:
@@ -745,13 +745,7 @@ function PitchTable({
   );
 }
 
-function EmptyIntegerNotice({
-  message,
-  onShowDecimals,
-}: {
-  message: string;
-  onShowDecimals: () => void;
-}) {
+function EmptyIntegerNotice({ message, onShowDecimals }: { message: string; onShowDecimals: () => void }) {
   return (
     <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
       <Ruler className="h-8 w-8 text-gray-400 dark:text-zinc-500" strokeWidth={1.5} />
