@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Moon, Sun, Copy, Check, Ruler } from "lucide-react";
+import { Moon, Sun, Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -13,11 +13,11 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Trame ·" },
+      { title: "Trame · Calculateur de répartition" },
       {
         name: "description",
         content:
-          "Calculateur métier pour la répartition de perçages en façade : pas maximum, intervalles, positions cumulées.",
+          "Trame — calculateur métier pour la répartition de perçages en façade : pas maximum, intervalles, positions cumulées.",
       },
     ],
   }),
@@ -296,15 +296,15 @@ function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Toaster richColors position="top-right" />
-      <header className="border-b border-border">
+      <header className="border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-md bg-foreground text-background">
-              <span className="font-mono text-sm font-bold">DP</span>
-            </div>
+            <TrameLogo className="h-10 w-10" />
             <div>
-              <h1 className="text-sm font-semibold leading-tight">Répartition de Perçages</h1>
-              <p className="text-xs text-muted-foreground">Calculateur façade — temps réel</p>
+              <h1 className="text-base font-semibold leading-tight tracking-tight">
+                Trame<span className="ml-1.5 text-[var(--color-trame)]">·</span>
+              </h1>
+              <p className="text-xs text-muted-foreground">Répartition de perçages — temps réel</p>
             </div>
           </div>
           <button
