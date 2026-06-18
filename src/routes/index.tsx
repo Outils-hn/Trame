@@ -747,8 +747,8 @@ function PitchTable({
 
 function EmptyIntegerNotice({ message, onShowDecimals }: { message: string; onShowDecimals: () => void }) {
   return (
-    <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
-      <Ruler className="h-8 w-8 text-gray-400 dark:text-zinc-500" strokeWidth={1.5} />
+    <div className="flex min-h-[320px] flex-col items-center justify-center gap-5 rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+      <HexWireframe className="h-20 w-20" />
       <p className="max-w-sm text-sm font-medium text-gray-600 dark:text-zinc-300">{message}</p>
       <p className="text-xs text-gray-400 dark:text-zinc-500">
         Décochez l'option pour afficher les cotes avec décimales.
@@ -756,10 +756,84 @@ function EmptyIntegerNotice({ message, onShowDecimals }: { message: string; onSh
       <button
         type="button"
         onClick={onShowDecimals}
-        className="mt-1 rounded-md border border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+        className="mt-1 rounded-md border border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-[var(--color-trame)] hover:text-[var(--color-trame)]"
       >
         Afficher avec décimales
       </button>
     </div>
+  );
+}
+
+function TrameLogo({ className }: { className?: string }) {
+  // 5x5 dot grid; 3 successive diagonal dots highlighted with orange rings
+  const dots: Array<[number, number]> = [];
+  for (let y = 0; y < 5; y++) for (let x = 0; x < 5; x++) dots.push([x, y]);
+  const highlights = new Set(["1,3", "2,2", "3,1"]);
+  return (
+    <svg viewBox="0 0 50 50" className={className} aria-hidden="true">
+      <rect width="50" height="50" rx="8" className="fill-muted/40" />
+      {dots.map(([x, y]) => {
+        const cx = 5 + x * 10;
+        const cy = 5 + y * 10;
+        const isHi = highlights.has(`${x},${y}`);
+        return (
+          <g key={`${x}-${y}`}>
+            {isHi && (
+              <circle
+                cx={cx}
+                cy={cy}
+                r={3.6}
+                fill="none"
+                stroke="#ff7a22"
+                strokeWidth={1.2}
+                opacity={0.95}
+              />
+            )}
+            <circle cx={cx} cy={cy} r={1.3} className="fill-zinc-500 dark:fill-zinc-400" />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function HexWireframe({ className }: { className?: string }) {
+  // Wireframe hexagon, thin slate lines + a single orange accent edge / vertex
+  const cx = 50;
+  const cy = 50;
+  const r = 36;
+  const pts = Array.from({ length: 6 }, (_, i) => {
+    const a = (Math.PI / 3) * i - Math.PI / 2;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)] as const;
+  });
+  const path = pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`).join(" ") + " Z";
+  return (
+    <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
+      <path d={path} fill="none" stroke="currentColor" strokeWidth={0.8} className="text-zinc-400 dark:text-zinc-600" />
+      {/* inner triangulation */}
+      {pts.map(([x, y], i) => (
+        <line
+          key={i}
+          x1={cx}
+          y1={cy}
+          x2={x}
+          y2={y}
+          stroke="currentColor"
+          strokeWidth={0.5}
+          className="text-zinc-300 dark:text-zinc-700"
+        />
+      ))}
+      {/* orange accent edge */}
+      <line
+        x1={pts[0][0]}
+        y1={pts[0][1]}
+        x2={pts[1][0]}
+        y2={pts[1][1]}
+        stroke="#ff7a22"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      <circle cx={pts[0][0]} cy={pts[0][1]} r={2.2} fill="#ff7a22" />
+    </svg>
   );
 }
