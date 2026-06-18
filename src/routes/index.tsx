@@ -302,7 +302,7 @@ function Index() {
             <TrameLogo className="h-10 w-10" />
             <div>
               <h1 className="text-base font-semibold leading-tight tracking-tight">
-                Trame<span className="ml-1.5 text-[var(--color-trame)]">·</span>
+                TRAME<span className="ml-1.5 text-[var(--color-trame)]">·</span>
               </h1>
               <p className="text-xs text-muted-foreground">Répartition de perçages — temps réel</p>
             </div>
