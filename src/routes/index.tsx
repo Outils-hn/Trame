@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TRAME · Calculateur de répartition" },
+      { title: "Trame ·" },
       {
         name: "description",
         content:
