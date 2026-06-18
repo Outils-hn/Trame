@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Trame · Calculateur de répartition" },
+      { title: "TRAME · Calculateur de répartition" },
       {
         name: "description",
         content:
@@ -320,9 +320,24 @@ function Index() {
       <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
           <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-grid">
-            <TabsTrigger value="intervals" className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]">Par Nbre d'intervalles</TabsTrigger>
-            <TabsTrigger value="pitch" className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]">Par Entraxe Fixe</TabsTrigger>
-            <TabsTrigger value="maxpitch" className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]">Par Entraxe Maximum</TabsTrigger>
+            <TabsTrigger
+              value="intervals"
+              className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
+            >
+              Par Nbre d'intervalles
+            </TabsTrigger>
+            <TabsTrigger
+              value="pitch"
+              className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
+            >
+              Par Entraxe Fixe
+            </TabsTrigger>
+            <TabsTrigger
+              value="maxpitch"
+              className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
+            >
+              Par Entraxe Maximum
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -620,7 +635,9 @@ function IntervalsTable({
                     <span className="font-mono text-base font-semibold tabular-nums">{r.holes}</span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-mono text-lg font-bold tabular-nums text-[var(--color-trame)]">{fmt(r.pitch)}</span>
+                    <span className="font-mono text-lg font-bold tabular-nums text-[var(--color-trame)]">
+                      {fmt(r.pitch)}
+                    </span>
                     <span className="text-[11px] text-muted-foreground">mm</span>
                   </div>
                   <div className="min-w-0">
@@ -778,17 +795,7 @@ function TrameLogo({ className }: { className?: string }) {
         const isHi = highlights.has(`${x},${y}`);
         return (
           <g key={`${x}-${y}`}>
-            {isHi && (
-              <circle
-                cx={cx}
-                cy={cy}
-                r={3.6}
-                fill="none"
-                stroke="#ff7a22"
-                strokeWidth={1.2}
-                opacity={0.95}
-              />
-            )}
+            {isHi && <circle cx={cx} cy={cy} r={3.6} fill="none" stroke="#ff7a22" strokeWidth={1.2} opacity={0.95} />}
             <circle cx={cx} cy={cy} r={1.3} className="fill-zinc-500 dark:fill-zinc-400" />
           </g>
         );
