@@ -301,10 +301,10 @@ function Index() {
           <div className="flex items-center gap-3">
             <TrameLogo className="h-10 w-10" />
             <div>
-              <h1 className="text-base font-semibold leading-tight tracking-tight">
-                TRAME<span className="ml-1.5 text-[var(--color-trame)]">·</span>
-              </h1>
-              <p className="text-xs text-muted-foreground">Répartition de perçages — temps réel</p>
+              <h1 className="font-display text-lg font-bold uppercase tracking-[0.22em] text-foreground">Trame</h1>
+              <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+                Optimisation de découpe 1D
+              </p>
             </div>
           </div>
           <button
