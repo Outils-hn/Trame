@@ -302,9 +302,7 @@ function Index() {
             <TrameLogo className="h-10 w-10" />
             <div>
               <h1 className="font-display text-lg font-bold uppercase tracking-[0.22em] text-foreground">Trame</h1>
-              <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
-                Optimisation de découpe 1D
-              </p>
+              <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Répartition de perçages</p>
             </div>
           </div>
           <button
