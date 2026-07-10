@@ -575,7 +575,7 @@ function IntervalsTable({
   integers: boolean;
   onShowDecimals: () => void;
   emptyIntegerMessage: string;
-  copy: (positions: number[], idx: number, label: string) => void;
+  copy: (positions: number[], idx: number, label: string, useIntegers: boolean) => void;
   copiedIdx: number | null;
 }) {
   return (
@@ -667,7 +667,7 @@ function PitchTable({
   integers: boolean;
   onShowDecimals: () => void;
   emptyIntegerMessage: string;
-  copy: (positions: number[], idx: number, label: string) => void;
+  copy: (positions: number[], idx: number, label: string, useIntegers: boolean) => void;
   copiedIdx: number | null;
 }) {
   return (
