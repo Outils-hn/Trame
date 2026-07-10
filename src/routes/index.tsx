@@ -271,8 +271,8 @@ function Index() {
   );
 
   const pitchRows = useMemo(
-    () => buildPitchRows(L2, E, symmetric, Dstart, integers),
-    [L2, E, symmetric, Dstart, integers],
+    () => buildPitchRows(L2, E, symmetric, Dstart, false),
+    [L2, E, symmetric, Dstart],
   );
 
   const effectiveDe3 = sameEnd3 ? Ds3 : De3;
@@ -281,8 +281,8 @@ function Index() {
     [L3, Ds3, effectiveDe3, Emax, integers],
   );
 
-  const copy = async (positions: number[], idx: number, label: string) => {
-    const txt = positions.map((p) => (integers ? String(p) : fmt(p, 1).replace(/\s/g, ""))).join("; ");
+  const copy = async (positions: number[], idx: number, label: string, useIntegers: boolean) => {
+    const txt = positions.map((p) => (useIntegers ? String(p) : fmt(p, 1).replace(/\s/g, ""))).join("; ");
     try {
       await navigator.clipboard.writeText(txt);
       setCopiedIdx(idx);
@@ -438,13 +438,6 @@ function Index() {
                   </div>
                 </section>
 
-                <section className="rounded-xl border border-border bg-card p-5">
-                  <h2 className="mb-3 text-sm font-semibold">Options</h2>
-                  <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                    <span className="text-xs font-medium text-foreground">Mesures entières uniquement</span>
-                    <Switch checked={integers} onCheckedChange={setIntegers} />
-                  </label>
-                </section>
 
                 <section className="rounded-xl border border-border bg-muted/40 p-5">
                   <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -540,7 +533,7 @@ function Index() {
             ) : mode === "pitch" ? (
               <PitchTable
                 rows={pitchRows}
-                integers={integers}
+                integers={false}
                 onShowDecimals={() => setIntegers(false)}
                 emptyIntegerMessage="Aucun entraxe fixe parfait trouvé avec ces dimensions."
                 copy={copy}
@@ -582,7 +575,7 @@ function IntervalsTable({
   integers: boolean;
   onShowDecimals: () => void;
   emptyIntegerMessage: string;
-  copy: (positions: number[], idx: number, label: string) => void;
+  copy: (positions: number[], idx: number, label: string, useIntegers: boolean) => void;
   copiedIdx: number | null;
 }) {
   return (
@@ -645,7 +638,7 @@ function IntervalsTable({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => copy(r.positions, idx, `${r.holes} trous`)}
+                      onClick={() => copy(r.positions, idx, `${r.holes} trous`, integers)}
                       className="gap-1.5"
                     >
                       {copiedIdx === idx ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
@@ -674,7 +667,7 @@ function PitchTable({
   integers: boolean;
   onShowDecimals: () => void;
   emptyIntegerMessage: string;
-  copy: (positions: number[], idx: number, label: string) => void;
+  copy: (positions: number[], idx: number, label: string, useIntegers: boolean) => void;
   copiedIdx: number | null;
 }) {
   return (
@@ -743,7 +736,7 @@ function PitchTable({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => copy(r.positions, idx, r.option)}
+                      onClick={() => copy(r.positions, idx, r.option, integers)}
                       className="gap-1.5"
                     >
                       {copiedIdx === idx ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
