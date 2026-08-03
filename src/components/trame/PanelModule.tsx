@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,8 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ExportActions } from "@/components/trame/ExportActions";
+
 
 function fmt(n: number, d = 1) {
   if (!isFinite(n)) return "—";
