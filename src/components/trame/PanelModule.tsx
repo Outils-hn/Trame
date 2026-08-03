@@ -206,6 +206,7 @@ function PanelSchematic({
   res,
   hovered,
   setHovered,
+  svgRef,
 }: {
   X: number;
   Y: number;
@@ -214,6 +215,7 @@ function PanelSchematic({
   res: PanelResult;
   hovered: number | null;
   setHovered: (i: number | null) => void;
+  svgRef?: React.RefObject<SVGSVGElement | null>;
 }) {
   const span = Math.max(X, Y);
   const pad = span * 0.16;
@@ -235,12 +237,14 @@ function PanelSchematic({
       </div>
       <div className="px-5 py-5">
         <svg
+          ref={svgRef}
           viewBox={`${-pad} ${-pad} ${X + 2 * pad} ${Y + 2 * pad}`}
           className="mx-auto block h-auto w-full max-w-[560px]"
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label="Schéma du panneau et des perçages"
         >
+
           {/* Panneau */}
           <rect
             x={0}
