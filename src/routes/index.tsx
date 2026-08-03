@@ -234,6 +234,7 @@ function SummaryRow({ label, value, strong }: { label: string; value: string; st
 
 function Index() {
   const [dark, setDark] = useState(false);
+  const [mainModule, setMainModule] = useState<"standard" | "reinforced">("standard");
   const [mode, setMode] = useState<Mode>("intervals");
 
   // Mode 1 — intervals
