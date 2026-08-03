@@ -246,6 +246,8 @@ function ExpansionSchematic({
       </div>
       <div className="px-5 py-5">
         <svg
+          ref={svgRef}
+
           viewBox={`${-pad} ${-pad} ${X + 2 * pad} ${H + 2 * pad}`}
           className="mx-auto block h-auto w-full max-w-[620px]"
           preserveAspectRatio="xMidYMid meet"
