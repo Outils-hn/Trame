@@ -89,7 +89,7 @@ export interface ReinforcedResult {
   centerIntervals: number;
 }
 
-const CENTER_LIMIT = 40;
+const CENTER_LIMIT = 200;
 
 export function computeReinforced(
   L: number,
@@ -143,19 +143,22 @@ export function computeReinforced(
   let pitchCenter = centerLength / Nc;
 
   if (integers) {
+    // FILTRE STRICT : aucune cote ne doit comporter de décimale.
+    const baseIntegers =
+      Number.isInteger(first) && Number.isInteger(last) && Number.isInteger(pitchR) && Number.isInteger(centerLength);
+    if (!baseIntegers) return { ...empty, reason: "nointeger" };
+
     let found = false;
     for (let n = Nc; n <= CENTER_LIMIT; n++) {
       const cp = centerLength / n;
-      if (Number.isInteger(cp) && Number.isInteger(lastStart) && cp <= pitchMax + 1e-9) {
+      if (Number.isInteger(cp) && cp <= pitchMax + 1e-9) {
         Nc = n;
         pitchCenter = cp;
         found = true;
         break;
       }
     }
-    if (!found || !Number.isInteger(pitchR) || !Number.isInteger(Ds)) {
-      return { ...empty, reason: "nointeger" };
-    }
+    if (!found) return { ...empty, reason: "nointeger" };
   }
 
   const points: ReinforcedPoint[] = [];
@@ -203,7 +206,7 @@ export function ReinforcedModule({
 
   const copy = async () => {
     const txt = res.points
-      .map((pt) => (integers ? String(Math.round(pt.pos)) : String(Number(pt.pos.toFixed(1)))))
+      .map((pt) => String(Number(pt.pos.toFixed(1))))
       .join("; ");
     try {
       await navigator.clipboard.writeText(txt);
@@ -289,7 +292,7 @@ export function ReinforcedModule({
         {!res.ok ? (
           res.reason === "nointeger" ? (
             <EmptyNotice
-              message="Aucune répartition en millimètres entiers trouvée pour la zone courante (limite de 40 intervalles)."
+              message="Aucune répartition entière trouvée pour cette zone courante."
               onShowDecimals={() => setIntegers(false)}
             />
           ) : (
@@ -331,7 +334,7 @@ export function ReinforcedModule({
                       )}
                       title={pt.zone === "center" ? "Zone courante" : "Zone renforcée"}
                     >
-                      {integers ? Math.round(pt.pos) : Number(pt.pos.toFixed(1))}
+                      {Number(pt.pos.toFixed(1))}
                     </span>
                   ))}
                 </div>
