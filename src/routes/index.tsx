@@ -562,6 +562,76 @@ function Index() {
 
           {/* Résultats */}
           <section>
+            {(() => {
+              const list: (IntervalRow | PitchRow)[] =
+                mode === "intervals" ? intervalsData.rows : mode === "pitch" ? pitchRows : maxPitchData.rows;
+              if (!list.length) return null;
+              const idx = Math.min(exportIdx, list.length - 1);
+              const sel = list[idx];
+              const totalL = mode === "intervals" ? L : mode === "pitch" ? L2 : L3;
+              const label = (r: IntervalRow | PitchRow) =>
+                r.kind === "intervals"
+                  ? `${r.N} intervalles · pas ${fmt(r.pitch)} mm · ${r.holes} trous`
+                  : `${r.option} · ${r.N} int. · entraxe ${fmt(r.entraxe)} mm`;
+              const params =
+                sel.kind === "intervals"
+                  ? [
+                      { label: "Longueur totale", value: `${fmt(totalL)} mm` },
+                      {
+                        label: "Distance début",
+                        value: `${fmt(mode === "intervals" ? Ds : Ds3)} mm`,
+                      },
+                      {
+                        label: "Distance fin",
+                        value: `${fmt(mode === "intervals" ? (sameEnd ? Ds : De) : sameEnd3 ? Ds3 : De3)} mm`,
+                      },
+                      { label: "Intervalles", value: String(sel.N) },
+                      { label: "Entraxe retenu", value: `${fmt(sel.pitch)} mm` },
+                      { label: "Nombre de trous", value: String(sel.holes) },
+                    ]
+                  : [
+                      { label: "Longueur totale", value: `${fmt(totalL)} mm` },
+                      { label: "Option", value: sel.option },
+                      { label: "Entraxe imposé", value: `${fmt(sel.entraxe)} mm` },
+                      { label: "Rive début", value: `${fmt(sel.rDebut)} mm` },
+                      { label: "Rive fin", value: `${fmt(sel.rFin)} mm` },
+                      { label: "Intervalles", value: String(sel.N) },
+                      { label: "Nombre de trous", value: String(sel.positions.length) },
+                    ];
+              return (
+                <div className="mb-5 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <label htmlFor="exp-sel" className="text-xs text-muted-foreground">
+                      Répartition à exporter
+                    </label>
+                    <select
+                      id="exp-sel"
+                      value={idx}
+                      onChange={(e) => setExportIdx(Number(e.target.value))}
+                      className="h-9 rounded-md border border-border bg-card px-2 text-xs font-mono"
+                    >
+                      {list.map((r, i) => (
+                        <option key={i} value={i}>
+                          {label(r)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <ExportActions
+                    moduleName={mode === "intervals" ? "Intervalles" : mode === "pitch" ? "Entraxe-fixe" : "Entraxe-max"}
+                    subtitle={label(sel)}
+                    is2D={false}
+                    width={totalL}
+                    holes={sel.positions.map((p) => ({ x: p, y: 0 }))}
+                    params={params}
+                    columns={["N°", "Position (mm)"]}
+                    rows={sel.positions.map((p, i) => [String(i + 1), fmt(p)])}
+                    notes={["Ø perçage DXF par défaut : 8 mm.", "Cotes cumulées depuis l'extrémité gauche."]}
+                  />
+                </div>
+              );
+            })()}
+
             {mode === "intervals" ? (
               <IntervalsTable
                 rows={intervalsData.rows}
