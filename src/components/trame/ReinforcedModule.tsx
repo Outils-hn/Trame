@@ -206,7 +206,7 @@ export function ReinforcedModule({
 
   const copy = async () => {
     const txt = res.points
-      .map((pt) => (integers ? String(Math.round(pt.pos)) : String(Number(pt.pos.toFixed(1)))))
+      .map((pt) => String(Number(pt.pos.toFixed(1))))
       .join("; ");
     try {
       await navigator.clipboard.writeText(txt);
@@ -292,7 +292,7 @@ export function ReinforcedModule({
         {!res.ok ? (
           res.reason === "nointeger" ? (
             <EmptyNotice
-              message="Aucune répartition en millimètres entiers trouvée pour la zone courante (limite de 40 intervalles)."
+              message="Aucune répartition entière trouvée pour cette zone courante."
               onShowDecimals={() => setIntegers(false)}
             />
           ) : (
@@ -334,7 +334,7 @@ export function ReinforcedModule({
                       )}
                       title={pt.zone === "center" ? "Zone courante" : "Zone renforcée"}
                     >
-                      {integers ? Math.round(pt.pos) : Number(pt.pos.toFixed(1))}
+                      {Number(pt.pos.toFixed(1))}
                     </span>
                   ))}
                 </div>
