@@ -89,7 +89,7 @@ export interface ReinforcedResult {
   centerIntervals: number;
 }
 
-const CENTER_LIMIT = 40;
+const CENTER_LIMIT = 200;
 
 export function computeReinforced(
   L: number,
@@ -143,19 +143,22 @@ export function computeReinforced(
   let pitchCenter = centerLength / Nc;
 
   if (integers) {
+    // FILTRE STRICT : aucune cote ne doit comporter de décimale.
+    const baseIntegers =
+      Number.isInteger(first) && Number.isInteger(last) && Number.isInteger(pitchR) && Number.isInteger(centerLength);
+    if (!baseIntegers) return { ...empty, reason: "nointeger" };
+
     let found = false;
     for (let n = Nc; n <= CENTER_LIMIT; n++) {
       const cp = centerLength / n;
-      if (Number.isInteger(cp) && Number.isInteger(lastStart) && cp <= pitchMax + 1e-9) {
+      if (Number.isInteger(cp) && cp <= pitchMax + 1e-9) {
         Nc = n;
         pitchCenter = cp;
         found = true;
         break;
       }
     }
-    if (!found || !Number.isInteger(pitchR) || !Number.isInteger(Ds)) {
-      return { ...empty, reason: "nointeger" };
-    }
+    if (!found) return { ...empty, reason: "nointeger" };
   }
 
   const points: ReinforcedPoint[] = [];
