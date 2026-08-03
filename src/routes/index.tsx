@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { ReinforcedModule } from "@/components/trame/ReinforcedModule";
+import { ObstacleModule } from "@/components/trame/ObstacleModule";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -235,7 +236,7 @@ function SummaryRow({ label, value, strong }: { label: string; value: string; st
 
 function Index() {
   const [dark, setDark] = useState(false);
-  const [mainModule, setMainModule] = useState<"standard" | "reinforced">("standard");
+  const [mainModule, setMainModule] = useState<"standard" | "reinforced" | "obstacle">("standard");
   const [mode, setMode] = useState<Mode>("intervals");
 
   // Mode 1 — intervals
@@ -323,6 +324,7 @@ function Index() {
             [
               ["standard", "Répartition Standard"],
               ["reinforced", "Zone Renforcée"],
+              ["obstacle", "Évitement d'Obstacle"],
             ] as const
           ).map(([v, label]) => (
             <button
@@ -343,6 +345,8 @@ function Index() {
 
         {mainModule === "reinforced" ? (
           <ReinforcedModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
+        ) : mainModule === "obstacle" ? (
+          <ObstacleModule integers={integers} setIntegers={setIntegers} />
         ) : (
           <>
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
