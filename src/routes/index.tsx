@@ -238,7 +238,7 @@ function SummaryRow({ label, value, strong }: { label: string; value: string; st
 
 function Index() {
   const [dark, setDark] = useState(false);
-  const [mainModule, setMainModule] = useState<"standard" | "reinforced" | "obstacle" | "panel">("standard");
+  const [mainModule, setMainModule] = useState<"standard" | "reinforced" | "obstacle" | "panel" | "expansion">("standard");
   const [mode, setMode] = useState<Mode>("intervals");
 
   // Mode 1 — intervals
@@ -328,6 +328,7 @@ function Index() {
               ["reinforced", "Zone Renforcée"],
               ["obstacle", "Évitement d'Obstacle"],
               ["panel", "Panneaux & Cassettes"],
+              ["expansion", "Dilatation (PF/PG)"],
             ] as const
           ).map(([v, label]) => (
             <button
@@ -352,6 +353,8 @@ function Index() {
           <ObstacleModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
         ) : mainModule === "panel" ? (
           <PanelModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
+        ) : mainModule === "expansion" ? (
+          <ExpansionModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
         ) : (
           <>
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
