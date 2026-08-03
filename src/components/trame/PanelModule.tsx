@@ -198,6 +198,200 @@ export function computePanel(
   };
 }
 
+function PanelSchematic({
+  X,
+  Y,
+  mxs,
+  mys,
+  res,
+  hovered,
+  setHovered,
+}: {
+  X: number;
+  Y: number;
+  mxs: number;
+  mys: number;
+  res: PanelResult;
+  hovered: number | null;
+  setHovered: (i: number | null) => void;
+}) {
+  const span = Math.max(X, Y);
+  const pad = span * 0.16;
+  const u = span / 400; // unité de trait, indépendante de l'échelle
+  const fontS = span * 0.026;
+  const fontXS = span * 0.021;
+  // Repère écran : y inversé (0 en bas du panneau)
+  const py = (y: number) => Y - y;
+  const isCorner = (h: PanelHole) => h.zone.startsWith("Angle");
+  const hov = hovered != null ? res.holes[hovered] : null;
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border px-5 py-3">
+        <h2 className="text-sm font-semibold">Schéma de calepinage</h2>
+        <span className="font-mono text-xs text-muted-foreground">
+          {fmt(X)} × {fmt(Y)} mm · EX {fmt(res.pitchX)} · EY {fmt(res.pitchY)}
+        </span>
+      </div>
+      <div className="px-5 py-5">
+        <svg
+          viewBox={`${-pad} ${-pad} ${X + 2 * pad} ${Y + 2 * pad}`}
+          className="mx-auto block h-auto w-full max-w-[560px]"
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label="Schéma du panneau et des perçages"
+        >
+          {/* Panneau */}
+          <rect
+            x={0}
+            y={0}
+            width={X}
+            height={Y}
+            rx={span * 0.008}
+            className="fill-slate-100 stroke-slate-400 dark:fill-zinc-800 dark:stroke-zinc-600"
+            strokeWidth={u * 1.6}
+          />
+          {/* Zone utile (rives) */}
+          <rect
+            x={mxs}
+            y={py(mys + res.usableY)}
+            width={res.usableX}
+            height={res.usableY}
+            className="fill-none stroke-slate-400 dark:stroke-zinc-500"
+            strokeWidth={u}
+            strokeDasharray={`${u * 6} ${u * 5}`}
+          />
+
+          {/* Cotation X (sous le panneau) */}
+          <g className="stroke-slate-500 dark:stroke-zinc-400" strokeWidth={u}>
+            <line x1={0} y1={Y + pad * 0.45} x2={X} y2={Y + pad * 0.45} />
+            <line x1={0} y1={Y + pad * 0.3} x2={0} y2={Y + pad * 0.6} />
+            <line x1={X} y1={Y + pad * 0.3} x2={X} y2={Y + pad * 0.6} />
+          </g>
+          <text
+            x={X / 2}
+            y={Y + pad * 0.9}
+            textAnchor="middle"
+            fontSize={fontS}
+            className="fill-slate-600 font-mono dark:fill-zinc-300"
+          >
+            X = {fmt(X)}
+          </text>
+
+          {/* Cotation Y (à gauche) */}
+          <g className="stroke-slate-500 dark:stroke-zinc-400" strokeWidth={u}>
+            <line x1={-pad * 0.45} y1={0} x2={-pad * 0.45} y2={Y} />
+            <line x1={-pad * 0.6} y1={0} x2={-pad * 0.3} y2={0} />
+            <line x1={-pad * 0.6} y1={Y} x2={-pad * 0.3} y2={Y} />
+          </g>
+          <text
+            x={-pad * 0.62}
+            y={Y / 2}
+            textAnchor="middle"
+            fontSize={fontS}
+            transform={`rotate(-90 ${-pad * 0.62} ${Y / 2})`}
+            className="fill-slate-600 font-mono dark:fill-zinc-300"
+          >
+            Y = {fmt(Y)}
+          </text>
+
+          {/* Entraxe EX (au-dessus du panneau) */}
+          <g stroke="var(--color-trame)" strokeWidth={u}>
+            <line x1={mxs} y1={-pad * 0.42} x2={mxs + res.pitchX} y2={-pad * 0.42} />
+            <line x1={mxs} y1={-pad * 0.55} x2={mxs} y2={-pad * 0.29} />
+            <line x1={mxs + res.pitchX} y1={-pad * 0.55} x2={mxs + res.pitchX} y2={-pad * 0.29} />
+          </g>
+          <text
+            x={mxs + res.pitchX / 2}
+            y={-pad * 0.66}
+            textAnchor="middle"
+            fontSize={fontXS}
+            fill="var(--color-trame)"
+            className="font-mono"
+          >
+            EX {fmt(res.pitchX)}
+          </text>
+
+          {/* Entraxe EY (à droite) */}
+          <g stroke="var(--color-trame)" strokeWidth={u}>
+            <line x1={X + pad * 0.42} y1={py(mys)} x2={X + pad * 0.42} y2={py(mys + res.pitchY)} />
+            <line x1={X + pad * 0.29} y1={py(mys)} x2={X + pad * 0.55} y2={py(mys)} />
+            <line x1={X + pad * 0.29} y1={py(mys + res.pitchY)} x2={X + pad * 0.55} y2={py(mys + res.pitchY)} />
+          </g>
+          <text
+            x={X + pad * 0.68}
+            y={py(mys + res.pitchY / 2)}
+            textAnchor="middle"
+            fontSize={fontXS}
+            transform={`rotate(-90 ${X + pad * 0.68} ${py(mys + res.pitchY / 2)})`}
+            fill="var(--color-trame)"
+            className="font-mono"
+          >
+            EY {fmt(res.pitchY)}
+          </text>
+
+          {/* Perçages */}
+          {res.holes.map((h, i) => {
+            const active = hovered === i;
+            const corner = isCorner(h);
+            return (
+              <g key={`${h.x}-${h.y}-${i}`} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
+                <circle cx={h.x} cy={py(h.y)} r={span * 0.022} fill="transparent" />
+                {active && (
+                  <circle
+                    cx={h.x}
+                    cy={py(h.y)}
+                    r={span * 0.024}
+                    fill="none"
+                    stroke="var(--color-trame)"
+                    strokeWidth={u * 1.4}
+                    opacity={0.55}
+                  />
+                )}
+                <circle
+                  cx={h.x}
+                  cy={py(h.y)}
+                  r={span * (active ? 0.013 : 0.0095)}
+                  fill={active || corner ? "var(--color-trame)" : "currentColor"}
+                  className={cn(!active && !corner && "text-slate-500 dark:text-zinc-300")}
+                />
+              </g>
+            );
+          })}
+
+          {/* Info-bulle */}
+          {hov && hovered != null && (
+            <g pointerEvents="none">
+              <rect
+                x={Math.min(Math.max(hov.x - span * 0.15, -pad * 0.6), X + pad * 0.6 - span * 0.3)}
+                y={py(hov.y) - span * 0.105}
+                width={span * 0.3}
+                height={span * 0.062}
+                rx={span * 0.008}
+                className="fill-slate-900 dark:fill-zinc-100"
+                opacity={0.95}
+              />
+              <text
+                x={Math.min(Math.max(hov.x - span * 0.15, -pad * 0.6), X + pad * 0.6 - span * 0.3) + span * 0.15}
+                y={py(hov.y) - span * 0.062}
+                textAnchor="middle"
+                fontSize={fontXS}
+                className="fill-white font-mono dark:fill-zinc-900"
+              >
+                Trou N°{hovered + 1} : X={fmt(hov.x)}, Y={fmt(hov.y)}
+              </text>
+            </g>
+          )}
+        </svg>
+        <p className="mt-3 text-center text-[11px] text-muted-foreground">
+          <span className="mr-1 inline-block size-2 rounded-full bg-[var(--color-trame)] align-middle" /> perçages
+          d'angle · trait pointillé : zone utile après rives
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function PanelModule({
   integers,
   setIntegers,
@@ -219,6 +413,7 @@ export function PanelModule({
   const [pitchMaxY, setPitchMaxY] = useState<number>(600);
   const [pattern, setPattern] = useState<PanelPattern>("perimeter");
   const [copied, setCopied] = useState(false);
+  const [hovered, setHovered] = useState<number | null>(null);
 
   const effMxe = sameX ? mxs : mxe;
   const effMye = sameY ? mys : mye;
@@ -376,6 +571,16 @@ export function PanelModule({
               <StatCard label="Intervalles Y" value={String(res.ny)} />
             </div>
 
+            <PanelSchematic
+              X={X}
+              Y={Y}
+              mxs={mxs}
+              mys={mys}
+              res={res}
+              hovered={hovered}
+              setHovered={setHovered}
+            />
+
             <div className="overflow-hidden rounded-xl border border-border bg-card">
               <div className="flex items-center justify-between border-b border-border px-5 py-3">
                 <h2 className="text-sm font-semibold">Coordonnées des perçages</h2>
@@ -396,9 +601,13 @@ export function PanelModule({
                 {res.holes.map((h, idx) => (
                   <li
                     key={`${h.x}-${h.y}-${idx}`}
+                    onMouseEnter={() => setHovered(idx)}
+                    onMouseLeave={() => setHovered(null)}
                     className={cn(
-                      "grid gap-2 border-b border-gray-300 px-5 py-2.5 dark:border-zinc-700 md:grid-cols-[70px_1fr_1fr_1.4fr] md:items-center md:gap-4",
+                      "grid gap-2 border-b border-gray-300 px-5 py-2.5 transition-colors dark:border-zinc-700 md:grid-cols-[70px_1fr_1fr_1.4fr] md:items-center md:gap-4",
                       idx % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-slate-100 dark:bg-zinc-800",
+                      hovered === idx &&
+                        "bg-[var(--color-trame)]/12 dark:bg-[var(--color-trame)]/15 shadow-[inset_3px_0_0_var(--color-trame)]",
                     )}
                   >
                     <span className="font-mono text-xs tabular-nums text-muted-foreground">{idx + 1}</span>
