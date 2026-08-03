@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { ExportActions } from "@/components/trame/ExportActions";
+
 import { Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -206,6 +208,7 @@ function ExpansionSchematic({
   res,
   hovered,
   setHovered,
+  svgRef,
 }: {
   mode: ExpansionMode;
   X: number;
@@ -213,6 +216,8 @@ function ExpansionSchematic({
   res: ExpansionResult;
   hovered: number | null;
   setHovered: (i: number | null) => void;
+  svgRef?: React.RefObject<SVGSVGElement | null>;
+
 }) {
   const barH = X * 0.14;
   const H = mode === "bar" ? barH : Y;
@@ -241,6 +246,8 @@ function ExpansionSchematic({
       </div>
       <div className="px-5 py-5">
         <svg
+          ref={svgRef}
+
           viewBox={`${-pad} ${-pad} ${X + 2 * pad} ${H + 2 * pad}`}
           className="mx-auto block h-auto w-full max-w-[620px]"
           preserveAspectRatio="xMidYMid meet"
@@ -371,6 +378,8 @@ export function ExpansionModule({
   const [dHole, setDHole] = useState<number>(8.5);
   const [copied, setCopied] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
 
   const effMxe = sameX ? mxs : mxe;
   const effMye = sameY ? mys : mye;
@@ -602,7 +611,43 @@ export function ExpansionModule({
               res={res}
               hovered={hovered}
               setHovered={setHovered}
+              svgRef={svgRef}
             />
+
+            <ExportActions
+              moduleName={mode === "bar" ? "Dilatation-barre" : "Dilatation-panneau"}
+              subtitle={pfMode === "auto" ? "Point fixe automatique" : `Point fixe manuel N°${pfIndex}`}
+              is2D={mode === "panel"}
+              width={X}
+              height={Y}
+              holes={res.holes.map((h) => ({ x: h.x, y: h.y, dia: h.fixed ? dScrew : dHole }))}
+              svgRef={svgRef}
+              params={[
+                { label: mode === "bar" ? "Longueur" : "Largeur X", value: `${fmt(X)} mm` },
+                ...(mode === "panel" ? [{ label: "Hauteur Y", value: `${fmt(Y)} mm` }] : []),
+                { label: mode === "bar" ? "Rives" : "Rives X", value: `${fmt(mxs)} / ${fmt(effMxe)} mm` },
+                ...(mode === "panel" ? [{ label: "Rives Y", value: `${fmt(mys)} / ${fmt(effMye)} mm` }] : []),
+                { label: "Pas X retenu", value: `${fmt(res.pitchX)} mm` },
+                ...(mode === "panel" ? [{ label: "Pas Y retenu", value: `${fmt(res.pitchY)} mm` }] : []),
+                { label: "Ø vis", value: `${fmt(dScrew, 2)} mm` },
+                { label: "Ø perçage PG", value: `${fmt(dHole, 2)} mm` },
+                { label: "Jeu par PG", value: `± ${fmt(jeu, 2)} mm` },
+                { label: "Total trous", value: String(total) },
+                { label: "PF / PG", value: `1 / ${sliding}` },
+              ]}
+              columns={["N°", mode === "bar" ? "Position (mm)" : "X / Y (mm)", "Type", "Ø recommandé"]}
+              rows={res.holes.map((h, i) => [
+                String(i + 1),
+                mode === "bar" ? fmt(h.x) : `${fmt(h.x)} / ${fmt(h.y)}`,
+                h.fixed ? "PF — Point fixe" : "PG — Point glissant",
+                `Ø ${fmt(h.fixed ? dScrew : dHole, 2)} mm`,
+              ])}
+              notes={[
+                `Point fixe : Ø ${fmt(dScrew, 2)} mm — perçage ajusté sans jeu.`,
+                `Points glissants : Ø ${fmt(dHole, 2)} mm — coulisse ± ${fmt(jeu, 2)} mm.`,
+              ]}
+            />
+
 
             <div className="rounded-xl border border-[var(--color-trame)]/40 bg-[var(--color-trame)]/[0.07] p-5">
               <h2 className="text-sm font-semibold text-foreground">Synthèse atelier</h2>

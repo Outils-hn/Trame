@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,8 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ExportActions } from "@/components/trame/ExportActions";
+
 
 function fmt(n: number, d = 1) {
   if (!isFinite(n)) return "—";
@@ -206,6 +208,7 @@ function PanelSchematic({
   res,
   hovered,
   setHovered,
+  svgRef,
 }: {
   X: number;
   Y: number;
@@ -214,6 +217,7 @@ function PanelSchematic({
   res: PanelResult;
   hovered: number | null;
   setHovered: (i: number | null) => void;
+  svgRef?: React.RefObject<SVGSVGElement | null>;
 }) {
   const span = Math.max(X, Y);
   const pad = span * 0.16;
@@ -235,12 +239,14 @@ function PanelSchematic({
       </div>
       <div className="px-5 py-5">
         <svg
+          ref={svgRef}
           viewBox={`${-pad} ${-pad} ${X + 2 * pad} ${Y + 2 * pad}`}
           className="mx-auto block h-auto w-full max-w-[560px]"
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label="Schéma du panneau et des perçages"
         >
+
           {/* Panneau */}
           <rect
             x={0}
@@ -424,6 +430,8 @@ export function PanelModule({
   const [pattern, setPattern] = useState<PanelPattern>("perimeter");
   const [copied, setCopied] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
 
   const effMxe = sameX ? mxs : mxe;
   const effMye = sameY ? mys : mye;
@@ -589,7 +597,33 @@ export function PanelModule({
               res={res}
               hovered={hovered}
               setHovered={setHovered}
+              svgRef={svgRef}
             />
+
+            <ExportActions
+              moduleName="Panneau"
+              subtitle={pattern === "grid" ? "Grille complète" : "Périmètre"}
+              is2D
+              width={X}
+              height={Y}
+              holes={res.holes.map((h) => ({ x: h.x, y: h.y }))}
+              svgRef={svgRef}
+              params={[
+                { label: "Largeur X", value: `${fmt(X)} mm` },
+                { label: "Hauteur Y", value: `${fmt(Y)} mm` },
+                { label: "Rives X", value: `${fmt(mxs)} / ${fmt(effMxe)} mm` },
+                { label: "Rives Y", value: `${fmt(mys)} / ${fmt(effMye)} mm` },
+                { label: "Pas X retenu", value: `${fmt(res.pitchX)} mm` },
+                { label: "Pas Y retenu", value: `${fmt(res.pitchY)} mm` },
+                { label: "Matrice", value: `${res.nx + 1} × ${res.ny + 1}` },
+                { label: "Total perçages", value: String(res.holes.length) },
+                { label: "Schéma", value: pattern === "grid" ? "Grille complète" : "Périmètre" },
+              ]}
+              columns={["N°", "X (mm)", "Y (mm)", "Zone"]}
+              rows={res.holes.map((h, i) => [String(i + 1), fmt(h.x), fmt(h.y), h.zone])}
+              notes={["Ø perçage DXF par défaut : 8 mm.", "Origine des cotes : angle bas-gauche du panneau."]}
+            />
+
 
             <div className="overflow-hidden rounded-xl border border-border bg-card">
               <div className="flex items-center justify-between border-b border-border px-5 py-3">
