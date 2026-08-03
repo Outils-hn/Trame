@@ -208,6 +208,7 @@ function ExpansionSchematic({
   res,
   hovered,
   setHovered,
+  svgRef,
 }: {
   mode: ExpansionMode;
   X: number;
@@ -215,6 +216,8 @@ function ExpansionSchematic({
   res: ExpansionResult;
   hovered: number | null;
   setHovered: (i: number | null) => void;
+  svgRef?: React.RefObject<SVGSVGElement | null>;
+
 }) {
   const barH = X * 0.14;
   const H = mode === "bar" ? barH : Y;
