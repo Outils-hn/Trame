@@ -13,6 +13,8 @@ import { ReinforcedModule } from "@/components/trame/ReinforcedModule";
 import { ObstacleModule } from "@/components/trame/ObstacleModule";
 import { PanelModule } from "@/components/trame/PanelModule";
 import { ExpansionModule } from "@/components/trame/ExpansionModule";
+import { ExportActions } from "@/components/trame/ExportActions";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
