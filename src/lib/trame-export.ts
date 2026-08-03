@@ -262,7 +262,7 @@ export function openWorkshopSheet(opts: WorkshopSheetOptions) {
   .params div { display:flex; justify-content:space-between; border-bottom:1px dotted #d4d4d8; padding:2px 0; }
   .params span:last-child { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight:700; }
   .schema { border:1px solid #e4e4e7; border-radius:6px; padding:8px; text-align:center; }
-  .schema svg { max-height:95mm; width:auto; max-width:100%; }
+  .schema svg { max-width:100%; }
   tr, thead { page-break-inside:avoid; }
   thead { display:table-header-group; }
 
