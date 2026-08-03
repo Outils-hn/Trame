@@ -250,7 +250,7 @@ export function buildWorkshopSheetHtml(opts: WorkshopSheetOptions, stamp: string
 
 
   return `<style>
-  #trame-sheet { font-family: ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif; color:#18181b; font-size:11px; background:#fff; width:690px; overflow:hidden; padding:0 0 6px; }
+  #trame-sheet { font-family: ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif; color:#18181b; font-size:11px; background:#fff; width:690px; overflow:hidden; padding:0 0 20px; }
   #trame-sheet * { box-sizing: border-box; }
   #trame-sheet .head { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #ff7a22; padding-bottom:8px; }
   #trame-sheet .brand { display:flex; align-items:center; gap:10px; }
