@@ -263,6 +263,8 @@ function Index() {
 
   const [integers, setIntegers] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [exportIdx, setExportIdx] = useState(0);
+
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
