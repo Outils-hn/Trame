@@ -316,8 +316,36 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
+        <div className="mb-6 inline-flex rounded-lg border border-border bg-card p-1">
+          {(
+            [
+              ["standard", "Répartition Standard"],
+              ["reinforced", "Zone Renforcée"],
+            ] as const
+          ).map(([v, label]) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setMainModule(v)}
+              className={cn(
+                "rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-colors",
+                mainModule === v
+                  ? "bg-[var(--color-trame)] text-white"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {mainModule === "reinforced" ? (
+          <ReinforcedModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
+        ) : (
+          <>
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
           <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-grid">
+
             <TabsTrigger
               value="intervals"
               className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
