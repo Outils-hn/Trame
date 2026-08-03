@@ -430,6 +430,8 @@ export function PanelModule({
   const [pattern, setPattern] = useState<PanelPattern>("perimeter");
   const [copied, setCopied] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
 
   const effMxe = sameX ? mxs : mxe;
   const effMye = sameY ? mys : mye;
