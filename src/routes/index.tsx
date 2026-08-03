@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { ReinforcedModule } from "@/components/trame/ReinforcedModule";
 import { ObstacleModule } from "@/components/trame/ObstacleModule";
+import { PanelModule } from "@/components/trame/PanelModule";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -236,7 +237,7 @@ function SummaryRow({ label, value, strong }: { label: string; value: string; st
 
 function Index() {
   const [dark, setDark] = useState(false);
-  const [mainModule, setMainModule] = useState<"standard" | "reinforced" | "obstacle">("standard");
+  const [mainModule, setMainModule] = useState<"standard" | "reinforced" | "obstacle" | "panel">("standard");
   const [mode, setMode] = useState<Mode>("intervals");
 
   // Mode 1 — intervals
@@ -325,6 +326,7 @@ function Index() {
               ["standard", "Répartition Standard"],
               ["reinforced", "Zone Renforcée"],
               ["obstacle", "Évitement d'Obstacle"],
+              ["panel", "Panneaux & Cassettes"],
             ] as const
           ).map(([v, label]) => (
             <button
@@ -347,6 +349,8 @@ function Index() {
           <ReinforcedModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
         ) : mainModule === "obstacle" ? (
           <ObstacleModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
+        ) : mainModule === "panel" ? (
+          <PanelModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
         ) : (
           <>
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
