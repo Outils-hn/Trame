@@ -360,28 +360,38 @@ function PanelSchematic({
           })}
 
           {/* Info-bulle */}
-          {hov && hovered != null && (
-            <g pointerEvents="none">
-              <rect
-                x={Math.min(Math.max(hov.x - span * 0.15, -pad * 0.6), X + pad * 0.6 - span * 0.3)}
-                y={py(hov.y) - span * 0.105}
-                width={span * 0.3}
-                height={span * 0.062}
-                rx={span * 0.008}
-                className="fill-slate-900 dark:fill-zinc-100"
-                opacity={0.95}
-              />
-              <text
-                x={Math.min(Math.max(hov.x - span * 0.15, -pad * 0.6), X + pad * 0.6 - span * 0.3) + span * 0.15}
-                y={py(hov.y) - span * 0.062}
-                textAnchor="middle"
-                fontSize={fontXS}
-                className="fill-white font-mono dark:fill-zinc-900"
-              >
-                Trou N°{hovered + 1} : X={fmt(hov.x)}, Y={fmt(hov.y)}
-              </text>
-            </g>
-          )}
+          {hov &&
+            hovered != null &&
+            (() => {
+              const label = `Trou N°${hovered + 1} : X=${fmt(hov.x)}, Y=${fmt(hov.y)}`;
+              const w = label.length * fontXS * 0.62 + fontXS * 1.6;
+              const h = fontXS * 2.1;
+              const bx = Math.min(Math.max(hov.x - w / 2, -pad * 0.5), X + pad * 0.5 - w);
+              const by = py(hov.y) - span * 0.03 - h;
+              return (
+                <g pointerEvents="none">
+                  <rect
+                    x={bx}
+                    y={by}
+                    width={w}
+                    height={h}
+                    rx={h * 0.25}
+                    className="fill-slate-900 dark:fill-zinc-100"
+                    opacity={0.95}
+                  />
+                  <text
+                    x={bx + w / 2}
+                    y={by + h * 0.68}
+                    textAnchor="middle"
+                    fontSize={fontXS}
+                    className="fill-white font-mono dark:fill-zinc-900"
+                  >
+                    {label}
+                  </text>
+                </g>
+              );
+            })()}
+
         </svg>
         <p className="mt-3 text-center text-[11px] text-muted-foreground">
           <span className="mr-1 inline-block size-2 rounded-full bg-[var(--color-trame)] align-middle" /> perçages
