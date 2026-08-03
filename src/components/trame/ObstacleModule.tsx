@@ -254,6 +254,11 @@ export function ObstacleModule({
     try {
       await navigator.clipboard.writeText(txt);
       setCopied(key);
+      saveHistory(
+        "Évitement d'Obstacle",
+        `Barre ${fmt(L)} mm — ${points.length} trous`,
+        { L, Ds, De, sameEnd, pitchMax, posObs, margin, integers },
+      );
       toast.success("Cotes copiées");
       setTimeout(() => setCopied(null), 1500);
     } catch {

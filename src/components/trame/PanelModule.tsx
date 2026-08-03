@@ -479,6 +479,11 @@ export function PanelModule({
     try {
       await navigator.clipboard.writeText(txt);
       setCopied(true);
+      saveHistory(
+        "Panneaux & Cassettes",
+        `Panneau ${fmt(X)}×${fmt(Y)} mm — ${res.holes.length} trous`,
+        { X, Y, mxs, mxe, sameX, mys, mye, sameY, pitchMaxX, pitchMaxY, pattern, integers },
+      );
       toast.success("Coordonnées copiées (X,Y)");
       setTimeout(() => setCopied(false), 1500);
     } catch {

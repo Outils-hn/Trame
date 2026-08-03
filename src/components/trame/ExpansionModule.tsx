@@ -454,6 +454,28 @@ export function ExpansionModule({
     try {
       await navigator.clipboard.writeText(txt);
       setCopied(true);
+      saveHistory(
+        "Dilatation (PF/PG)",
+        `${mode === "bar" ? `Barre ${fmt(X)} mm` : `Panneau ${fmt(X)}×${fmt(Y)} mm`} — ${total} trous`,
+        {
+          mode,
+          X,
+          Y,
+          mxs,
+          mxe,
+          sameX,
+          mys,
+          mye,
+          sameY,
+          pitchMaxX,
+          pitchMaxY,
+          pfMode,
+          pfIndex,
+          dScrew,
+          dHole,
+          integers,
+        },
+      );
       toast.success("Liste PF/PG copiée");
       setTimeout(() => setCopied(false), 1500);
     } catch {

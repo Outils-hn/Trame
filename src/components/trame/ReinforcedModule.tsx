@@ -237,6 +237,11 @@ export function ReinforcedModule({
     try {
       await navigator.clipboard.writeText(txt);
       setCopied(true);
+      saveHistory(
+        "Zone Renforcée",
+        `Barre ${fmt(L)} mm — ${res.points.length} trous`,
+        { L, Ds, De, sameEnd, Lr, pitchR, pitchMax, integers },
+      );
       toast.success("Cotes copiées (Zone renforcée)");
       setTimeout(() => setCopied(false), 1500);
     } catch {
