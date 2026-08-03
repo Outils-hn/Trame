@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { ReinforcedModule } from "@/components/trame/ReinforcedModule";
+import { ObstacleModule } from "@/components/trame/ObstacleModule";
 
 export const Route = createFileRoute("/")({
   head: () => ({
