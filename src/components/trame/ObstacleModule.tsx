@@ -75,13 +75,14 @@ export interface ObstaclePoint {
 
 export interface ObstacleResult {
   ok: boolean;
-  reason?: "invalid" | "obstacleOut";
+  reason?: "invalid" | "obstacleOut" | "nointeger";
   usable: number;
   base: { pitch: number; intervals: number; points: number[]; conflicts: number[] };
   hasConflict: boolean;
   low: number;
   high: number;
   pinch: { points: ObstaclePoint[]; added: number } | null;
+  pinchIntegerFail?: boolean;
   recalc: { points: ObstaclePoint[]; pitch: number; intervals: number } | null;
 }
 
@@ -94,6 +95,7 @@ export function computeObstacle(
   pitchMax: number,
   posObs: number,
   margin: number,
+  integers: boolean,
 ): ObstacleResult {
   const empty: ObstacleResult = {
     ok: false,
@@ -116,7 +118,22 @@ export function computeObstacle(
   const low = posObs - margin;
   const high = posObs + margin;
 
-  const N = Math.max(1, Math.ceil(usable / pitchMax));
+  let N = Math.max(1, Math.ceil(usable / pitchMax));
+  if (integers) {
+    // FILTRE STRICT : toutes les cotes doivent être des entiers exacts.
+    if (!Number.isInteger(first) || !Number.isInteger(last) || !Number.isInteger(usable)) {
+      return { ...empty, reason: "nointeger" };
+    }
+    let found = false;
+    for (let n = N; n <= MAX_INTERVALS; n++) {
+      if (Number.isInteger(usable / n)) {
+        N = n;
+        found = true;
+        break;
+      }
+    }
+    if (!found) return { ...empty, reason: "nointeger" };
+  }
   const pitch = usable / N;
   const points: number[] = [];
   for (let i = 0; i <= N; i++) points.push(first + i * pitch);
@@ -139,12 +156,14 @@ export function computeObstacle(
     { pos: low, flagged: true },
     { pos: high, flagged: true },
   ].sort((a, b) => a.pos - b.pos);
-  const pinch = { points: pinchPoints, added: 2 - conflicts.length };
+  const pinchIntegerFail = integers && !(Number.isInteger(low) && Number.isInteger(high));
+  const pinch = pinchIntegerFail ? null : { points: pinchPoints, added: 2 - conflicts.length };
 
   // Solution 2 : recalcul du pas
   let recalc: ObstacleResult["recalc"] = null;
   for (let n = N; n <= MAX_INTERVALS; n++) {
     const p = usable / n;
+    if (integers && !Number.isInteger(p)) continue;
     const pts: number[] = [];
     for (let i = 0; i <= n; i++) pts.push(first + i * p);
     if (!pts.some(inZone)) {
@@ -153,10 +172,10 @@ export function computeObstacle(
     }
   }
 
-  return { ok: true, usable, base, hasConflict: true, low, high, pinch, recalc };
+  return { ok: true, usable, base, hasConflict: true, low, high, pinch, recalc, pinchIntegerFail };
 }
 
-function PositionList({ points, integers }: { points: ObstaclePoint[]; integers: boolean }) {
+function PositionList({ points }: { points: ObstaclePoint[] }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
       {points.map((pt, i) => (
@@ -170,14 +189,22 @@ function PositionList({ points, integers }: { points: ObstaclePoint[]; integers:
           )}
           title={pt.flagged ? "Perçage encadrant l'obstacle" : "Perçage standard"}
         >
-          {integers ? Math.round(pt.pos) : Number(pt.pos.toFixed(1))}
+          {Number(pt.pos.toFixed(1))}
         </span>
       ))}
     </div>
   );
 }
 
-export function ObstacleModule({ integers, setIntegers }: { integers: boolean; setIntegers: (v: boolean) => void }) {
+export function ObstacleModule({
+  integers,
+  setIntegers,
+  EmptyNotice,
+}: {
+  integers: boolean;
+  setIntegers: (v: boolean) => void;
+  EmptyNotice: React.ComponentType<{ message: string; onShowDecimals: () => void }>;
+}) {
   const [L, setL] = useState<number>(3094);
   const [Ds, setDs] = useState<number>(50);
   const [De, setDe] = useState<number>(50);
@@ -190,13 +217,13 @@ export function ObstacleModule({ integers, setIntegers }: { integers: boolean; s
   const effectiveDe = sameEnd ? Ds : De;
 
   const res = useMemo(
-    () => computeObstacle(L, Ds, effectiveDe, pitchMax, posObs, margin),
-    [L, Ds, effectiveDe, pitchMax, posObs, margin],
+    () => computeObstacle(L, Ds, effectiveDe, pitchMax, posObs, margin, integers),
+    [L, Ds, effectiveDe, pitchMax, posObs, margin, integers],
   );
 
   const copy = async (key: string, points: ObstaclePoint[]) => {
     const txt = points
-      .map((pt) => (integers ? String(Math.round(pt.pos)) : String(Number(pt.pos.toFixed(1)))))
+      .map((pt) => String(Number(pt.pos.toFixed(1))))
       .join("; ");
     try {
       await navigator.clipboard.writeText(txt);
@@ -281,9 +308,16 @@ export function ObstacleModule({ integers, setIntegers }: { integers: boolean; s
 
       <section>
         {!res.ok ? (
-          <div className="flex min-h-[320px] items-center justify-center rounded-xl border border-dashed border-border bg-card px-6 text-center text-sm text-muted-foreground">
-            Saisissez des dimensions cohérentes (marges plus courtes que la longueur totale).
-          </div>
+          res.reason === "nointeger" ? (
+            <EmptyNotice
+              message="Aucune répartition entière trouvée pour cette barre."
+              onShowDecimals={() => setIntegers(false)}
+            />
+          ) : (
+            <div className="flex min-h-[320px] items-center justify-center rounded-xl border border-dashed border-border bg-card px-6 text-center text-sm text-muted-foreground">
+              Saisissez des dimensions cohérentes (marges plus courtes que la longueur totale).
+            </div>
+          )
         ) : (
           <div className="space-y-5">
             <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -299,7 +333,6 @@ export function ObstacleModule({ integers, setIntegers }: { integers: boolean; s
                     pos: p,
                     flagged: p > res.low + 1e-9 && p < res.high - 1e-9,
                   }))}
-                  integers={integers}
                 />
               </div>
             </div>
@@ -320,6 +353,7 @@ export function ObstacleModule({ integers, setIntegers }: { integers: boolean; s
                       <Button
                         variant="outline"
                         size="sm"
+                        disabled={!res.pinch}
                         onClick={() => res.pinch && copy("pinch", res.pinch.points)}
                         className="gap-1.5"
                       >
@@ -330,18 +364,27 @@ export function ObstacleModule({ integers, setIntegers }: { integers: boolean; s
                     <p className="mt-1 text-[11px] text-muted-foreground">Encadrement de l'obstacle</p>
                   </div>
                   <div className="px-5 py-4">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-trame)]/12 px-2.5 py-1 text-[11px] font-semibold text-[var(--color-trame)] ring-1 ring-[var(--color-trame)]/30">
-                      <AlertTriangle className="size-3" />
-                      Obstacle évité (2 trous ajoutés)
-                    </span>
-                    <div className="mt-3">
-                      <PositionList points={res.pinch?.points ?? []} integers={integers} />
-                    </div>
-                    <dl className="mt-4 space-y-2 text-xs">
-                      <SummaryRow label="Total trous" value={String(res.pinch?.points.length ?? 0)} strong />
-                      <SummaryRow label="Pas conservé" value={`${fmt(res.base.pitch)} mm`} />
-                      <SummaryRow label="Cotes encadrantes" value={`${fmt(res.low)} / ${fmt(res.high)} mm`} />
-                    </dl>
+                    {res.pinch ? (
+                      <>
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-trame)]/12 px-2.5 py-1 text-[11px] font-semibold text-[var(--color-trame)] ring-1 ring-[var(--color-trame)]/30">
+                          <AlertTriangle className="size-3" />
+                          Obstacle évité (2 trous ajoutés)
+                        </span>
+                        <div className="mt-3">
+                          <PositionList points={res.pinch.points} />
+                        </div>
+                        <dl className="mt-4 space-y-2 text-xs">
+                          <SummaryRow label="Total trous" value={String(res.pinch.points.length)} strong />
+                          <SummaryRow label="Pas conservé" value={`${fmt(res.base.pitch)} mm`} />
+                          <SummaryRow label="Cotes encadrantes" value={`${fmt(res.low)} / ${fmt(res.high)} mm`} />
+                        </dl>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Les cotes de sécurité ({fmt(res.low)} / {fmt(res.high)} mm) ne sont pas des entiers exacts :
+                        ajustez la position de l'obstacle ou la marge, ou décochez « Mesures entières uniquement ».
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -366,7 +409,7 @@ export function ObstacleModule({ integers, setIntegers }: { integers: boolean; s
                   <div className="px-5 py-4">
                     {res.recalc ? (
                       <>
-                        <PositionList points={res.recalc.points} integers={integers} />
+                        <PositionList points={res.recalc.points} />
                         <dl className="mt-4 space-y-2 text-xs">
                           <SummaryRow label="Intervalles" value={String(res.recalc.intervals)} />
                           <SummaryRow label="Nouveau pas exact" value={`${fmt(res.recalc.pitch)} mm`} strong />
@@ -375,8 +418,9 @@ export function ObstacleModule({ integers, setIntegers }: { integers: boolean; s
                       </>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Aucune répartition régulière n'évite la zone d'exclusion (limite de {MAX_INTERVALS}{" "}
-                        intervalles).
+                        {integers
+                          ? "Aucune répartition entière n'évite la zone d'exclusion."
+                          : `Aucune répartition régulière n'évite la zone d'exclusion (limite de ${MAX_INTERVALS} intervalles).`}
                       </p>
                     )}
                   </div>
