@@ -134,11 +134,11 @@ export function computeObstacle(
   }
 
   // Solution 1 : pincement
-  const pinchPoints: ObstaclePoint[] = points
-    .filter((p) => !inZone(p))
-    .map((p) => ({ pos: p }))
-    .concat([{ pos: low, flagged: true }, { pos: high, flagged: true }])
-    .sort((a, b) => a.pos - b.pos);
+  const pinchPoints: ObstaclePoint[] = [
+    ...points.filter((p) => !inZone(p)).map((p): ObstaclePoint => ({ pos: p })),
+    { pos: low, flagged: true },
+    { pos: high, flagged: true },
+  ].sort((a, b) => a.pos - b.pos);
   const pinch = { points: pinchPoints, added: 2 - conflicts.length };
 
   // Solution 2 : recalcul du pas
