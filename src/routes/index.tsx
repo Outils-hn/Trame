@@ -580,6 +580,10 @@ function Index() {
             )}
           </section>
         </div>
+          </>
+        )}
+
+
 
         <footer className="mt-10 border-t border-border pt-4 text-center text-[11px] text-muted-foreground">
           Cotes en millimètres · cumulées depuis le bord de départ
