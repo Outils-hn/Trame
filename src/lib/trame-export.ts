@@ -249,6 +249,10 @@ export function openWorkshopSheet(opts: WorkshopSheetOptions) {
   .params div { display:flex; justify-content:space-between; border-bottom:1px dotted #d4d4d8; padding:2px 0; }
   .params span:last-child { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight:700; }
   .schema { border:1px solid #e4e4e7; border-radius:6px; padding:8px; text-align:center; }
+  .schema svg { max-height:95mm; width:auto; max-width:100%; }
+  tr, thead { page-break-inside:avoid; }
+  thead { display:table-header-group; }
+
   table { width:100%; border-collapse:collapse; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   th, td { border:1px solid #d4d4d8; padding:3px 6px; text-align:left; font-size:10px; }
   th { background:#f4f4f5; text-transform:uppercase; letter-spacing:.08em; font-size:9px; }
