@@ -595,7 +595,33 @@ export function PanelModule({
               res={res}
               hovered={hovered}
               setHovered={setHovered}
+              svgRef={svgRef}
             />
+
+            <ExportActions
+              moduleName="Panneau"
+              subtitle={pattern === "grid" ? "Grille complète" : "Périmètre"}
+              is2D
+              width={X}
+              height={Y}
+              holes={res.holes.map((h) => ({ x: h.x, y: h.y }))}
+              svgRef={svgRef}
+              params={[
+                { label: "Largeur X", value: `${fmt(X)} mm` },
+                { label: "Hauteur Y", value: `${fmt(Y)} mm` },
+                { label: "Rives X", value: `${fmt(mxs)} / ${fmt(effMxe)} mm` },
+                { label: "Rives Y", value: `${fmt(mys)} / ${fmt(effMye)} mm` },
+                { label: "Pas X retenu", value: `${fmt(res.pitchX)} mm` },
+                { label: "Pas Y retenu", value: `${fmt(res.pitchY)} mm` },
+                { label: "Matrice", value: `${res.nx + 1} × ${res.ny + 1}` },
+                { label: "Total perçages", value: String(res.holes.length) },
+                { label: "Schéma", value: pattern === "grid" ? "Grille complète" : "Périmètre" },
+              ]}
+              columns={["N°", "X (mm)", "Y (mm)", "Zone"]}
+              rows={res.holes.map((h, i) => [String(i + 1), fmt(h.x), fmt(h.y), h.zone])}
+              notes={["Ø perçage DXF par défaut : 8 mm.", "Origine des cotes : angle bas-gauche du panneau."]}
+            />
+
 
             <div className="overflow-hidden rounded-xl border border-border bg-card">
               <div className="flex items-center justify-between border-b border-border px-5 py-3">
