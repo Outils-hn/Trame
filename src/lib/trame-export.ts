@@ -261,6 +261,11 @@ async function svgToPng(markup: string, scale = 3): Promise<{ data: string; w: n
   }
 }
 
+/** jsPDF (Helvetica/WinAnsi) ne connaît pas les espaces fines insécables : on normalise. */
+function txt(s: string) {
+  return (s ?? "").replace(/[\u00a0\u202f\u2009\u2007\u2060]/g, " ");
+}
+
 const INK = [24, 24, 27] as [number, number, number];
 const GREY = [113, 113, 122] as [number, number, number];
 const ORANGE = [255, 122, 34] as [number, number, number];
@@ -282,6 +287,16 @@ function alignFor(col: string, index: number): "left" | "right" | "center" {
 export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
   try {
     const now = new Date();
+    const sheet: WorkshopSheetOptions = {
+      ...opts,
+      moduleName: txt(opts.moduleName),
+      subtitle: opts.subtitle ? txt(opts.subtitle) : undefined,
+      material: opts.material ? txt(opts.material) : undefined,
+      params: opts.params.map((p) => ({ label: txt(p.label), value: txt(p.value) })),
+      columns: opts.columns.map(txt),
+      rows: opts.rows.map((r) => r.map(txt)),
+      notes: opts.notes?.map(txt),
+    };
     const stamp = now.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
 
     const [{ jsPDF }, { default: autoTable }] = await Promise.all([
@@ -305,7 +320,7 @@ export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
     pdf.text(stamp, pageW - M, M - 1.5, { align: "right" });
     pdf.setFont("helvetica", "bold").setFontSize(9).setTextColor(...INK);
     pdf.text(
-      `${opts.moduleName}${opts.subtitle ? ` · ${opts.subtitle}` : ""}`,
+      `${sheet.moduleName}${sheet.subtitle ? ` · ${sheet.subtitle}` : ""}`,
       pageW - M,
       M + 3,
       { align: "right" },
@@ -321,8 +336,8 @@ export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
     y += 2;
 
     const allParams: SheetParam[] = [
-      ...opts.params,
-      { label: "Matériau", value: opts.material?.trim() || "—" },
+      ...sheet.params,
+      { label: "Matériau", value: sheet.material?.trim() || "—" },
     ];
     const paramRows: string[][] = [];
     for (let i = 0; i < allParams.length; i += 2) {
@@ -356,8 +371,8 @@ export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
     y = (pdf as any).lastAutoTable.finalY + 8;
 
     /* ---------- Schéma (PNG haute résolution, max 80 mm de hauteur) ---------- */
-    if (opts.svgMarkup) {
-      const png = await svgToPng(opts.svgMarkup, 3);
+    if (sheet.svgMarkup) {
+      const png = await svgToPng(sheet.svgMarkup, 3);
       if (png) {
         const maxH = 80;
         let w = contentW;
@@ -386,19 +401,19 @@ export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
       pdf.addPage();
       y = M + 6;
     }
-    pdf.text(`COTES DE PERÇAGE (${opts.rows.length})`, M, y);
+    pdf.text(`COTES DE PERÇAGE (${sheet.rows.length})`, M, y);
     y += 2;
 
     const colStyles: Record<number, { halign: "left" | "right" | "center" }> = {};
-    opts.columns.forEach((c, i) => {
+    sheet.columns.forEach((c, i) => {
       colStyles[i] = { halign: alignFor(c, i) };
     });
 
     autoTable(pdf, {
       startY: y,
       margin: { left: M, right: M, bottom: FOOT_H },
-      head: [opts.columns],
-      body: opts.rows,
+      head: [sheet.columns],
+      body: sheet.rows,
       theme: "grid",
       styles: {
         font: "helvetica",
@@ -423,13 +438,13 @@ export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     y = (pdf as any).lastAutoTable.finalY + 6;
 
-    if (opts.notes?.length) {
-      if (y + opts.notes.length * 4 > pageH - FOOT_H) {
+    if (sheet.notes?.length) {
+      if (y + sheet.notes.length * 4 > pageH - FOOT_H) {
         pdf.addPage();
         y = M + 6;
       }
       pdf.setFont("helvetica", "normal").setFontSize(8).setTextColor(...GREY);
-      for (const n of opts.notes) {
+      for (const n of sheet.notes) {
         pdf.text(`• ${n}`, M, y);
         y += 3.8;
       }
@@ -457,7 +472,7 @@ export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
       pdf.text(`Page ${p}/${pages} · ${stamp}`, pageW - M, pageH - 5.5, { align: "right" });
     }
 
-    pdf.save(sheetFileName(opts.moduleName, now));
+    pdf.save(sheetFileName(sheet.moduleName, now));
     return true;
   } catch {
     return false;
