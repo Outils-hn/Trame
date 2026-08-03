@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { ReinforcedModule } from "@/components/trame/ReinforcedModule";
 import { ObstacleModule } from "@/components/trame/ObstacleModule";
 import { PanelModule } from "@/components/trame/PanelModule";
+import { ExpansionModule } from "@/components/trame/ExpansionModule";
 
 export const Route = createFileRoute("/")({
   head: () => ({
