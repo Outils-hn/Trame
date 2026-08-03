@@ -408,6 +408,9 @@ function PanelSchematic({
   );
 }
 
+import { PresetPicker } from "@/components/trame/PresetPicker";
+import { useModuleHistory, type HistoryParams } from "@/lib/trame-history";
+import type { MaterialPreset } from "@/lib/trame-presets";
 export function PanelModule({
   integers,
   setIntegers,
@@ -441,6 +444,34 @@ export function PanelModule({
     [X, Y, mxs, effMxe, mys, effMye, pitchMaxX, pitchMaxY, pattern, integers],
   );
 
+  const applyHistory = (p: HistoryParams) => {
+    setX(Number(p.X));
+    setY(Number(p.Y));
+    setMxs(Number(p.mxs));
+    setMxe(Number(p.mxe));
+    setSameX(Boolean(p.sameX));
+    setMys(Number(p.mys));
+    setMye(Number(p.mye));
+    setSameY(Boolean(p.sameY));
+    setPitchMaxX(Number(p.pitchMaxX));
+    setPitchMaxY(Number(p.pitchMaxY));
+    setPattern((p.pattern as PanelPattern) ?? "perimeter");
+    setIntegers(Boolean(p.integers));
+    toast.success("Paramètres rechargés depuis l'historique");
+  };
+
+  const saveHistory = useModuleHistory("panel", applyHistory);
+
+  const applyPreset = (p: MaterialPreset) => {
+    setMxs(p.margin);
+    setMxe(p.margin);
+    setMys(p.margin);
+    setMye(p.margin);
+    setPitchMaxX(p.pitchMax);
+    setPitchMaxY(p.pitchMax);
+    toast.success(`Préréglage appliqué : ${p.name}`);
+  };
+
   const copy = async () => {
     const txt = res.holes
       .map((h) => `${Number(h.x.toFixed(1))},${Number(h.y.toFixed(1))}`)
@@ -458,6 +489,7 @@ export function PanelModule({
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
       <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
+        <PresetPicker onApply={applyPreset} />
         <section className="rounded-xl border border-border bg-card p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-semibold">Dimensions du panneau</h2>

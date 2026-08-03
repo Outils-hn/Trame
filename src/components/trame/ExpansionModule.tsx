@@ -352,6 +352,9 @@ function ExpansionSchematic({
 
 /* --------------------------------- Module --------------------------------- */
 
+import { PresetPicker } from "@/components/trame/PresetPicker";
+import { useModuleHistory, type HistoryParams } from "@/lib/trame-history";
+import type { MaterialPreset } from "@/lib/trame-presets";
 export function ExpansionModule({
   integers,
   setIntegers,
@@ -407,6 +410,40 @@ export function ExpansionModule({
   const total = res.holes.length;
   const sliding = Math.max(total - 1, 0);
 
+  const applyHistory = (p: HistoryParams) => {
+    setMode((p.mode as ExpansionMode) ?? "bar");
+    setX(Number(p.X));
+    setY(Number(p.Y));
+    setMxs(Number(p.mxs));
+    setMxe(Number(p.mxe));
+    setSameX(Boolean(p.sameX));
+    setMys(Number(p.mys));
+    setMye(Number(p.mye));
+    setSameY(Boolean(p.sameY));
+    setPitchMaxX(Number(p.pitchMaxX));
+    setPitchMaxY(Number(p.pitchMaxY));
+    setPfMode((p.pfMode as PfMode) ?? "auto");
+    setPfIndex(Number(p.pfIndex));
+    setDScrew(Number(p.dScrew));
+    setDHole(Number(p.dHole));
+    setIntegers(Boolean(p.integers));
+    toast.success("Paramètres rechargés depuis l'historique");
+  };
+
+  const saveHistory = useModuleHistory("expansion", applyHistory);
+
+  const applyPreset = (p: MaterialPreset) => {
+    setMxs(p.margin);
+    setMxe(p.margin);
+    setMys(p.margin);
+    setMye(p.margin);
+    setPitchMaxX(p.pitchMax);
+    setPitchMaxY(p.pitchMax);
+    if (p.screw) setDScrew(p.screw);
+    if (p.hole) setDHole(p.hole);
+    toast.success(`Préréglage appliqué : ${p.name}`);
+  };
+
   const copy = async () => {
     const txt = res.holes
       .map((h, i) => {
@@ -427,6 +464,7 @@ export function ExpansionModule({
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
       <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
+        <PresetPicker onApply={applyPreset} />
         <section className="rounded-xl border border-border bg-card p-5">
           <h2 className="mb-3 text-sm font-semibold">Type de support</h2>
           <div className="inline-flex w-full rounded-md border border-border bg-muted/40 p-1">
