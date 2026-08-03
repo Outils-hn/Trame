@@ -14,6 +14,15 @@ import { ObstacleModule } from "@/components/trame/ObstacleModule";
 import { PanelModule } from "@/components/trame/PanelModule";
 import { ExpansionModule } from "@/components/trame/ExpansionModule";
 import { ExportActions } from "@/components/trame/ExportActions";
+import { PresetPicker } from "@/components/trame/PresetPicker";
+import { HistoryButton, HistoryPanel } from "@/components/trame/HistoryPanel";
+import {
+  TrameHistoryProvider,
+  useModuleHistory,
+  type HistoryParams,
+  type TrameModuleKey,
+} from "@/lib/trame-history";
+import type { MaterialPreset } from "@/lib/trame-presets";
 
 
 export const Route = createFileRoute("/")({
@@ -239,8 +248,22 @@ function SummaryRow({ label, value, strong }: { label: string; value: string; st
 }
 
 function Index() {
+  const [mainModule, setMainModule] = useState<TrameModuleKey>("standard");
+  return (
+    <TrameHistoryProvider onModuleChange={setMainModule}>
+      <TrameApp mainModule={mainModule} setMainModule={setMainModule} />
+    </TrameHistoryProvider>
+  );
+}
+
+function TrameApp({
+  mainModule,
+  setMainModule,
+}: {
+  mainModule: TrameModuleKey;
+  setMainModule: (m: TrameModuleKey) => void;
+}) {
   const [dark, setDark] = useState(false);
-  const [mainModule, setMainModule] = useState<"standard" | "reinforced" | "obstacle" | "panel" | "expansion">("standard");
   const [mode, setMode] = useState<Mode>("intervals");
 
   // Mode 1 — intervals
@@ -290,11 +313,70 @@ function Index() {
     [L3, Ds3, effectiveDe3, Emax, integers],
   );
 
+  const applyHistory = (p: HistoryParams) => {
+    setMode((p.mode as Mode) ?? "intervals");
+    setL(Number(p.L));
+    setDs(Number(p.Ds));
+    setDe(Number(p.De));
+    setSameEnd(Boolean(p.sameEnd));
+    setMaxIntervals(Number(p.maxIntervals));
+    setL2(Number(p.L2));
+    setE(Number(p.E));
+    setSymmetric(Boolean(p.symmetric));
+    setDstart(Number(p.Dstart));
+    setL3(Number(p.L3));
+    setDs3(Number(p.Ds3));
+    setDe3(Number(p.De3));
+    setSameEnd3(Boolean(p.sameEnd3));
+    setEmax(Number(p.Emax));
+    setIntegers(Boolean(p.integers));
+    toast.success("Paramètres rechargés depuis l'historique");
+  };
+
+  const saveHistory = useModuleHistory("standard", applyHistory);
+
+  const snapshot = (): HistoryParams => ({
+    mode,
+    L,
+    Ds,
+    De,
+    sameEnd,
+    maxIntervals,
+    L2,
+    E,
+    symmetric,
+    Dstart,
+    L3,
+    Ds3,
+    De3,
+    sameEnd3,
+    Emax,
+    integers,
+  });
+
+  const applyPreset = (p: MaterialPreset) => {
+    setDs(p.margin);
+    setDe(p.margin);
+    setDs3(p.margin);
+    setDe3(p.margin);
+    setDstart(p.margin);
+    setEmax(p.pitchMax);
+    toast.success(`Préréglage appliqué : ${p.name}`);
+  };
+
   const copy = async (positions: number[], idx: number, label: string, useIntegers: boolean) => {
     const txt = positions.map((p) => (useIntegers ? String(p) : fmt(p, 1).replace(/\s/g, ""))).join("; ");
     try {
       await navigator.clipboard.writeText(txt);
       setCopiedIdx(idx);
+      const total = mode === "pitch" ? L2 : mode === "maxpitch" ? L3 : L;
+      saveHistory(
+        `Répartition Standard · ${
+          mode === "pitch" ? "Entraxe fixe" : mode === "maxpitch" ? "Entraxe max" : "Nbre d'intervalles"
+        }`,
+        `Barre ${fmt(total, 1)} mm — ${positions.length} trous`,
+        snapshot(),
+      );
       toast.success(`Cotes copiées (${label})`);
       setTimeout(() => setCopiedIdx(null), 1500);
     } catch {
@@ -314,6 +396,8 @@ function Index() {
               <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Répartition de perçages</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+          <HistoryButton />
           <button
             onClick={() => setDark((d) => !d)}
             className="inline-flex size-9 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:bg-muted"
@@ -321,8 +405,10 @@ function Index() {
           >
             {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
+          </div>
         </div>
       </header>
+      <HistoryPanel />
 
       <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6 inline-flex rounded-lg border border-border bg-card p-1">
@@ -388,6 +474,7 @@ function Index() {
         <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
           {/* Paramètres */}
           <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
+            <PresetPicker onApply={applyPreset} />
             {mode === "intervals" ? (
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
