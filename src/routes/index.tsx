@@ -324,6 +324,7 @@ function Index() {
             [
               ["standard", "Répartition Standard"],
               ["reinforced", "Zone Renforcée"],
+              ["obstacle", "Évitement d'Obstacle"],
             ] as const
           ).map(([v, label]) => (
             <button
