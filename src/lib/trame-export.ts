@@ -226,8 +226,8 @@ export function sheetFileName(moduleName: string, d = new Date()) {
   return `Fiche_Atelier_Trame_${safe(moduleName)}_${fileStamp(d)}.pdf`;
 }
 
-/** Rasterise un markup SVG en PNG haute résolution (dataURL) + dimensions px. */
-async function svgToPng(markup: string, scale = 3): Promise<{ data: string; w: number; h: number } | null> {
+/** Rasterise un markup SVG en JPEG compressé (dataURL) + dimensions px. */
+async function svgToRaster(markup: string, maxPx = 800, quality = 0.7): Promise<{ data: string; w: number; h: number } | null> {
   try {
     const holder = document.createElement("div");
     holder.innerHTML = markup.trim();
@@ -247,15 +247,17 @@ async function svgToPng(markup: string, scale = 3): Promise<{ data: string; w: n
       img.onerror = () => reject(new Error("svg"));
       img.src = src;
     });
+    // Résolution plafonnée (poids du PDF) tout en restant lisible en atelier
+    const k = Math.min(maxPx / Math.max(vw, vh), 3);
     const canvas = document.createElement("canvas");
-    canvas.width = Math.round(vw * scale);
-    canvas.height = Math.round(vh * scale);
+    canvas.width = Math.max(1, Math.round(vw * k));
+    canvas.height = Math.max(1, Math.round(vh * k));
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    return { data: canvas.toDataURL("image/png"), w: vw, h: vh };
+    return { data: canvas.toDataURL("image/jpeg", quality), w: vw, h: vh };
   } catch {
     return null;
   }
@@ -304,7 +306,7 @@ export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
       import("jspdf-autotable"),
     ]);
 
-    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
     const M = 14;
@@ -372,7 +374,7 @@ export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
 
     /* ---------- Schéma (PNG haute résolution, max 80 mm de hauteur) ---------- */
     if (sheet.svgMarkup) {
-      const png = await svgToPng(sheet.svgMarkup, 3);
+      const png = await svgToRaster(sheet.svgMarkup, 800, 0.7);
       if (png) {
         const maxH = 80;
         let w = contentW;
@@ -390,7 +392,7 @@ export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
         y += 3;
         pdf.setDrawColor(228, 228, 231).setLineWidth(0.2);
         pdf.rect(M, y, contentW, h + 6);
-        pdf.addImage(png.data, "PNG", M + (contentW - w) / 2, y + 3, w, h);
+        pdf.addImage(png.data, "JPEG", M + (contentW - w) / 2, y + 3, w, h, undefined, "FAST");
         y += h + 14;
       }
     }
