@@ -1,15 +1,16 @@
 import { useState, type RefObject } from "react";
-import { FileDown, Printer } from "lucide-react";
+import { FileDown, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   downloadDxf,
-  openWorkshopSheet,
+  downloadWorkshopSheetPdf,
   serializeSvg,
   type ExportHole,
   type SheetParam,
 } from "@/lib/trame-export";
+
 
 export interface ExportActionsProps {
   moduleName: string;
@@ -43,6 +44,7 @@ export function ExportActions({
   disabled,
 }: ExportActionsProps) {
   const [material, setMaterial] = useState("");
+  const [pdfBusy, setPdfBusy] = useState(false);
   const off = disabled || !holes.length;
 
   const onDxf = () => {
@@ -54,18 +56,24 @@ export function ExportActions({
     }
   };
 
-  const onPrint = () => {
-    const ok = openWorkshopSheet({
-      moduleName,
-      subtitle,
-      material,
-      params,
-      svgMarkup: serializeSvg(svgRef?.current ?? null),
-      columns,
-      rows,
-      notes,
-    });
-    if (!ok) toast.error("Autorisez les fenêtres pop-up pour imprimer la fiche");
+  const onPdf = async () => {
+    setPdfBusy(true);
+    try {
+      const ok = await downloadWorkshopSheetPdf({
+        moduleName,
+        subtitle,
+        material,
+        params,
+        svgMarkup: serializeSvg(svgRef?.current ?? null),
+        columns,
+        rows,
+        notes,
+      });
+      if (ok) toast.success("Fiche d'atelier PDF téléchargée");
+      else toast.error("Échec de la génération du PDF");
+    } finally {
+      setPdfBusy(false);
+    }
   };
 
   return (
@@ -77,13 +85,14 @@ export function ExportActions({
       </Button>
       <Button
         size="sm"
-        onClick={onPrint}
-        disabled={off}
+        onClick={onPdf}
+        disabled={off || pdfBusy}
         className="gap-1.5 bg-[var(--color-trame)] text-white hover:bg-[var(--color-trame)]/90"
       >
-        <Printer className="size-3.5" />
-        Imprimer / PDF Fiche d'Atelier
+        {pdfBusy ? <Loader2 className="size-3.5 animate-spin" /> : <FileText className="size-3.5" />}
+        {pdfBusy ? "Génération…" : "Fiche d'Atelier (PDF)"}
       </Button>
+
       <div className="ml-auto flex items-center gap-2">
         <label htmlFor={`mat-${moduleName}`} className="text-xs text-muted-foreground">
           Matériau

@@ -236,55 +236,51 @@ function esc(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-export function openWorkshopSheet(opts: WorkshopSheetOptions) {
-  const now = new Date();
-  const stamp = now.toLocaleString("fr-FR", {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
+function fileStamp(d: Date) {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}h${p(d.getMinutes())}`;
+}
 
-  const html = `<!doctype html>
-<html lang="fr"><head><meta charset="utf-8">
-<title>Fiche atelier — Trame — ${esc(opts.moduleName)}</title>
-<style>
-  @page { size: A4; margin: 12mm; }
-  * { box-sizing: border-box; }
-  body { font-family: ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif; color:#18181b; margin:0; font-size:11px; }
-  header { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #ff7a22; padding-bottom:8px; }
-  .brand { display:flex; align-items:center; gap:10px; }
-  .brand h1 { margin:0; font-size:13px; letter-spacing:.22em; text-transform:uppercase; }
-  .brand p { margin:0; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:#71717a; }
-  .title { text-align:right; }
-  .title h2 { margin:0; font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
-  .title p { margin:2px 0 0; font-size:10px; color:#52525b; }
-  h3 { font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:#52525b; margin:14px 0 6px; }
-  .params { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px 14px; }
-  .params div { display:flex; justify-content:space-between; border-bottom:1px dotted #d4d4d8; padding:2px 0; }
-  .params span:last-child { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight:700; }
-  .schema { border:1px solid #e4e4e7; border-radius:6px; padding:8px; text-align:center; }
-  .schema svg { max-width:100%; }
-  tr, thead { page-break-inside:avoid; }
-  thead { display:table-header-group; }
+export function sheetFileName(moduleName: string, d = new Date()) {
+  return `Fiche_Atelier_Trame_${safe(moduleName)}_${fileStamp(d)}.pdf`;
+}
 
-  table { width:100%; border-collapse:collapse; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-  th, td { border:1px solid #d4d4d8; padding:3px 6px; text-align:left; font-size:10px; }
-  th { background:#f4f4f5; text-transform:uppercase; letter-spacing:.08em; font-size:9px; }
-  tr:nth-child(even) td { background:#fafafa; }
-  .valid { margin-top:16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
-  .valid div { border-top:1px solid #18181b; padding-top:4px; font-size:10px; }
-  .notes { margin-top:8px; font-size:9.5px; color:#52525b; }
-  footer { margin-top:10px; border-top:1px solid #e4e4e7; padding-top:6px; font-size:9px; color:#71717a; display:flex; justify-content:space-between; }
-  @media print { .noprint { display:none; } }
-  .noprint { margin:10px 0; }
-  .noprint button { font:inherit; padding:6px 12px; border:1px solid #ff7a22; background:#ff7a22; color:#fff; border-radius:4px; cursor:pointer; }
-</style></head><body>
-<div class="noprint"><button onclick="window.print()">Imprimer / Enregistrer en PDF</button></div>
-<header>
+/** Construit le bloc HTML A4 de la fiche d'atelier (utilisé pour le rendu PDF). */
+export function buildWorkshopSheetHtml(opts: WorkshopSheetOptions, stamp: string) {
+
+
+  return `<style>
+  #trame-sheet { font-family: ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif; color:#18181b; font-size:11px; background:#fff; width:690px; overflow:hidden; padding:0 0 20px; }
+  #trame-sheet * { box-sizing: border-box; }
+  #trame-sheet .head { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #ff7a22; padding-bottom:8px; }
+  #trame-sheet .brand { display:flex; align-items:center; gap:10px; }
+  #trame-sheet .brand h1 { margin:0; font-size:13px; letter-spacing:.22em; text-transform:uppercase; }
+  #trame-sheet .brand p { margin:0; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:#71717a; }
+  #trame-sheet .title { text-align:right; }
+  #trame-sheet .title h2 { margin:0; font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
+  #trame-sheet .title p { margin:2px 0 0; font-size:10px; color:#52525b; }
+  #trame-sheet h3 { font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:#52525b; margin:14px 0 6px; }
+  #trame-sheet .params { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px 14px; }
+  #trame-sheet .params div { display:flex; justify-content:space-between; border-bottom:1px dotted #d4d4d8; padding:2px 0; }
+  #trame-sheet .params span:last-child { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight:700; }
+  #trame-sheet .schema { border:1px solid #e4e4e7; border-radius:6px; padding:8px; text-align:center; }
+  #trame-sheet .schema svg { max-width:100%; }
+  #trame-sheet tr, #trame-sheet thead, #trame-sheet .valid, #trame-sheet .schema { page-break-inside:avoid; }
+  #trame-sheet table { width:100%; border-collapse:collapse; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  #trame-sheet th, #trame-sheet td { border:1px solid #d4d4d8; padding:3px 6px; text-align:left; font-size:10px; }
+  #trame-sheet th { background:#f4f4f5; text-transform:uppercase; letter-spacing:.08em; font-size:9px; }
+  #trame-sheet tbody tr:nth-child(even) td { background:#fafafa; }
+  #trame-sheet .valid { margin-top:16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+  #trame-sheet .valid div { border-top:1px solid #18181b; padding-top:4px; font-size:10px; }
+  #trame-sheet .notes { margin-top:8px; font-size:9.5px; color:#52525b; }
+  #trame-sheet .foot { margin-top:10px; border-top:1px solid #e4e4e7; padding-top:6px; font-size:9px; color:#71717a; display:flex; justify-content:space-between; }
+</style>
+<div class="head">
   <div class="brand">${LOGO}<div><h1>Trame</h1><p>Répartition de perçages</p></div></div>
   <div class="title"><h2>Fiche de fabrication atelier</h2><p>${esc(opts.moduleName)}${
     opts.subtitle ? ` · ${esc(opts.subtitle)}` : ""
   } — ${esc(stamp)}</p></div>
-</header>
+</div>
 
 <h3>Paramètres</h3>
 <div class="params">
@@ -309,13 +305,88 @@ ${opts.notes?.length ? `<div class="notes">${opts.notes.map((n) => `• ${esc(n)
   <div>Date : ............................</div>
   <div>Visa atelier : ............................</div>
 </div>
-<footer><span>Trame — cotes en millimètres</span><span>${esc(stamp)}</span></footer>
-</body></html>`;
-
-  const win = window.open("", "_blank", "width=900,height=1000");
-  if (!win) return false;
-  win.document.open();
-  win.document.write(html);
-  win.document.close();
-  return true;
+<div class="foot"><span>Trame — cotes en millimètres</span><span>${esc(stamp)}</span></div>`;
 }
+
+/**
+ * Génère et télécharge directement la fiche d'atelier au format PDF A4.
+ * Le rendu se fait dans une iframe isolée : les styles de l'application
+ * (couleurs oklch de Tailwind v4) ne sont pas lisibles par html2canvas.
+ */
+export async function downloadWorkshopSheetPdf(opts: WorkshopSheetOptions) {
+  const now = new Date();
+  const stamp = now.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
+
+  const frame = document.createElement("iframe");
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0;";
+  document.body.appendChild(frame);
+
+  try {
+    const doc = frame.contentDocument;
+    if (!doc) return false;
+    doc.open();
+    doc.write(
+      `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>html,body{margin:0;padding:0;background:#fff;}</style></head><body><div id="trame-sheet">${buildWorkshopSheetHtml(
+        opts,
+        stamp,
+      )}</div></body></html>`,
+    );
+    doc.close();
+    await new Promise((r) => setTimeout(r, 60));
+    const target = doc.getElementById("trame-sheet");
+    if (!target) return false;
+
+    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+      import("html2canvas"),
+      import("jspdf"),
+    ]);
+
+    const canvas = await html2canvas(target, {
+      scale: 2,
+      backgroundColor: "#ffffff",
+      useCORS: true,
+      logging: false,
+      windowWidth: 690,
+      width: 690,
+      height: target.scrollHeight + 4,
+    });
+
+    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    const margin = 12;
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const contentW = pageW - margin * 2;
+    const contentH = pageH - margin * 2;
+    const pxPerMm = canvas.width / contentW;
+    const sliceH = Math.floor(contentH * pxPerMm);
+
+    let y = 0;
+    let page = 0;
+    while (y < canvas.height) {
+      const h = Math.min(sliceH, canvas.height - y);
+      const slice = document.createElement("canvas");
+      slice.width = canvas.width;
+      slice.height = h;
+      const ctx = slice.getContext("2d");
+      if (!ctx) return false;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, slice.width, slice.height);
+      ctx.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+      if (page > 0) pdf.addPage();
+      pdf.addImage(slice.toDataURL("image/jpeg", 0.95), "JPEG", margin, margin, contentW, h / pxPerMm);
+      y += h;
+      page += 1;
+    }
+
+    pdf.save(sheetFileName(opts.moduleName, now));
+    return true;
+
+  } catch {
+    return false;
+  } finally {
+    frame.remove();
+  }
+}
+
+
