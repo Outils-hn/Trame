@@ -184,7 +184,7 @@ export function serializeSvg(source: SVGSVGElement | null): string {
     if (target) apply(el, target);
   });
   clone.removeAttribute("width");
-  clone.setAttribute("style", (clone.getAttribute("style") ?? "") + "max-width:100%;height:auto;");
+  clone.setAttribute("style", (clone.getAttribute("style") ?? "") + "max-width:100%;height:auto;max-height:95mm;");
   return clone.outerHTML;
 }
 
