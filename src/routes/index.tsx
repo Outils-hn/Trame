@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
+import { ReinforcedModule } from "@/components/trame/ReinforcedModule";
 
 export const Route = createFileRoute("/")({
   head: () => ({
