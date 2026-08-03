@@ -14,7 +14,7 @@ import { ObstacleModule } from "@/components/trame/ObstacleModule";
 import { PanelModule } from "@/components/trame/PanelModule";
 import { ExpansionModule } from "@/components/trame/ExpansionModule";
 import { ExportActions } from "@/components/trame/ExportActions";
-import { PresetPicker } from "@/components/trame/PresetPicker";
+
 import { HistoryButton, HistoryPanel } from "@/components/trame/HistoryPanel";
 import {
   TrameHistoryProvider,
@@ -22,7 +22,7 @@ import {
   type HistoryParams,
   type TrameModuleKey,
 } from "@/lib/trame-history";
-import type { MaterialPreset } from "@/lib/trame-presets";
+
 
 
 export const Route = createFileRoute("/")({
@@ -354,15 +354,6 @@ function TrameApp({
     integers,
   });
 
-  const applyPreset = (p: MaterialPreset) => {
-    setDs(p.margin);
-    setDe(p.margin);
-    setDs3(p.margin);
-    setDe3(p.margin);
-    setDstart(p.margin);
-    setEmax(p.pitchMax);
-    toast.success(`Préréglage appliqué : ${p.name}`);
-  };
 
   const copy = async (positions: number[], idx: number, label: string, useIntegers: boolean) => {
     const txt = positions.map((p) => (useIntegers ? String(p) : fmt(p, 1).replace(/\s/g, ""))).join("; ");
@@ -474,7 +465,7 @@ function TrameApp({
         <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
           {/* Paramètres */}
           <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-            <PresetPicker onApply={applyPreset} />
+            
             {mode === "intervals" ? (
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
