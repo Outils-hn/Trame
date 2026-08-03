@@ -283,8 +283,7 @@ function ExpansionSchematic({
             return (
               <g key={i} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}>
                 <circle cx={cx} cy={cy} r={r * 3.2} fill="transparent" />
-                {mode === "bar" || true ? (
-                  <g
+                <g
                     className="stroke-slate-400 dark:stroke-zinc-500"
                     strokeWidth={u * 0.9}
                     strokeLinecap="round"
@@ -293,8 +292,7 @@ function ExpansionSchematic({
                     <line x1={cx - a} y1={cy} x2={cx + a} y2={cy} />
                     <polyline points={`${cx - a + r * 0.9},${cy - r * 0.7} ${cx - a},${cy} ${cx - a + r * 0.9},${cy + r * 0.7}`} />
                     <polyline points={`${cx + a - r * 0.9},${cy - r * 0.7} ${cx + a},${cy} ${cx + a - r * 0.9},${cy + r * 0.7}`} />
-                  </g>
-                ) : null}
+                </g>
                 <circle
                   cx={cx}
                   cy={cy}
