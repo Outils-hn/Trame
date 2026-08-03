@@ -181,9 +181,8 @@ export function computeReinforced(
   };
 }
 
-import { PresetPicker } from "@/components/trame/PresetPicker";
 import { useModuleHistory, type HistoryParams } from "@/lib/trame-history";
-import type { MaterialPreset } from "@/lib/trame-presets";
+
 export function ReinforcedModule({
   integers,
   setIntegers,
@@ -223,12 +222,6 @@ export function ReinforcedModule({
 
   const saveHistory = useModuleHistory("reinforced", applyHistory);
 
-  const applyPreset = (p: MaterialPreset) => {
-    setDs(p.margin);
-    setDe(p.margin);
-    setPitchMax(p.pitchMax);
-    toast.success(`Préréglage appliqué : ${p.name}`);
-  };
 
   const copy = async () => {
     const txt = res.points
@@ -252,7 +245,7 @@ export function ReinforcedModule({
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
       <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-        <PresetPicker onApply={applyPreset} />
+        
         <section className="rounded-xl border border-border bg-card p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-semibold">Paramètres</h2>
