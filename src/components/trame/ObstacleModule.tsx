@@ -339,6 +339,55 @@ export function ObstacleModule({
               </div>
             </div>
 
+            {(() => {
+              const retained: ObstaclePoint[] | null = !res.hasConflict
+                ? res.base.points.map((p) => ({ pos: p }))
+                : (res.pinch?.points ?? res.recalc?.points ?? null);
+              const label = !res.hasConflict
+                ? "Répartition de base"
+                : res.pinch
+                  ? "Solution 1 — Pincement"
+                  : res.recalc
+                    ? "Solution 2 — Répartition recalculée"
+                    : "—";
+              const pitchLabel =
+                !res.hasConflict || res.pinch ? `${fmt(res.base.pitch)} mm` : `${fmt(res.recalc?.pitch ?? NaN)} mm`;
+              return (
+                <ExportActions
+                  moduleName="Obstacle"
+                  subtitle={label}
+                  is2D={false}
+                  width={L}
+                  holes={(retained ?? []).map((p) => ({ x: p.pos, y: 0 }))}
+                  disabled={!retained}
+                  params={[
+                    { label: "Longueur totale", value: `${fmt(L)} mm` },
+                    { label: "Distance début", value: `${fmt(Ds)} mm` },
+                    { label: "Distance fin", value: `${fmt(effectiveDe)} mm` },
+                    { label: "Pas max souhaité", value: `${fmt(pitchMax)} mm` },
+                    { label: "Axe obstacle", value: `${fmt(posObs)} mm` },
+                    { label: "Marge sécurité", value: `${fmt(margin)} mm` },
+                    { label: "Zone d'exclusion", value: `${fmt(res.low)} → ${fmt(res.high)} mm` },
+                    { label: "Solution retenue", value: label },
+                    { label: "Pas appliqué", value: pitchLabel },
+                    { label: "Total trous", value: String(retained?.length ?? 0) },
+                  ]}
+                  columns={["N°", "Position (mm)", "Type"]}
+                  rows={(retained ?? []).map((p, i) => [
+                    String(i + 1),
+                    fmt(p.pos),
+                    p.flagged ? "Encadrement obstacle" : "Standard",
+                  ])}
+                  notes={[
+                    "Ø perçage DXF par défaut : 8 mm.",
+                    `Zone d'exclusion à respecter : ${fmt(res.low)} → ${fmt(res.high)} mm.`,
+                  ]}
+                />
+              );
+            })()}
+
+
+
             {!res.hasConflict ? (
               <div className="rounded-xl border border-border bg-card px-5 py-6 text-sm text-muted-foreground">
                 {res.reason === "obstacleOut"
