@@ -312,6 +312,33 @@ export function ReinforcedModule({
               <StatCard label="Total trous" value={String(res.points.length)} />
             </div>
 
+            <ExportActions
+              moduleName="Zone-renforcee"
+              is2D={false}
+              width={L}
+              holes={res.points.map((p) => ({ x: p.pos, y: 0 }))}
+              params={[
+                { label: "Longueur totale", value: `${fmt(L)} mm` },
+                { label: "Distance début", value: `${fmt(Ds)} mm` },
+                { label: "Distance fin", value: `${fmt(effectiveDe)} mm` },
+                { label: "Longueur renfort", value: `${fmt(Lr)} mm` },
+                { label: "Pas renfort", value: `${fmt(res.pitchReinforced)} mm` },
+                { label: "Pas zone courante", value: `${fmt(res.pitchCenter)} mm` },
+                { label: "Trous renfort début", value: String(res.startCount) },
+                { label: "Trous renfort fin", value: String(res.endCount) },
+                { label: "Total trous", value: String(res.points.length) },
+              ]}
+              columns={["N°", "Position (mm)", "Zone"]}
+              rows={res.points.map((p, i) => [
+                String(i + 1),
+                fmt(p.pos),
+                p.zone === "center" ? "Courante" : "Renforcée",
+              ])}
+              notes={["Ø perçage DXF par défaut : 8 mm.", "Cotes mesurées depuis l'extrémité gauche du profilé."]}
+            />
+
+
+
             <div className="overflow-hidden rounded-xl border border-border bg-card">
               <div className="flex items-center justify-between border-b border-border px-5 py-3">
                 <h2 className="text-sm font-semibold">Positions (mm)</h2>
