@@ -183,10 +183,23 @@ export function serializeSvg(source: SVGSVGElement | null): string {
     const target = clones[i];
     if (target) apply(el, target);
   });
-  clone.removeAttribute("width");
-  clone.setAttribute("style", (clone.getAttribute("style") ?? "") + "max-width:100%;height:auto;max-height:95mm;");
+  // Dimensionne explicitement en mm pour tenir dans la page A4 (les classes CSS ne suivent pas)
+  const vb = source.viewBox.baseVal;
+  const ratio = vb && vb.width > 0 ? vb.height / vb.width : 0.6;
+  const maxW = 168;
+  const maxH = 95;
+  let wmm = maxW;
+  let hmm = wmm * ratio;
+  if (hmm > maxH) {
+    hmm = maxH;
+    wmm = hmm / (ratio || 1);
+  }
+  clone.setAttribute("width", `${wmm.toFixed(1)}mm`);
+  clone.setAttribute("height", `${hmm.toFixed(1)}mm`);
+  clone.setAttribute("style", (clone.getAttribute("style") ?? "") + "max-width:100%;");
   return clone.outerHTML;
 }
+
 
 export interface SheetParam {
   label: string;
