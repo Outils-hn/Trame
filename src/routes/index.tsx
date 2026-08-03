@@ -343,6 +343,8 @@ function Index() {
 
         {mainModule === "reinforced" ? (
           <ReinforcedModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
+        ) : mainModule === "obstacle" ? (
+          <ObstacleModule integers={integers} setIntegers={setIntegers} />
         ) : (
           <>
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
