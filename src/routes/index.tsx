@@ -695,16 +695,18 @@ function TrameApp({
                   <div className="space-y-4">
                     <NumberField id="L3" label="Longueur totale (L)" value={isFinite(L3) ? L3 : ""} onChange={setL3} />
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <NumberField id="ds3" label="Distance début" value={isFinite(Ds3) ? Ds3 : ""} onChange={setDs3} />
-                      <NumberField
-                        id="de3"
-                        label="Distance fin"
-                        value={sameEnd3 ? (isFinite(Ds3) ? Ds3 : "") : isFinite(De3) ? De3 : ""}
-                        onChange={setDe3}
-                        disabled={sameEnd3}
-                      />
-                    </div>
+                    {!autoRives3 && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <NumberField id="ds3" label="Distance début" value={isFinite(Ds3) ? Ds3 : ""} onChange={setDs3} />
+                        <NumberField
+                          id="de3"
+                          label="Distance fin"
+                          value={sameEnd3 ? (isFinite(Ds3) ? Ds3 : "") : isFinite(De3) ? De3 : ""}
+                          onChange={setDe3}
+                          disabled={sameEnd3}
+                        />
+                      </div>
+                    )}
 
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
                       <span className="text-xs font-medium text-foreground">Identique au début</span>
@@ -717,6 +719,22 @@ function TrameApp({
                       value={isFinite(Emax) ? Emax : ""}
                       onChange={setEmax}
                     />
+
+                    <label className="flex cursor-pointer items-center justify-between rounded-md border border-[var(--color-trame)]/40 bg-[var(--color-trame)]/5 px-3 py-2">
+                      <span className="text-xs font-medium text-foreground">
+                        Calculer / optimiser les rives automatiquement
+                      </span>
+                      <Switch checked={autoRives3} onCheckedChange={setAutoRives3} />
+                    </label>
+
+                    {autoRives3 && (
+                      <NumberField
+                        id="rivemin3"
+                        label="Rive minimale de sécurité"
+                        value={isFinite(riveMin3) ? riveMin3 : ""}
+                        onChange={setRiveMin3}
+                      />
+                    )}
                   </div>
                 </section>
 
@@ -734,15 +752,35 @@ function TrameApp({
                   </h2>
                   <dl className="space-y-2 text-xs">
                     <SummaryRow label="Longueur totale" value={`${fmt(L3)} mm`} />
-                    <SummaryRow label="Marge début" value={`${fmt(Ds3)} mm`} />
-                    <SummaryRow label="Marge fin" value={`${fmt(effectiveDe3)} mm`} />
-                    <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
-                    <div className="my-2 h-px bg-border" />
-                    <SummaryRow label="Longueur utile" value={`${fmt(maxPitchData.Lu)} mm`} strong />
-                    <SummaryRow
-                      label="Intervalles min."
-                      value={maxPitchData.Nmin > 0 ? String(maxPitchData.Nmin) : "—"}
-                    />
+                    {autoRives3 ? (
+                      <>
+                        <SummaryRow label="Rives" value="Calculées" />
+                        <SummaryRow label="Rive mini." value={`${fmt(riveMin3)} mm`} />
+                        <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
+                        <div className="my-2 h-px bg-border" />
+                        <SummaryRow
+                          label="Propositions"
+                          value={autoRiveData.rows.length ? String(autoRiveData.rows.length) : "—"}
+                          strong
+                        />
+                        <SummaryRow
+                          label="Intervalles min."
+                          value={autoRiveData.Nmin > 0 ? String(autoRiveData.Nmin) : "—"}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <SummaryRow label="Marge début" value={`${fmt(Ds3)} mm`} />
+                        <SummaryRow label="Marge fin" value={`${fmt(effectiveDe3)} mm`} />
+                        <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
+                        <div className="my-2 h-px bg-border" />
+                        <SummaryRow label="Longueur utile" value={`${fmt(maxPitchData.Lu)} mm`} strong />
+                        <SummaryRow
+                          label="Intervalles min."
+                          value={maxPitchData.Nmin > 0 ? String(maxPitchData.Nmin) : "—"}
+                        />
+                      </>
+                    )}
                   </dl>
                 </section>
               </>
