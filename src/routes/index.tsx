@@ -791,7 +791,13 @@ function TrameApp({
           <section>
             {(() => {
               const list: (IntervalRow | PitchRow)[] =
-                mode === "intervals" ? intervalsData.rows : mode === "pitch" ? pitchRows : maxPitchData.rows;
+                mode === "intervals"
+                  ? intervalsData.rows
+                  : mode === "pitch"
+                    ? pitchRows
+                    : autoRives3
+                      ? autoRiveData.rows
+                      : maxPitchData.rows;
               if (!list.length) return null;
               const idx = Math.min(exportIdx, list.length - 1);
               const sel = list[idx];
