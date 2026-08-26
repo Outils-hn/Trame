@@ -1021,6 +1021,7 @@ function PitchTable({
   emptyIntegerMessage,
   copy,
   copiedIdx,
+  title = "Calcul des rives",
 }: {
   rows: PitchRow[];
   integers: boolean;
@@ -1028,11 +1029,12 @@ function PitchTable({
   emptyIntegerMessage: string;
   copy: (positions: number[], idx: number, label: string, useIntegers: boolean) => void;
   copiedIdx: number | null;
+  title?: string;
 }) {
   return (
     <>
       <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold">Calcul des rives</h2>
+        <h2 className="text-sm font-semibold">{title}</h2>
         <span className="text-xs text-muted-foreground">
           {rows.length} proposition{rows.length > 1 ? "s" : ""}
         </span>
