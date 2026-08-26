@@ -173,7 +173,12 @@ function buildMaxPitchRows(
     const positions: number[] = [];
     for (let i = 0; i <= N; i++) {
       positions.push(Ds + i * rawPitch);
+    }
+    rows.push({ kind: "intervals", N, holes: N + 1, pitch: rawPitch, positions });
+  }
+  return { rows, Lu, Nmin };
 }
+
 
 /**
  * Onglet 3 — rives calculées/optimisées automatiquement.
