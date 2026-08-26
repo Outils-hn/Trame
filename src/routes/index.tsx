@@ -884,6 +884,16 @@ function TrameApp({
                 copy={copy}
                 copiedIdx={copiedIdx}
               />
+            ) : autoRives3 ? (
+              <PitchTable
+                rows={autoRiveData.rows}
+                integers={integers}
+                onShowDecimals={() => setIntegers(false)}
+                emptyIntegerMessage="Aucune répartition à rives et pas entiers trouvée avec cette rive minimale et cet entraxe max."
+                copy={copy}
+                copiedIdx={copiedIdx}
+                title="Rives optimisées"
+              />
             ) : (
               <IntervalsTable
                 rows={maxPitchData.rows}
