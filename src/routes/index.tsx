@@ -432,6 +432,8 @@ function TrameApp({
     setDe3(Number(p.De3));
     setSameEnd3(Boolean(p.sameEnd3));
     setEmax(Number(p.Emax));
+    setAutoRives3(Boolean(p.autoRives3));
+    if (p.riveMin3 !== undefined) setRiveMin3(Number(p.riveMin3));
     setIntegers(Boolean(p.integers));
     toast.success("Paramètres rechargés depuis l'historique");
   };
