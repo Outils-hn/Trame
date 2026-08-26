@@ -179,6 +179,103 @@ function buildMaxPitchRows(
   return { rows, Lu, Nmin };
 }
 
+
+/**
+ * Onglet 3 — rives calculées/optimisées automatiquement.
+ * Cherche, pour un nombre croissant d'intervalles, la plus petite rive >= riveMin
+ * telle que l'entraxe résultant reste <= Emax (et entier si demandé).
+ */
+function buildAutoRiveRows(
+  L: number,
+  Emax: number,
+  riveMin: number,
+  symmetric: boolean,
+  integers: boolean,
+): { rows: PitchRow[]; Nmin: number } {
+  if (![L, Emax, riveMin].every((v) => isFinite(v)) || L <= 0 || Emax <= 0 || riveMin < 0) {
+    return { rows: [], Nmin: 0 };
+  }
+  if (integers && (!Number.isInteger(L) || !Number.isInteger(riveMin))) return { rows: [], Nmin: 0 };
+
+  const Nmin = Math.max(1, Math.ceil((L - 2 * riveMin) / Emax));
+  const rows: PitchRow[] = [];
+  const target = 6;
+  const hardLimit = integers ? Nmin + 400 : Nmin + target - 1;
+
+  for (let N = Nmin; N <= hardLimit && rows.length < target; N++) {
+    let rDebut: number | null = null;
+    let rFin: number | null = null;
+    let pitch = 0;
+
+    if (symmetric) {
+      const lower = Math.max(riveMin, (L - N * Emax) / 2);
+      if (integers) {
+        const start = Math.ceil(lower - 1e-9);
+        const maxRive = (L - N) / 2; // pas >= 1 mm
+        for (let r = start; r <= maxRive; r++) {
+          const Lu = L - 2 * r;
+          if (Lu <= 0) break;
+          if (Lu % N !== 0) continue;
+          const p = Lu / N;
+          if (p > Emax) continue;
+          rDebut = r;
+          rFin = r;
+          pitch = p;
+          break;
+        }
+      } else {
+        const Lu = L - 2 * lower;
+        if (Lu > 0) {
+          rDebut = lower;
+          rFin = lower;
+          pitch = Lu / N;
+        }
+      }
+    } else {
+      // Rive de début au minimum, le reliquat part sur la rive de fin
+      if (integers) {
+        const pStart = Math.floor(Math.min(Emax, (L - 2 * riveMin) / N));
+        for (let p = pStart; p >= 1; p--) {
+          const rest = L - riveMin - N * p;
+          if (rest < riveMin) continue;
+          rDebut = riveMin;
+          rFin = rest;
+          pitch = p;
+          break;
+        }
+      } else {
+        const p = Math.min(Emax, (L - 2 * riveMin) / N);
+        if (p > 0) {
+          rDebut = riveMin;
+          rFin = L - riveMin - N * p;
+          pitch = p;
+        }
+      }
+    }
+
+    if (rDebut === null || rFin === null || pitch <= 0 || pitch > Emax + 1e-9 || rFin < riveMin - 1e-9) continue;
+
+    const positions: number[] = [];
+    for (let i = 0; i <= N; i++) positions.push(rDebut + i * pitch);
+
+    rows.push({
+      kind: "pitch",
+      option: `Proposition ${rows.length + 1} · rives ${fmt(rDebut)}${
+        symmetric ? "" : `/${fmt(rFin)}`
+      } mm · pas ${fmt(pitch)} mm`,
+      N,
+      rDebut,
+      entraxe: pitch,
+      rFin,
+      positions,
+    });
+  }
+
+  return { rows, Nmin };
+}
+
+
+
 function PositionsList({ positions, integers }: { positions: number[]; integers: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-xs leading-relaxed text-foreground/85">
@@ -285,6 +382,8 @@ function TrameApp({
   const [De3, setDe3] = useState<number>(50);
   const [sameEnd3, setSameEnd3] = useState(true);
   const [Emax, setEmax] = useState<number>(300);
+  const [autoRives3, setAutoRives3] = useState(false);
+  const [riveMin3, setRiveMin3] = useState<number>(30);
 
   const [integers, setIntegers] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
@@ -312,6 +411,10 @@ function TrameApp({
     () => buildMaxPitchRows(L3, Ds3, effectiveDe3, Emax, integers),
     [L3, Ds3, effectiveDe3, Emax, integers],
   );
+  const autoRiveData = useMemo(
+    () => buildAutoRiveRows(L3, Emax, riveMin3, sameEnd3, integers),
+    [L3, Emax, riveMin3, sameEnd3, integers],
+  );
 
   const applyHistory = (p: HistoryParams) => {
     setMode((p.mode as Mode) ?? "intervals");
@@ -329,6 +432,8 @@ function TrameApp({
     setDe3(Number(p.De3));
     setSameEnd3(Boolean(p.sameEnd3));
     setEmax(Number(p.Emax));
+    setAutoRives3(Boolean(p.autoRives3));
+    if (p.riveMin3 !== undefined) setRiveMin3(Number(p.riveMin3));
     setIntegers(Boolean(p.integers));
     toast.success("Paramètres rechargés depuis l'historique");
   };
@@ -351,6 +456,8 @@ function TrameApp({
     De3,
     sameEnd3,
     Emax,
+    autoRives3,
+    riveMin3,
     integers,
   });
 
@@ -588,16 +695,18 @@ function TrameApp({
                   <div className="space-y-4">
                     <NumberField id="L3" label="Longueur totale (L)" value={isFinite(L3) ? L3 : ""} onChange={setL3} />
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <NumberField id="ds3" label="Distance début" value={isFinite(Ds3) ? Ds3 : ""} onChange={setDs3} />
-                      <NumberField
-                        id="de3"
-                        label="Distance fin"
-                        value={sameEnd3 ? (isFinite(Ds3) ? Ds3 : "") : isFinite(De3) ? De3 : ""}
-                        onChange={setDe3}
-                        disabled={sameEnd3}
-                      />
-                    </div>
+                    {!autoRives3 && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <NumberField id="ds3" label="Distance début" value={isFinite(Ds3) ? Ds3 : ""} onChange={setDs3} />
+                        <NumberField
+                          id="de3"
+                          label="Distance fin"
+                          value={sameEnd3 ? (isFinite(Ds3) ? Ds3 : "") : isFinite(De3) ? De3 : ""}
+                          onChange={setDe3}
+                          disabled={sameEnd3}
+                        />
+                      </div>
+                    )}
 
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
                       <span className="text-xs font-medium text-foreground">Identique au début</span>
@@ -610,6 +719,22 @@ function TrameApp({
                       value={isFinite(Emax) ? Emax : ""}
                       onChange={setEmax}
                     />
+
+                    <label className="flex cursor-pointer items-center justify-between rounded-md border border-[var(--color-trame)]/40 bg-[var(--color-trame)]/5 px-3 py-2">
+                      <span className="text-xs font-medium text-foreground">
+                        Calculer / optimiser les rives automatiquement
+                      </span>
+                      <Switch checked={autoRives3} onCheckedChange={setAutoRives3} />
+                    </label>
+
+                    {autoRives3 && (
+                      <NumberField
+                        id="rivemin3"
+                        label="Rive minimale de sécurité"
+                        value={isFinite(riveMin3) ? riveMin3 : ""}
+                        onChange={setRiveMin3}
+                      />
+                    )}
                   </div>
                 </section>
 
@@ -627,15 +752,35 @@ function TrameApp({
                   </h2>
                   <dl className="space-y-2 text-xs">
                     <SummaryRow label="Longueur totale" value={`${fmt(L3)} mm`} />
-                    <SummaryRow label="Marge début" value={`${fmt(Ds3)} mm`} />
-                    <SummaryRow label="Marge fin" value={`${fmt(effectiveDe3)} mm`} />
-                    <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
-                    <div className="my-2 h-px bg-border" />
-                    <SummaryRow label="Longueur utile" value={`${fmt(maxPitchData.Lu)} mm`} strong />
-                    <SummaryRow
-                      label="Intervalles min."
-                      value={maxPitchData.Nmin > 0 ? String(maxPitchData.Nmin) : "—"}
-                    />
+                    {autoRives3 ? (
+                      <>
+                        <SummaryRow label="Rives" value="Calculées" />
+                        <SummaryRow label="Rive mini." value={`${fmt(riveMin3)} mm`} />
+                        <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
+                        <div className="my-2 h-px bg-border" />
+                        <SummaryRow
+                          label="Propositions"
+                          value={autoRiveData.rows.length ? String(autoRiveData.rows.length) : "—"}
+                          strong
+                        />
+                        <SummaryRow
+                          label="Intervalles min."
+                          value={autoRiveData.Nmin > 0 ? String(autoRiveData.Nmin) : "—"}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <SummaryRow label="Marge début" value={`${fmt(Ds3)} mm`} />
+                        <SummaryRow label="Marge fin" value={`${fmt(effectiveDe3)} mm`} />
+                        <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
+                        <div className="my-2 h-px bg-border" />
+                        <SummaryRow label="Longueur utile" value={`${fmt(maxPitchData.Lu)} mm`} strong />
+                        <SummaryRow
+                          label="Intervalles min."
+                          value={maxPitchData.Nmin > 0 ? String(maxPitchData.Nmin) : "—"}
+                        />
+                      </>
+                    )}
                   </dl>
                 </section>
               </>
@@ -646,7 +791,13 @@ function TrameApp({
           <section>
             {(() => {
               const list: (IntervalRow | PitchRow)[] =
-                mode === "intervals" ? intervalsData.rows : mode === "pitch" ? pitchRows : maxPitchData.rows;
+                mode === "intervals"
+                  ? intervalsData.rows
+                  : mode === "pitch"
+                    ? pitchRows
+                    : autoRives3
+                      ? autoRiveData.rows
+                      : maxPitchData.rows;
               if (!list.length) return null;
               const idx = Math.min(exportIdx, list.length - 1);
               const sel = list[idx];
@@ -732,6 +883,16 @@ function TrameApp({
                 emptyIntegerMessage="Aucun entraxe fixe parfait trouvé avec ces dimensions."
                 copy={copy}
                 copiedIdx={copiedIdx}
+              />
+            ) : autoRives3 ? (
+              <PitchTable
+                rows={autoRiveData.rows}
+                integers={integers}
+                onShowDecimals={() => setIntegers(false)}
+                emptyIntegerMessage="Aucune répartition à rives et pas entiers trouvée avec cette rive minimale et cet entraxe max."
+                copy={copy}
+                copiedIdx={copiedIdx}
+                title="Rives optimisées"
               />
             ) : (
               <IntervalsTable
@@ -860,6 +1021,7 @@ function PitchTable({
   emptyIntegerMessage,
   copy,
   copiedIdx,
+  title = "Calcul des rives",
 }: {
   rows: PitchRow[];
   integers: boolean;
@@ -867,11 +1029,12 @@ function PitchTable({
   emptyIntegerMessage: string;
   copy: (positions: number[], idx: number, label: string, useIntegers: boolean) => void;
   copiedIdx: number | null;
+  title?: string;
 }) {
   return (
     <>
       <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold">Calcul des rives</h2>
+        <h2 className="text-sm font-semibold">{title}</h2>
         <span className="text-xs text-muted-foreground">
           {rows.length} proposition{rows.length > 1 ? "s" : ""}
         </span>
