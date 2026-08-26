@@ -382,6 +382,8 @@ function TrameApp({
   const [De3, setDe3] = useState<number>(50);
   const [sameEnd3, setSameEnd3] = useState(true);
   const [Emax, setEmax] = useState<number>(300);
+  const [autoRives3, setAutoRives3] = useState(false);
+  const [riveMin3, setRiveMin3] = useState<number>(30);
 
   const [integers, setIntegers] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
