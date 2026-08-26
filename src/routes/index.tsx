@@ -411,6 +411,10 @@ function TrameApp({
     () => buildMaxPitchRows(L3, Ds3, effectiveDe3, Emax, integers),
     [L3, Ds3, effectiveDe3, Emax, integers],
   );
+  const autoRiveData = useMemo(
+    () => buildAutoRiveRows(L3, Emax, riveMin3, sameEnd3, integers),
+    [L3, Emax, riveMin3, sameEnd3, integers],
+  );
 
   const applyHistory = (p: HistoryParams) => {
     setMode((p.mode as Mode) ?? "intervals");
