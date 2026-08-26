@@ -456,6 +456,8 @@ function TrameApp({
     De3,
     sameEnd3,
     Emax,
+    autoRives3,
+    riveMin3,
     integers,
   });
 
