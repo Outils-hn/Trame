@@ -274,10 +274,7 @@ function buildAutoRiveRows(
   return { rows, Nmin };
 }
 
-    rows.push({ kind: "intervals", N, holes: N + 1, pitch: rawPitch, positions });
-  }
-  return { rows, Lu, Nmin };
-}
+
 
 function PositionsList({ positions, integers }: { positions: number[]; integers: boolean }) {
   return (
