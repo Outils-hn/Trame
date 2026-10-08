@@ -509,7 +509,7 @@ function TrameApp({
       <HistoryPanel />
 
       <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6 inline-flex rounded-lg border border-border bg-card p-1">
+        <div className="mb-6 hidden rounded-lg border border-border bg-card p-1">
           {(
             [
               ["standard", "Répartition Standard"],
