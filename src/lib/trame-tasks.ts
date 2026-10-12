@@ -13,6 +13,8 @@ export interface TaskLine {
   holes: number;
   /** Diametre(s) du percage en mm ; plusieurs = trou etage (ex. 6,5 + 11). */
   diameters: number[];
+  /** Designation de la vis (copiee depuis "mes vis" ou tapee) ; vide = non precisee. */
+  screw?: string;
   /** Rappel de la repartition (affichage seulement). */
   length: number;
   pitch: number;
@@ -61,20 +63,34 @@ export interface TaskTotals {
   byDiameter: { d: number; count: number }[];
   /** Fixations sans diametre renseigne. */
   noDiameter: number;
+  /** Vis a commander, regroupees par designation (ordre d'apparition). */
+  byScrew: { screw: string; count: number }[];
+  /** Fixations sans vis renseignee. */
+  noScrew: number;
 }
 
 export function taskTotals(task: Task): TaskTotals {
   const map = new Map<number, number>();
-  let pieces = 0, fixings = 0, noDiameter = 0;
+  const screws = new Map<string, { screw: string; count: number }>();
+  let pieces = 0, fixings = 0, noDiameter = 0, noScrew = 0;
   for (const l of task.lines) {
     const n = lineTotal(l);
+    const name = (l.screw ?? "").trim();
+    if (!name) noScrew += n;
+    else {
+      // Meme vis malgre la casse ou les espaces : on regroupe.
+      const key = name.toLowerCase().replace(/\s+/g, " ");
+      const cur = screws.get(key);
+      if (cur) cur.count += n;
+      else screws.set(key, { screw: name, count: n });
+    }
     pieces += l.qty;
     fixings += n;
     if (!l.diameters.length) noDiameter += n;
     for (const d of l.diameters) map.set(d, (map.get(d) ?? 0) + n);
   }
   const byDiameter = [...map.entries()].sort((a, b) => a[0] - b[0]).map(([d, count]) => ({ d, count }));
-  return { pieces, fixings, byDiameter, noDiameter };
+  return { pieces, fixings, byDiameter, noDiameter, byScrew: [...screws.values()], noScrew };
 }
 
 /** Tableau a coller dans Excel (tabulations, virgule decimale) avec les totaux. */
@@ -82,15 +98,33 @@ export function taskTable(task: Task): string {
   const n = (v: number) => String(Number(v.toFixed(2))).replace(".", ",");
   const lines = [
     task.name,
-    ["Repère", "Qté", "Longueur", "Rangées", "Perçages/rangée", "Entraxe", "Diamètres", "Fixations"].join("\t"),
+    ["Repère", "Qté", "Longueur", "Rangées", "Perçages/rangée", "Entraxe", "Diamètres", "Vis", "Fixations"].join("\t"),
     ...task.lines.map((l) =>
-      [l.mark, l.qty, n(l.length), l.rows, l.holes, n(l.pitch), l.diameters.map(fmtD).join(" + "), lineTotal(l)].join("\t"),
+      [l.mark, l.qty, n(l.length), l.rows, l.holes, n(l.pitch), l.diameters.map(fmtD).join(" + "), l.screw ?? "", lineTotal(l)].join("\t"),
     ),
   ];
   const t = taskTotals(task);
-  lines.push(["Total", t.pieces, "", "", "", "", "", t.fixings].join("\t"));
-  for (const { d, count } of t.byDiameter) lines.push([`Perçages ${fmtD(d)}`, "", "", "", "", "", "", count].join("\t"));
+  const pad = (label: string, v: number) => [label, "", "", "", "", "", "", "", v].join("\t");
+  lines.push(["Total", t.pieces, "", "", "", "", "", "", t.fixings].join("\t"));
+  for (const { screw, count } of t.byScrew) lines.push(pad(screw, count));
+  for (const { d, count } of t.byDiameter) lines.push(pad(`Perçages ${fmtD(d)}`, count));
   return lines.join("\n");
+}
+
+// ---------- Mes vis : bibliotheque personnelle ----------
+
+export interface Screw {
+  id: string;
+  /** Designation telle qu'on la commande (ex. "SX5/7-L12 5,5x25"). */
+  name: string;
+  /** Diametre(s) de percage associe(s). */
+  diameters: number[];
+}
+
+/** Retrouve une vis de la liste par sa designation (casse et espaces ignores). */
+export function findScrew(list: Screw[], name: string): Screw | undefined {
+  const k = name.trim().toLowerCase().replace(/\s+/g, " ");
+  return k ? list.find((s) => s.name.trim().toLowerCase().replace(/\s+/g, " ") === k) : undefined;
 }
 
 // ---------- Stockage navigateur (jamais de serveur) ----------
@@ -100,17 +134,19 @@ const KEY = "trame:tasks:v1";
 export interface TaskStore {
   tasks: Task[];
   activeId: string | null;
+  screws: Screw[];
 }
 
 export function readTasks(): TaskStore {
-  if (typeof window === "undefined") return { tasks: [], activeId: null };
+  if (typeof window === "undefined") return { tasks: [], activeId: null, screws: [] };
   try {
     const p = JSON.parse(window.localStorage.getItem(KEY) ?? "null");
-    if (p && Array.isArray(p.tasks)) return { tasks: p.tasks, activeId: p.activeId ?? null };
+    if (p && Array.isArray(p.tasks))
+      return { tasks: p.tasks, activeId: p.activeId ?? null, screws: Array.isArray(p.screws) ? p.screws : [] };
   } catch {
     /* donnees illisibles : on repart a vide */
   }
-  return { tasks: [], activeId: null };
+  return { tasks: [], activeId: null, screws: [] };
 }
 
 export function writeTasks(s: TaskStore) {

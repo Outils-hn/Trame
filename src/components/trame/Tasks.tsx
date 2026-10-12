@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { ClipboardList, ListChecks, Plus, Trash2 } from "lucide-react";
+import { ClipboardList, ListChecks, Plus, Trash2, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fmt, type DrillOption } from "@/lib/trame-calc";
 import {
-  fmtD, lineTotal, nextTaskName, parseDiameters, readTasks, taskTable, taskTotals, uid, writeTasks,
+  findScrew, fmtD, lineTotal, nextTaskName, parseDiameters, readTasks, taskTable, taskTotals, uid, writeTasks,
   type Task, type TaskLine, type TaskStore,
 } from "@/lib/trame-tasks";
 
@@ -26,6 +26,9 @@ interface Ctx {
   addLine: (taskId: string | null, line: Omit<TaskLine, "id">) => string;
   updateLine: (taskId: string, lineId: string, patch: Partial<TaskLine>) => void;
   removeLine: (taskId: string, lineId: string) => void;
+  /** Ajoute ou met a jour une vis de "mes vis" (meme designation = mise a jour). */
+  saveScrew: (name: string, diameters: number[]) => void;
+  removeScrew: (id: string) => void;
   /** Ouvre la fenetre "Ajouter a la tache" pour la repartition choisie. */
   startAdd: (opt: DrillOption, length: number) => void;
 }
@@ -39,7 +42,7 @@ export function useTasks() {
 }
 
 export function TasksProvider({ children }: { children: ReactNode }) {
-  const [store, setStore] = useState<TaskStore>({ tasks: [], activeId: null });
+  const [store, setStore] = useState<TaskStore>({ tasks: [], activeId: null, screws: [] });
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<{ opt: DrillOption; length: number } | null>(null);
 
@@ -56,7 +59,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
   const createTask = useCallback(() => {
     const id = uid();
-    update((s) => ({ tasks: [...s.tasks, { id, name: nextTaskName(s.tasks), createdAt: Date.now(), lines: [] }], activeId: id }));
+    update((s) => ({ ...s, tasks: [...s.tasks, { id, name: nextTaskName(s.tasks), createdAt: Date.now(), lines: [] }], activeId: id }));
     return id;
   }, [update]);
 
@@ -75,7 +78,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       deleteTask: (id) =>
         update((s) => {
           const tasks = s.tasks.filter((t) => t.id !== id);
-          return { tasks, activeId: s.activeId === id ? (tasks[tasks.length - 1]?.id ?? null) : s.activeId };
+          return { ...s, tasks, activeId: s.activeId === id ? (tasks[tasks.length - 1]?.id ?? null) : s.activeId };
         }),
       addLine: (taskId, line) => {
         const lineId = uid();
@@ -88,6 +91,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
           }
           const target = id;
           return {
+            ...s,
             tasks: tasks.map((t) => (t.id === target ? { ...t, lines: [...t.lines, { ...line, id: lineId }] } : t)),
             activeId: target,
           };
@@ -97,6 +101,15 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       updateLine: (taskId, lineId, patch) =>
         update(mapTask(taskId, (t) => ({ ...t, lines: t.lines.map((l) => (l.id === lineId ? { ...l, ...patch } : l)) }))),
       removeLine: (taskId, lineId) => update(mapTask(taskId, (t) => ({ ...t, lines: t.lines.filter((l) => l.id !== lineId) }))),
+      saveScrew: (name, diameters) =>
+        update((s) => {
+          const found = findScrew(s.screws, name);
+          const screws = found
+            ? s.screws.map((x) => (x.id === found.id ? { ...x, diameters } : x))
+            : [...s.screws, { id: uid(), name: name.trim(), diameters }];
+          return { ...s, screws: screws.sort((a, b) => a.name.localeCompare(b.name, "fr")) };
+        }),
+      removeScrew: (id) => update((s) => ({ ...s, screws: s.screws.filter((x) => x.id !== id) })),
       startAdd: (opt, length) => setPending({ opt, length }),
     };
   }, [store, open, update, createTask]);
@@ -104,6 +117,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   return (
     <TasksCtx.Provider value={ctx}>
       {children}
+      {/* Suggestions "mes vis" partagees par la fenetre d'ajout et le volet. */}
+      <datalist id="trame-screws">
+        {store.screws.map((x) => <option key={x.id} value={x.name}>{x.diameters.map(fmtD).join(" + ")}</option>)}
+      </datalist>
       <AddToTaskDialog pending={pending} onClose={() => setPending(null)} />
     </TasksCtx.Provider>
   );
@@ -135,10 +152,13 @@ export function TasksButton() {
 // ---------- Fenetre "Ajouter a la tache" ----------
 
 const LAST_D = "trame:tasks:lastDiameters";
+const LAST_S = "trame:tasks:lastScrew";
 const NEW = "__new__";
 
 function AddToTaskDialog({ pending, onClose }: { pending: { opt: DrillOption; length: number } | null; onClose: () => void }) {
-  const { store, active, addLine } = useTasks();
+  const { store, active, addLine, saveScrew } = useTasks();
+  const [screw, setScrew] = useState("");
+  const [remember, setRemember] = useState(true);
   const [taskId, setTaskId] = useState<string>(NEW);
   const [mark, setMark] = useState("");
   const [qty, setQty] = useState(1);
@@ -154,25 +174,40 @@ function AddToTaskDialog({ pending, onClose }: { pending: { opt: DrillOption; le
     setRows(1);
     try {
       setDiam(window.localStorage.getItem(LAST_D) ?? "");
+      setScrew(window.localStorage.getItem(LAST_S) ?? "");
     } catch {
       setDiam("");
+      setScrew("");
     }
+    setRemember(true);
   }, [pending, active?.id]);
 
   if (!pending) return null;
   const { opt, length } = pending;
   const ok = qty >= 1 && rows >= 1 && Number.isInteger(qty) && Number.isInteger(rows);
   const total = ok ? qty * rows * opt.holes : 0;
+  const known = findScrew(store.screws, screw);
+  const dNow = parseDiameters(diam);
+  // Percage ajuste pour cette piece seulement (la vis de la liste garde son diametre).
+  const adjusted = !!known && dNow.join("|") !== known.diameters.join("|");
+  const pickScrew = (v: string) => {
+    setScrew(v);
+    const f = findScrew(store.screws, v);
+    if (f) setDiam(f.diameters.map((d) => String(d).replace(".", ",")).join(" + "));
+  };
 
   const submit = () => {
     if (!ok) return;
     const diameters = parseDiameters(diam);
+    const screwName = known?.name ?? screw.trim();
+    if (screwName && !known && remember) saveScrew(screwName, diameters);
     addLine(taskId === NEW ? null : taskId, {
-      mark: mark.trim() || "—", qty, rows, holes: opt.holes, diameters,
+      mark: mark.trim() || "—", qty, rows, holes: opt.holes, diameters, screw: screwName || undefined,
       length, pitch: opt.pitch, dStart: opt.dStart, dEnd: opt.dEnd,
     });
     try {
       window.localStorage.setItem(LAST_D, diam);
+      window.localStorage.setItem(LAST_S, screwName);
     } catch {
       /* ignore */
     }
@@ -227,7 +262,27 @@ function AddToTaskDialog({ pending, onClose }: { pending: { opt: DrillOption; le
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="t-diam" className="text-xs text-muted-foreground">Diamètre(s) du perçage (mm)</Label>
+            <Label htmlFor="t-screw" className="text-xs text-muted-foreground">Vis</Label>
+            <Input
+              id="t-screw"
+              list="trame-screws"
+              value={screw}
+              onChange={(e) => pickScrew(e.target.value)}
+              placeholder={store.screws.length ? "Choisir dans mes vis ou taper une désignation" : "Désignation, ex. vis autoperceuse 5,5 × 25"}
+            />
+            {screw.trim() && !known && (
+              <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                Enregistrer dans mes vis avec ce perçage
+              </label>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="t-diam" className="text-xs text-muted-foreground">
+              Diamètre(s) du perçage (mm){known && !adjusted && " · repris de la vis"}
+              {adjusted && <span className="text-[var(--color-trame)]"> · ajusté pour cette pièce</span>}
+            </Label>
             <Input id="t-diam" value={diam} onChange={(e) => setDiam(e.target.value)} placeholder="6,5   ou   6,5 + 11 pour un trou étagé" />
             <div className="flex flex-wrap gap-1.5">
               {parseDiameters(diam).map((d) => (
@@ -334,6 +389,7 @@ export function TasksPanel() {
                       <th className="px-2 py-2 text-right">Rangées</th>
                       <th className="px-2 py-2 text-right" title="Perçages par rangée">Perç.</th>
                       <th className="px-2 py-2 text-left">Diamètres</th>
+                      <th className="px-2 py-2 text-left">Vis</th>
                       <th className="px-2 py-2 text-right">Fixations</th>
                       <th />
                     </tr>
@@ -363,6 +419,15 @@ export function TasksPanel() {
                         <td className="px-2 py-1.5">
                           <DiameterInput value={l.diameters} onChange={(d) => updateLine(active.id, l.id, { diameters: d })} />
                         </td>
+                        <td className="px-2 py-1.5">
+                          <input
+                            list="trame-screws"
+                            value={l.screw ?? ""}
+                            onChange={(e) => updateLine(active.id, l.id, { screw: e.target.value })}
+                            placeholder="—"
+                            className="h-8 w-32 rounded border border-input bg-background px-1.5 text-sm"
+                          />
+                        </td>
                         <td className="px-2 py-1.5 text-right font-semibold tabular-nums text-[var(--color-trame)]">{lineTotal(l)}</td>
                         <td className="px-1 py-1.5 text-right">
                           <button
@@ -388,6 +453,22 @@ export function TasksPanel() {
                   <span className="text-sm text-muted-foreground tabular-nums">{totals.pieces} pièce{totals.pieces > 1 ? "s" : ""}</span>
                 </div>
                 <div className="mt-1 text-2xl font-semibold tabular-nums text-[var(--color-trame)]">{totals.fixings} fixations</div>
+                {totals.byScrew.length > 0 && (
+                  <ul className="mt-3 space-y-1 text-sm tabular-nums">
+                    {totals.byScrew.map(({ screw, count }) => (
+                      <li key={screw} className="flex items-baseline justify-between gap-3 rounded border border-border bg-background px-2.5 py-1.5">
+                        <span className="min-w-0 truncate">{screw}</span>
+                        <b className="shrink-0">{count}</b>
+                      </li>
+                    ))}
+                    {totals.noScrew > 0 && (
+                      <li className="flex justify-between rounded border border-dashed border-border px-2.5 py-1.5 text-muted-foreground">
+                        <span>Vis non précisée</span>
+                        <b>{totals.noScrew}</b>
+                      </li>
+                    )}
+                  </ul>
+                )}
                 {(totals.byDiameter.length > 0 || totals.noDiameter > 0) && (
                   <div className="mt-3 flex flex-wrap gap-2 text-xs tabular-nums">
                     {totals.byDiameter.map(({ d, count }) => (
@@ -404,6 +485,7 @@ export function TasksPanel() {
                 )}
               </section>
             )}
+            <MyScrews />
           </div>
         )}
 
@@ -432,5 +514,56 @@ function DiameterInput({ value, onChange }: { value: number[]; onChange: (d: num
       placeholder="Ø"
       className="h-8 w-24 rounded border border-input bg-background px-1.5 text-sm tabular-nums"
     />
+  );
+}
+
+/** "Mes vis" : designation + diametre(s) de percage, reutilises a chaque ajout. */
+function MyScrews() {
+  const { store, saveScrew, removeScrew } = useTasks();
+  const [name, setName] = useState("");
+  const [diam, setDiam] = useState("");
+  const add = () => {
+    if (!name.trim()) return;
+    saveScrew(name, parseDiameters(diam));
+    setName("");
+    setDiam("");
+  };
+  return (
+    <details className="rounded-lg border border-border bg-card px-3 py-2">
+      <summary className="flex cursor-pointer items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em]">
+        <Wrench className="size-3.5" /> Mes vis
+        <span className="font-normal normal-case tracking-normal text-muted-foreground">({store.screws.length})</span>
+      </summary>
+      <div className="mt-3 space-y-2">
+        {store.screws.map((x) => (
+          <div key={x.id} className="flex items-center gap-2 text-sm">
+            <span className="min-w-0 flex-1 truncate">{x.name}</span>
+            <span className="text-xs text-muted-foreground tabular-nums">{x.diameters.map(fmtD).join(" + ") || "—"}</span>
+            <button
+              type="button"
+              onClick={() => removeScrew(x.id)}
+              className="rounded p-1 text-muted-foreground hover:text-destructive"
+              aria-label={`Supprimer ${x.name}`}
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          </div>
+        ))}
+        <form
+          className="flex gap-2 pt-1"
+          onSubmit={(e) => {
+            e.preventDefault();
+            add();
+          }}
+        >
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Désignation de la vis" className="h-8 flex-1 text-sm" />
+          <Input value={diam} onChange={(e) => setDiam(e.target.value)} placeholder="Ø perçage" className="h-8 w-24 text-sm" />
+          <Button type="submit" size="sm" variant="outline" className="h-8 gap-1">
+            <Plus className="size-3.5" />
+          </Button>
+        </form>
+        <p className="text-[11px] text-muted-foreground">Même désignation = mise à jour du perçage.</p>
+      </div>
+    </details>
   );
 }
