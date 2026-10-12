@@ -1,25 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Moon, Sun, Copy, Check } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { cn } from "@/lib/utils";
 
 import { HistoryButton, HistoryPanel } from "@/components/trame/HistoryPanel";
+import { ResultsView } from "@/components/trame/ResultsView";
 import {
   buildAutoRiveRows,
   buildIntervalRows,
   buildMaxPitchRows,
   buildPitchRows,
   fmt,
-  type IntervalRow,
+  fromIntervalRows,
+  fromPitchRows,
   type Mode,
-  type PitchRow,
 } from "@/lib/trame-calc";
 import {
   TrameHistoryProvider,
@@ -45,19 +44,6 @@ export const Route = createFileRoute("/")({
 
 
 
-
-function PositionsList({ positions, integers }: { positions: number[]; integers: boolean }) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-xs leading-relaxed text-foreground/85">
-      {positions.map((p, i) => (
-        <span key={i} className="inline-flex items-center gap-1.5">
-          <span className="tabular-nums">{integers ? p : fmt(p, 1)}</span>
-          {i < positions.length - 1 && <span className="text-muted-foreground/50">•</span>}
-        </span>
-      ))}
-    </div>
-  );
-}
 
 function NumberField({
   id,
@@ -99,17 +85,6 @@ function NumberField({
           {suffix}
         </span>
       </div>
-    </div>
-  );
-}
-
-function SummaryRow({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className={cn("font-mono tabular-nums", strong ? "text-foreground font-semibold" : "text-foreground/80")}>
-        {value}
-      </dd>
     </div>
   );
 }
@@ -348,23 +323,6 @@ function TrameApp() {
                     </label>
                   </div>
                 </section>
-
-                <section className="rounded-xl border border-border bg-muted/40 p-5">
-                  <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Résumé
-                  </h2>
-                  <dl className="space-y-2 text-xs">
-                    <SummaryRow label="Longueur totale" value={`${fmt(L)} mm`} />
-                    <SummaryRow label="Distance au bord début" value={`${fmt(Ds)} mm`} />
-                    <SummaryRow label="Distance au bord fin" value={`${fmt(effectiveDe)} mm`} />
-                    <div className="my-2 h-px bg-border" />
-                    <SummaryRow label="Longueur utile" value={`${fmt(intervalsData.Lu)} mm`} strong />
-                    <SummaryRow
-                      label="Intervalles max."
-                      value={intervalsData.Nmax > 0 ? String(intervalsData.Nmax) : "—"}
-                    />
-                  </dl>
-                </section>
               </>
             ) : mode === "pitch" ? (
               <>
@@ -394,19 +352,6 @@ function TrameApp() {
                       />
                     )}
                   </div>
-                </section>
-
-
-                <section className="rounded-xl border border-border bg-muted/40 p-5">
-                  <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Résumé
-                  </h2>
-                  <dl className="space-y-2 text-xs">
-                    <SummaryRow label="Longueur totale" value={`${fmt(L2)} mm`} />
-                    <SummaryRow label="Entraxe imposé" value={`${fmt(E)} mm`} />
-                    <SummaryRow label="Distances au bord" value={symmetric ? "Identiques" : "Début imposé"} />
-                    {!symmetric && <SummaryRow label="Distance au bord début" value={`${fmt(Dstart)} mm`} />}
-                  </dl>
                 </section>
               </>
             ) : (
@@ -472,90 +417,55 @@ function TrameApp() {
                     <Switch checked={integers} onCheckedChange={setIntegers} />
                   </label>
                 </section>
-
-                <section className="rounded-xl border border-border bg-muted/40 p-5">
-                  <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Résumé
-                  </h2>
-                  <dl className="space-y-2 text-xs">
-                    <SummaryRow label="Longueur totale" value={`${fmt(L3)} mm`} />
-                    {autoRives3 ? (
-                      <>
-                        <SummaryRow label="Distances au bord" value="Calculées" />
-                        <SummaryRow label="Distance au bord mini." value={`${fmt(riveMin3)} mm`} />
-                        <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
-                        <div className="my-2 h-px bg-border" />
-                        <SummaryRow
-                          label="Propositions"
-                          value={autoRiveData.rows.length ? String(autoRiveData.rows.length) : "—"}
-                          strong
-                        />
-                        <SummaryRow
-                          label="Intervalles min."
-                          value={autoRiveData.Nmin > 0 ? String(autoRiveData.Nmin) : "—"}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <SummaryRow label="Distance au bord début" value={`${fmt(Ds3)} mm`} />
-                        <SummaryRow label="Distance au bord fin" value={`${fmt(effectiveDe3)} mm`} />
-                        <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
-                        <div className="my-2 h-px bg-border" />
-                        <SummaryRow label="Longueur utile" value={`${fmt(maxPitchData.Lu)} mm`} strong />
-                        <SummaryRow
-                          label="Intervalles min."
-                          value={maxPitchData.Nmin > 0 ? String(maxPitchData.Nmin) : "—"}
-                        />
-                      </>
-                    )}
-                  </dl>
-                </section>
               </>
             )}
           </aside>
 
-          {/* Résultats */}
+          {/* Résultats : tableau compact des possibilités + détail de la ligne choisie */}
           <section>
-            {mode === "intervals" ? (
-              <IntervalsTable
-                rows={intervalsData.rows}
-                Nmax={intervalsData.Nmax}
-                integers={integers}
-                onShowDecimals={() => setIntegers(false)}
-                emptyIntegerMessage="Aucune répartition en millimètres entiers trouvée pour les 5 premiers intervalles."
-                copy={copy}
-                copiedIdx={copiedIdx}
-              />
-            ) : mode === "pitch" ? (
-              <PitchTable
-                rows={pitchRows}
-                integers={false}
-                onShowDecimals={() => setIntegers(false)}
-                emptyIntegerMessage="Aucun entraxe fixe parfait trouvé avec ces dimensions."
-                copy={copy}
-                copiedIdx={copiedIdx}
-              />
-            ) : autoRives3 ? (
-              <PitchTable
-                rows={autoRiveData.rows}
-                integers={integers}
-                onShowDecimals={() => setIntegers(false)}
-                emptyIntegerMessage="Aucune répartition en millimètres entiers trouvée avec cette distance au bord minimale et cet entraxe maximum."
-                copy={copy}
-                copiedIdx={copiedIdx}
-                title="Distances au bord optimisées"
-              />
-            ) : (
-              <IntervalsTable
-                rows={maxPitchData.rows}
-                Nmax={maxPitchData.rows.length ? maxPitchData.rows[maxPitchData.rows.length - 1].N : 0}
-                integers={integers}
-                onShowDecimals={() => setIntegers(false)}
-                emptyIntegerMessage="Aucune répartition en millimètres entiers trouvée sous la limite de 40 intervalles."
-                copy={copy}
-                copiedIdx={copiedIdx}
-              />
-            )}
+            <ResultsView
+              key={mode + (autoRives3 ? "-auto" : "")}
+              title={
+                mode === "intervals"
+                  ? "Répartitions possibles"
+                  : mode === "pitch"
+                    ? "Répartition"
+                    : autoRives3
+                      ? "Distances au bord optimisées"
+                      : "Répartitions sous l'entraxe maximum"
+              }
+              options={
+                mode === "intervals"
+                  ? fromIntervalRows(intervalsData.rows, Ds, effectiveDe)
+                  : mode === "pitch"
+                    ? fromPitchRows(pitchRows)
+                    : autoRives3
+                      ? fromPitchRows(autoRiveData.rows)
+                      : fromIntervalRows(maxPitchData.rows, Ds3, effectiveDe3)
+              }
+              integers={mode === "pitch" ? false : integers}
+              totalLength={mode === "intervals" ? L : mode === "pitch" ? L2 : L3}
+              copy={copy}
+              copiedIdx={copiedIdx}
+              empty={
+                mode !== "pitch" && integers ? (
+                  <EmptyIntegerNotice
+                    message={
+                      mode === "intervals"
+                        ? "Aucune répartition en millimètres entiers jusqu'à ce nombre d'intervalles."
+                        : autoRives3
+                          ? "Aucune répartition en millimètres entiers trouvée avec cette distance au bord minimale et cet entraxe maximum."
+                          : "Aucune répartition en millimètres entiers trouvée sous la limite de 40 intervalles."
+                    }
+                    onShowDecimals={() => setIntegers(false)}
+                  />
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
+                    Saisissez des valeurs valides pour voir les répartitions.
+                  </div>
+                )
+              }
+            />
           </section>
         </div>
 
@@ -564,200 +474,6 @@ function TrameApp() {
         </footer>
       </main>
     </div>
-  );
-}
-
-function IntervalsTable({
-  rows,
-  Nmax,
-  integers,
-  onShowDecimals,
-  emptyIntegerMessage,
-  copy,
-  copiedIdx,
-}: {
-  rows: IntervalRow[];
-  Nmax: number;
-  integers: boolean;
-  onShowDecimals: () => void;
-  emptyIntegerMessage: string;
-  copy: (positions: number[], idx: number, label: string, useIntegers: boolean) => void;
-  copiedIdx: number | null;
-}) {
-  return (
-    <>
-      <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold">Répartitions possibles</h2>
-        <span className="text-xs text-muted-foreground">
-          1 → {Nmax} intervalles · {rows.length} proposition
-          {rows.length > 1 ? "s" : ""}
-        </span>
-      </div>
-
-      {rows.length === 0 ? (
-        integers ? (
-          <EmptyIntegerNotice message={emptyIntegerMessage} onShowDecimals={onShowDecimals} />
-        ) : (
-          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
-            Saisissez des valeurs valides pour voir les répartitions.
-          </div>
-        )
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="hidden grid-cols-[60px_60px_110px_1fr_90px] gap-4 border-b border-border bg-muted/40 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid">
-            <div>Int.</div>
-            <div>Trous</div>
-            <div>Pas</div>
-            <div>Positions (mm)</div>
-            <div className="text-right">Action</div>
-          </div>
-
-          <ul>
-            {rows.map((r, idx) => (
-              <li
-                key={r.N}
-                className={cn(
-                  "px-5 py-4 border-b border-gray-300 dark:border-zinc-700 transition-colors",
-                  idx % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-slate-100 dark:bg-zinc-800",
-                  "hover:bg-slate-200 dark:hover:bg-zinc-700/70",
-                )}
-              >
-                <div className="grid gap-3 md:grid-cols-[60px_60px_110px_1fr_90px] md:items-center md:gap-4">
-                  <div className="flex items-center gap-2 md:block">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">Int.</span>
-                    <span className="font-mono text-base font-semibold tabular-nums">{r.N}</span>
-                  </div>
-                  <div className="flex items-center gap-2 md:block">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">Trous</span>
-                    <span className="font-mono text-base font-semibold tabular-nums">{r.holes}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-mono text-lg font-bold tabular-nums text-[var(--color-trame)]">
-                      {fmt(r.pitch)}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">mm</span>
-                  </div>
-                  <div className="min-w-0">
-                    <PositionsList positions={r.positions} integers={integers} />
-                  </div>
-                  <div className="flex md:justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copy(r.positions, idx, `${r.holes} trous`, integers)}
-                      className="gap-1.5"
-                    >
-                      {copiedIdx === idx ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                      Copier
-                    </Button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </>
-  );
-}
-
-function PitchTable({
-  rows,
-  integers,
-  onShowDecimals,
-  emptyIntegerMessage,
-  copy,
-  copiedIdx,
-  title = "Répartition",
-}: {
-  rows: PitchRow[];
-  integers: boolean;
-  onShowDecimals: () => void;
-  emptyIntegerMessage: string;
-  copy: (positions: number[], idx: number, label: string, useIntegers: boolean) => void;
-  copiedIdx: number | null;
-  title?: string;
-}) {
-  return (
-    <>
-      <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold">{title}</h2>
-        <span className="text-xs text-muted-foreground">
-          {rows.length} proposition{rows.length > 1 ? "s" : ""}
-        </span>
-      </div>
-
-      {rows.length === 0 ? (
-        integers ? (
-          <EmptyIntegerNotice message={emptyIntegerMessage} onShowDecimals={onShowDecimals} />
-        ) : (
-          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
-            Saisissez une longueur et un entraxe valides.
-          </div>
-        )
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="hidden grid-cols-[1.2fr_50px_90px_90px_90px_1.4fr_90px] gap-4 border-b border-border bg-muted/40 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid">
-            <div>Option</div>
-            <div>Int.</div>
-            <div>Bord début</div>
-            <div>Entraxe</div>
-            <div>Bord fin</div>
-            <div>Positions (mm)</div>
-            <div className="text-right">Action</div>
-          </div>
-
-          <ul>
-            {rows.map((r, idx) => (
-              <li
-                key={idx}
-                className={cn(
-                  "px-5 py-4 border-b border-gray-300 dark:border-zinc-700 transition-colors",
-                  idx % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-slate-100 dark:bg-zinc-800",
-                  "hover:bg-slate-200 dark:hover:bg-zinc-700/70",
-                )}
-              >
-                <div className="grid gap-3 md:grid-cols-[1.2fr_50px_90px_90px_90px_1.4fr_90px] md:items-center md:gap-4">
-                  <div className="text-xs font-medium text-foreground">{r.option}</div>
-                  <div className="flex items-center gap-2 md:block">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground md:hidden">Int.</span>
-                    <span className="font-mono text-base font-semibold tabular-nums">{r.N}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-mono text-base font-semibold tabular-nums">{fmt(r.rDebut)}</span>
-                    <span className="text-[11px] text-muted-foreground">mm</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-mono text-base font-bold tabular-nums text-[var(--color-trame)]">
-                      {fmt(r.entraxe)}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">mm</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-mono text-base font-semibold tabular-nums">{fmt(r.rFin)}</span>
-                    <span className="text-[11px] text-muted-foreground">mm</span>
-                  </div>
-                  <div className="min-w-0">
-                    <PositionsList positions={r.positions} integers={integers} />
-                  </div>
-                  <div className="flex md:justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copy(r.positions, idx, r.option, integers)}
-                      className="gap-1.5"
-                    >
-                      {copiedIdx === idx ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                      Copier
-                    </Button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </>
   );
 }
 
