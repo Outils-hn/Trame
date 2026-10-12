@@ -39,7 +39,7 @@ export function ResultsView({
     <div className="space-y-5">
       <div>
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-sm font-semibold">{title}</h2>
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">{title}</h2>
           <span className="text-xs text-muted-foreground">
             {options.length} possibilité{options.length > 1 ? "s" : ""} · cliquez une ligne pour le détail
           </span>
