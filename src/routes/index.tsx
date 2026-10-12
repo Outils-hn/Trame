@@ -272,23 +272,23 @@ function TrameApp() {
 
       <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
-          <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-grid">
+          <TabsList className="grid w-full grid-cols-3 border border-border bg-card shadow-sm sm:w-auto sm:inline-grid">
 
             <TabsTrigger
               value="intervals"
-              className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
+              className="data-[state=active]:bg-muted data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
             >
               Par nombre d'intervalles
             </TabsTrigger>
             <TabsTrigger
               value="pitch"
-              className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
+              className="data-[state=active]:bg-muted data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
             >
               Par entraxe fixe
             </TabsTrigger>
             <TabsTrigger
               value="maxpitch"
-              className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
+              className="data-[state=active]:bg-muted data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
             >
               Par entraxe maximum
             </TabsTrigger>
@@ -323,7 +323,7 @@ function TrameApp() {
                       />
                     </div>
 
-                    <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+                    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
                       <span className="text-xs font-medium text-foreground">Distances au bord identiques</span>
                       <Switch checked={sameEnd} onCheckedChange={setSameEnd} />
                     </label>
@@ -341,7 +341,7 @@ function TrameApp() {
                       suffix="int."
                       step="1"
                     />
-                    <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+                    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
                       <span className="text-xs font-medium text-foreground">Mesures entières uniquement</span>
                       <Switch checked={integers} onCheckedChange={setIntegers} />
                     </label>
@@ -362,7 +362,7 @@ function TrameApp() {
                     <NumberField id="L2" label="Longueur totale (L)" value={isFinite(L2) ? L2 : ""} onChange={setL2} />
                     <NumberField id="E" label="Entraxe imposé (E)" value={isFinite(E) ? E : ""} onChange={setE} />
 
-                    <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+                    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
                       <span className="text-xs font-medium text-foreground">Distances au bord identiques</span>
                       <Switch checked={symmetric} onCheckedChange={setSymmetric} />
                     </label>
@@ -454,7 +454,7 @@ function TrameApp() {
                       </div>
                     )}
 
-                    <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+                    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
                       <span className="text-xs font-medium text-foreground">Distances au bord identiques</span>
                       <Switch checked={sameEnd3} onCheckedChange={setSameEnd3} />
                     </label>
@@ -466,7 +466,7 @@ function TrameApp() {
                       onChange={setEmax}
                     />
 
-                    <label className="flex cursor-pointer items-center justify-between rounded-md border border-[var(--color-trame)]/40 bg-[var(--color-trame)]/5 px-3 py-2">
+                    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-[var(--color-trame)]/40 bg-[var(--color-trame)]/5 px-3 py-2">
                       <span className="text-xs font-medium text-foreground">
                         Calculer les distances au bord automatiquement
                       </span>
@@ -486,7 +486,7 @@ function TrameApp() {
 
                 <section className="rounded-xl border border-border bg-card p-5">
                   <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Options</h2>
-                  <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+                  <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
                     <span className="text-xs font-medium text-foreground">Mesures entières uniquement</span>
                     <Switch checked={integers} onCheckedChange={setIntegers} />
                   </label>
