@@ -59,8 +59,17 @@ export function buildIntervalRows(
   return { rows, Lu, Nmax };
 }
 
-export function buildPitchRows(L: number, E: number, symmetric: boolean, Dstart: number, integers: boolean): PitchRow[] {
+export function buildPitchRows(
+  L: number,
+  E: number,
+  symmetric: boolean,
+  Dstart: number,
+  integers: boolean,
+  minEdge = 0,
+): PitchRow[] {
   if (!isFinite(L) || !isFinite(E) || L <= 0 || E <= 0) return [];
+  // Distance au bord minimale : aucun percage plus pres du bord que cette valeur.
+  const m = isFinite(minEdge) && minEdge > 0 ? minEdge : 0;
   const rows: PitchRow[] = [];
 
   const makePositions = (start: number, N: number) => {
@@ -73,11 +82,12 @@ export function buildPitchRows(L: number, E: number, symmetric: boolean, Dstart:
   };
 
   if (symmetric) {
+    // Le plus d'intervalles possible en respectant la distance au bord minimale,
+    // puis la variante a un intervalle de moins (distances au bord plus grandes).
     const variants: number[] = [];
-    const N = Math.floor(L / E);
+    const N = Math.floor((L - 2 * m) / E + 1e-9);
     if (N >= 1) variants.push(N);
-    const rive = (L - N * E) / 2;
-    if (rive < 20 && N - 1 >= 1) variants.push(N - 1);
+    if (N - 1 >= 1) variants.push(N - 1);
 
     for (const Nv of variants) {
       const r = (L - Nv * E) / 2;
@@ -98,7 +108,8 @@ export function buildPitchRows(L: number, E: number, symmetric: boolean, Dstart:
   } else {
     if (!isFinite(Dstart) || Dstart < 0 || Dstart > L) return [];
     const rest = L - Dstart;
-    const N = Math.floor(rest / E);
+    // La distance au bord de fin (le reste) doit aussi respecter le minimum.
+    const N = Math.floor((rest - m) / E + 1e-9);
     if (N < 1) return [];
     const dFin = rest - N * E;
     rows.push({

@@ -109,7 +109,7 @@ export function ResultsView({
             <div className="flex flex-wrap gap-1.5 text-sm tabular-nums">
               {sel.positions.map((p, i) => (
                 <span key={i} className="rounded border border-border px-1.5 py-0.5">
-                  {integers ? p : fmt(p, 1)}
+                  {fmt(p, 1)}
                 </span>
               ))}
             </div>

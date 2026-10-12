@@ -72,3 +72,20 @@ describe("affichage unifie", () => {
     expect([o!.dStart, o!.pitch, o!.dEnd, o!.holes]).toEqual([47, 100, 47, 31]);
   });
 });
+
+describe("distance au bord minimale (entraxe fixe)", () => {
+  it("ecarte le percage au ras du bord : 3000 / 100 donne 29 intervalles a 50 / 50", () => {
+    const rows = buildPitchRows(3000, 100, true, 0, false, 30);
+    expect([rows[0]!.N, rows[0]!.rDebut, rows[0]!.rFin]).toEqual([29, 50, 50]);
+    for (const r of rows) expect(Math.min(r.rDebut, r.rFin)).toBeGreaterThanOrEqual(30);
+  });
+  it("debut impose : le reste en fin respecte aussi le minimum", () => {
+    const [r] = buildPitchRows(3000, 100, false, 50, false, 30);
+    expect(r!.rFin).toBeGreaterThanOrEqual(30);
+    expect(r!.rDebut + r!.N * 100 + r!.rFin).toBe(3000);
+  });
+  it("sans minimum, l'ancien comportement est conserve (3094 : 47 / 47)", () => {
+    const [r] = buildPitchRows(3094, 100, true, 0, false);
+    expect([r!.rDebut, r!.rFin]).toEqual([47, 47]);
+  });
+});
