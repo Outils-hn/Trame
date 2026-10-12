@@ -177,3 +177,14 @@
   --color-trame: #d98a52;
   --color-trame-glow: #e8a676;
 }
+
+/* Champs numeriques sans petites fleches (comme Linear et Format) : la saisie se fait au clavier. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

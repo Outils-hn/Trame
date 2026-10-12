@@ -115,6 +115,7 @@ function TrameApp() {
   const [E, setE] = useState<number>(100);
   const [symmetric, setSymmetric] = useState(true);
   const [Dstart, setDstart] = useState<number>(50);
+  const [minEdge2, setMinEdge2] = useState<number>(30);
 
   // Mode 3 — max pitch ceiling
   const [L3, setL3] = useState<number>(3000);
@@ -141,8 +142,8 @@ function TrameApp() {
   );
 
   const pitchRows = useMemo(
-    () => buildPitchRows(L2, E, symmetric, Dstart, false),
-    [L2, E, symmetric, Dstart],
+    () => buildPitchRows(L2, E, symmetric, Dstart, false, minEdge2),
+    [L2, E, symmetric, Dstart, minEdge2],
   );
 
   const effectiveDe3 = sameEnd3 ? Ds3 : De3;
@@ -166,6 +167,7 @@ function TrameApp() {
     setE(Number(p.E));
     setSymmetric(Boolean(p.symmetric));
     setDstart(Number(p.Dstart));
+    if (p.minEdge2 !== undefined) setMinEdge2(Number(p.minEdge2));
     setL3(Number(p.L3));
     setDs3(Number(p.Ds3));
     setDe3(Number(p.De3));
@@ -190,6 +192,7 @@ function TrameApp() {
     E,
     symmetric,
     Dstart,
+    minEdge2,
     L3,
     Ds3,
     De3,
@@ -352,6 +355,13 @@ function TrameApp() {
                         onChange={setDstart}
                       />
                     )}
+
+                    <NumberField
+                      id="minedge2"
+                      label="Distance au bord minimale"
+                      value={isFinite(minEdge2) ? minEdge2 : ""}
+                      onChange={setMinEdge2}
+                    />
                   </div>
                 </section>
               </>
