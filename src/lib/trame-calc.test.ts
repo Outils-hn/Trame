@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAutoRiveRows, buildIntervalRows, buildMaxPitchRows, buildPitchRows, fromIntervalRows, fromPitchRows } from "./trame-calc";
+import { buildAutoRiveRows, buildIntervalRows, buildMaxPitchRows, buildMultiPieceOptions, buildPitchRows, cadPitch, fromIntervalRows, fromPitchRows, parsePieces, piecesTable } from "./trame-calc";
 
 const close = (a: number, b: number) => Math.abs(a - b) < 1e-9;
 
@@ -87,5 +87,55 @@ describe("distance au bord minimale (entraxe fixe)", () => {
   it("sans minimum, l'ancien comportement est conserve (3094 : 47 / 47)", () => {
     const [r] = buildPitchRows(3094, 100, true, 0, false);
     expect([r!.rDebut, r!.rFin]).toEqual([47, 47]);
+  });
+});
+
+describe("aide AutoCAD", () => {
+  it("entraxe avec point decimal, sans separateur", () => {
+    expect(cadPitch(299.4)).toBe("@299.4<0");
+    expect(cadPitch(1250)).toBe("@1250<0");
+    expect(cadPitch(2994 / 7)).toBe("@427.7143<0");
+  });
+});
+
+describe("plusieurs pieces", () => {
+  it("lit un collage Excel avec en-tete, virgules et lignes vides", () => {
+    const { pieces, ignored } = parsePieces("Repère\tLongueur\nA1\t3000\n\nA2\t2 450,5\n1830\nPoteau 3 1200 mm\nA1 2450");
+    expect(ignored).toBe(1);
+    expect(pieces).toEqual([
+      { mark: "A1", length: 3000 },
+      { mark: "A2", length: 2450.5 },
+      { mark: "P3", length: 1830 },
+      { mark: "Poteau 3", length: 1200 },
+      { mark: "A1", length: 2450 },
+    ]);
+  });
+  it("chaque piece garde le moins de percages sous l'entraxe maximum", () => {
+    const pieces = [{ mark: "A", length: 3094 }, { mark: "B", length: 1000 }, { mark: "C", length: 80 }];
+    const { options, failed } = buildMultiPieceOptions(pieces, {
+      auto: false, Ds: 50, De: 50, Emax: 300, minEdge: 30, symmetric: true, integers: false,
+    });
+    expect(failed.map((f) => f.mark)).toEqual(["C"]);
+    expect(options.map((o) => [o.mark, o.length, o.N])).toEqual([["A", 3094, 10], ["B", 1000, 3]]);
+    expect(close(options[0]!.pitch, 299.4)).toBe(true);
+  });
+  it("mode distances au bord automatiques : bilan exact par piece", () => {
+    const pieces = [{ mark: "A", length: 3000 }, { mark: "B", length: 2450 }];
+    for (const integers of [false, true]) {
+      const { options } = buildMultiPieceOptions(pieces, {
+        auto: true, Ds: 0, De: 0, Emax: 300, minEdge: 30, symmetric: true, integers,
+      });
+      expect(options).toHaveLength(2);
+      for (const o of options) {
+        expect(o.pitch).toBeLessThanOrEqual(300);
+        expect(close(o.dStart + o.N * o.pitch + o.dEnd, o.length!)).toBe(true);
+      }
+    }
+  });
+  it("tableau pour Excel : tabulations et virgule decimale", () => {
+    const { options } = buildMultiPieceOptions([{ mark: "A", length: 3094 }], {
+      auto: false, Ds: 50, De: 50, Emax: 300, minEdge: 0, symmetric: true, integers: false,
+    });
+    expect(piecesTable(options).split("\n")[1]).toBe("A\t3094\t11\t299,4\t50\t50");
   });
 });

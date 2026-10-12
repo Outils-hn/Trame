@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, ClipboardList, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { fmt, type DrillOption } from "@/lib/trame-calc";
+import { cadPitch, fmt, piecesTable, type DrillOption } from "@/lib/trame-calc";
 
 /**
  * Tableau compact des possibilites (une ligne par repartition, sans les cotes)
@@ -16,6 +17,7 @@ export function ResultsView({
   empty,
   copy,
   copiedIdx,
+  notice,
 }: {
   title: string;
   options: DrillOption[];
@@ -24,6 +26,8 @@ export function ResultsView({
   empty: ReactNode;
   copy: (positions: number[], idx: number, label: string, useIntegers: boolean) => void;
   copiedIdx: number | null;
+  /** Message sous le tableau (ex. pieces sans solution). */
+  notice?: ReactNode;
 }) {
   const [selected, setSelected] = useState(0);
   // Si la liste raccourcit (nouvelles valeurs), on reste sur une ligne existante.
@@ -34,20 +38,35 @@ export function ResultsView({
   if (!options.length) return <>{empty}</>;
   const sel = options[Math.min(selected, options.length - 1)]!;
   const showNotes = options.some((o) => o.note);
+  // Mode plusieurs pieces : une ligne par piece, avec son repere et sa longueur.
+  const multi = options.some((o) => o.mark !== undefined);
+  const total = sel.length ?? totalLength;
 
   return (
     <div className="space-y-5">
       <div>
         <div className="mb-3 flex items-baseline justify-between">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">{title}</h2>
-          <span className="text-xs text-muted-foreground">
-            {options.length} possibilité{options.length > 1 ? "s" : ""} · cliquez une ligne pour le détail
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">
+              {multi
+                ? `${options.length} pièce${options.length > 1 ? "s" : ""}`
+                : `${options.length} possibilité${options.length > 1 ? "s" : ""}`}{" "}
+              · cliquez une ligne pour le détail
+            </span>
+            {multi && (
+              <CopyButton text={piecesTable(options)} done="Tableau copié, collez-le dans Excel" title="Copier le tableau pour Excel">
+                <ClipboardList className="size-3.5" /> Tableau
+              </CopyButton>
+            )}
+          </div>
         </div>
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/40 text-[11px] font-semibold text-muted-foreground">
               <tr>
+                {multi && <th className="px-4 py-2.5 text-left">Repère</th>}
+                {multi && <th className="px-4 py-2.5 text-right">Longueur</th>}
                 <th className="px-4 py-2.5 text-right">Intervalles</th>
                 <th className="px-4 py-2.5 text-right">Perçages</th>
                 <th className="px-4 py-2.5 text-right">Bord début</th>
@@ -69,7 +88,11 @@ export function ResultsView({
                       active ? "bg-[var(--color-trame)]/10" : "hover:bg-muted/50",
                     )}
                   >
-                    <td className={cn("px-4 py-2.5 text-right tabular-nums", active && "shadow-[inset_3px_0_0_var(--color-trame)]")}>{o.N}</td>
+                    {multi && (
+                      <td className={cn("px-4 py-2.5 text-left font-medium", active && "shadow-[inset_3px_0_0_var(--color-trame)]")}>{o.mark}</td>
+                    )}
+                    {multi && <td className="px-4 py-2.5 text-right tabular-nums">{fmt(o.length ?? 0)}</td>}
+                    <td className={cn("px-4 py-2.5 text-right tabular-nums", !multi && active && "shadow-[inset_3px_0_0_var(--color-trame)]")}>{o.N}</td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{o.holes}</td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmt(o.dStart)}</td>
                     <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-[var(--color-trame)]">{fmt(o.pitch)}</td>
@@ -90,10 +113,16 @@ export function ResultsView({
             </tbody>
           </table>
         </div>
+        {notice && <div className="mt-2 text-xs text-muted-foreground">{notice}</div>}
       </div>
 
       <section className="rounded-xl border border-border bg-card p-5">
         <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+          {multi && (
+            <span className="text-xl font-semibold">
+              {sel.mark} <span className="text-sm font-normal text-muted-foreground tabular-nums">· {fmt(total)} mm</span>
+            </span>
+          )}
           <span className="text-xl font-semibold tabular-nums">{sel.holes} perçages</span>
           <span className="text-xl font-semibold tabular-nums text-[var(--color-trame)]">entraxe {fmt(sel.pitch)} mm</span>
           <span className="text-sm text-muted-foreground tabular-nums">
@@ -101,7 +130,7 @@ export function ResultsView({
           </span>
         </div>
 
-        <BarSchema positions={sel.positions} total={totalLength} />
+        <BarSchema positions={sel.positions} total={total} />
 
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -115,15 +144,54 @@ export function ResultsView({
             </div>
           </div>
           <Button
-            onClick={() => copy(sel.positions, selected, `${sel.holes} perçages`, integers)}
+            onClick={() => copy(sel.positions, selected, multi ? `${sel.mark} · ${sel.holes} perçages` : `${sel.holes} perçages`, integers)}
             className="gap-1.5 bg-[var(--color-trame)] text-white hover:bg-[var(--color-trame)]/90"
           >
             {copiedIdx === selected ? <Check className="size-4" /> : <Copy className="size-4" />}
             Copier les cotes
           </Button>
         </div>
+
+        {sel.holes > 1 && (
+          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">Dans AutoCAD</span>
+            <span>
+              COPIER → <b className="font-medium text-foreground">Réseau</b> → {sel.holes} éléments →
+            </span>
+            <code className="rounded border border-border bg-background px-1.5 py-0.5 font-mono text-foreground">{cadPitch(sel.pitch)}</code>
+            <CopyButton text={cadPitch(sel.pitch)} done={`${cadPitch(sel.pitch)} copié`} title="Copier la saisie AutoCAD">
+              <Copy className="size-3.5" />
+            </CopyButton>
+            <span className="text-[11px]">&lt;90 pour une pièce verticale</span>
+          </div>
+        )}
       </section>
     </div>
+  );
+}
+
+/** Petit bouton qui copie un texte et confirme 1,5 s. */
+function CopyButton({ text, done, title, children }: { text: string; done: string; title: string; children: ReactNode }) {
+  const [ok, setOk] = useState(false);
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setOk(true);
+          toast.success(done);
+          setTimeout(() => setOk(false), 1500);
+        } catch {
+          toast.error("Impossible de copier");
+        }
+      }}
+      className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground transition-colors hover:border-[var(--color-trame)] hover:text-[var(--color-trame)]"
+    >
+      {ok ? <Check className="size-3.5" /> : children}
+    </button>
   );
 }
 
