@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 import { HistoryButton, HistoryPanel } from "@/components/trame/HistoryPanel";
 import { ResultsView } from "@/components/trame/ResultsView";
+import { AppFooter } from "@/components/trame/AppFooter";
 import {
   buildAutoRiveRows,
   buildIntervalRows,
@@ -79,7 +80,7 @@ function NumberField({
             const v = e.target.value;
             onChange(v === "" ? NaN : parseFloat(v));
           }}
-          className="h-11 pr-12 font-mono text-base tabular-nums"
+          className="h-11 pr-12 text-right text-base tabular-nums"
         />
         <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted-foreground">
           {suffix}
@@ -103,20 +104,20 @@ function TrameApp() {
   const [mode, setMode] = useState<Mode>("intervals");
 
   // Mode 1 — intervals
-  const [L, setL] = useState<number>(3094);
+  const [L, setL] = useState<number>(3000);
   const [Ds, setDs] = useState<number>(50);
   const [De, setDe] = useState<number>(50);
   const [sameEnd, setSameEnd] = useState(true);
   const [maxIntervals, setMaxIntervals] = useState<number>(5);
 
   // Mode 2 — fixed pitch
-  const [L2, setL2] = useState<number>(3094);
+  const [L2, setL2] = useState<number>(3000);
   const [E, setE] = useState<number>(100);
   const [symmetric, setSymmetric] = useState(true);
   const [Dstart, setDstart] = useState<number>(50);
 
   // Mode 3 — max pitch ceiling
-  const [L3, setL3] = useState<number>(3094);
+  const [L3, setL3] = useState<number>(3000);
   const [Ds3, setDs3] = useState<number>(50);
   const [De3, setDe3] = useState<number>(50);
   const [sameEnd3, setSameEnd3] = useState(true);
@@ -254,19 +255,19 @@ function TrameApp() {
               value="intervals"
               className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
             >
-              Par Nbre d'intervalles
+              Par nombre d'intervalles
             </TabsTrigger>
             <TabsTrigger
               value="pitch"
               className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
             >
-              Par Entraxe Fixe
+              Par entraxe fixe
             </TabsTrigger>
             <TabsTrigger
               value="maxpitch"
               className="data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
             >
-              Par Entraxe Maximum
+              Par entraxe maximum
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -279,7 +280,7 @@ function TrameApp() {
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold">Paramètres</h2>
+                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Paramètres</h2>
                     <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       Entrée
                     </span>
@@ -307,7 +308,7 @@ function TrameApp() {
                 </section>
 
                 <section className="rounded-xl border border-border bg-card p-5">
-                  <h2 className="mb-3 text-sm font-semibold">Contrainte façade</h2>
+                  <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Contrainte façade</h2>
                   <div className="space-y-4">
                     <NumberField
                       id="pm"
@@ -328,7 +329,7 @@ function TrameApp() {
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold">Paramètres</h2>
+                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Paramètres</h2>
                     <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       Entraxe fixe
                     </span>
@@ -358,7 +359,7 @@ function TrameApp() {
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold">Paramètres</h2>
+                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Paramètres</h2>
                     <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       Entraxe max
                     </span>
@@ -411,7 +412,7 @@ function TrameApp() {
                 </section>
 
                 <section className="rounded-xl border border-border bg-card p-5">
-                  <h2 className="mb-3 text-sm font-semibold">Options</h2>
+                  <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Options</h2>
                   <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
                     <span className="text-xs font-medium text-foreground">Mesures entières uniquement</span>
                     <Switch checked={integers} onCheckedChange={setIntegers} />
@@ -469,9 +470,10 @@ function TrameApp() {
           </section>
         </div>
 
-        <footer className="mt-10 border-t border-border pt-4 text-center text-[11px] text-muted-foreground">
+        <p className="mt-10 border-t border-border pt-4 text-center text-[11px] text-muted-foreground">
           Cotes en millimètres · cumulées depuis le bord de départ
-        </footer>
+        </p>
+        <AppFooter />
       </main>
     </div>
   );
@@ -510,7 +512,7 @@ function TrameLogo({ className }: { className?: string }) {
         const isHi = highlights.has(`${x},${y}`);
         return (
           <g key={`${x}-${y}`}>
-            {isHi && <circle cx={cx} cy={cy} r={3.6} fill="none" stroke="#ff7a22" strokeWidth={1.2} opacity={0.95} />}
+            {isHi && <circle cx={cx} cy={cy} r={3.6} fill="none" stroke="var(--color-trame)" strokeWidth={1.2} opacity={0.95} />}
             <circle cx={cx} cy={cy} r={1.3} className="fill-zinc-500 dark:fill-zinc-400" />
           </g>
         );
@@ -551,11 +553,11 @@ function HexWireframe({ className }: { className?: string }) {
         y1={pts[0][1]}
         x2={pts[1][0]}
         y2={pts[1][1]}
-        stroke="#ff7a22"
+        stroke="var(--color-trame)"
         strokeWidth={1.4}
         strokeLinecap="round"
       />
-      <circle cx={pts[0][0]} cy={pts[0][1]} r={2.2} fill="#ff7a22" />
+      <circle cx={pts[0][0]} cy={pts[0][1]} r={2.2} fill="var(--color-trame)" />
     </svg>
   );
 }
