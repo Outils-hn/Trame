@@ -9,3 +9,6 @@
 - The maximum-pitch tab has a "Une pièce / Plusieurs pièces" switch (only there). Multi-piece reads a Repère/Longueur list (pasted from Excel or typed, parsePieces) and shows one row per piece with its retained option: the fewest holes under the maximum pitch (buildMultiPieceOptions). Pieces without a solution are listed under the table; the table can be copied for Excel (piecesTable).
 - The detail panel shows the AutoCAD helper "COPIER → Réseau → N éléments → @pitch<0"; the value always uses a decimal point (cadPitch), never the French comma.
 - Background: light grey page (same tone as Format) with a dot-grid pattern echoing the logo (minor dots every 12 px, stronger dot every 60 px); the page wrapper must stay transparent so the body pattern shows.
+- The bar schema is drawn like a drawing dimension: a chain line (start distance, "N × pitch = span", end distance; narrow edge labels go outside the piece) and the overall length below.
+- The detail panel also offers the AutoCAD dimension text override "N x pitch = <>" (chainText, decimal comma) when there are at least 2 intervals.
+- In the maximum-pitch tab (single piece), the first row carries a "conseillé" badge: fewest holes under the maximum pitch.

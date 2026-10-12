@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAutoRiveRows, buildIntervalRows, buildMaxPitchRows, buildMultiPieceOptions, buildPitchRows, cadPitch, fromIntervalRows, fromPitchRows, parsePieces, piecesTable } from "./trame-calc";
+import { buildAutoRiveRows, buildIntervalRows, buildMaxPitchRows, buildMultiPieceOptions, buildPitchRows, cadPitch, chainText, fromIntervalRows, fromPitchRows, parsePieces, piecesTable } from "./trame-calc";
 
 const close = (a: number, b: number) => Math.abs(a - b) < 1e-9;
 
@@ -137,5 +137,14 @@ describe("plusieurs pieces", () => {
       auto: false, Ds: 50, De: 50, Emax: 300, minEdge: 0, symmetric: true, integers: false,
     });
     expect(piecesTable(options).split("\n")[1]).toBe("A\t3094\t11\t299,4\t50\t50");
+  });
+});
+
+describe("cote de chaine", () => {
+  it("texte de remplacement pour la cote AutoCAD", () => {
+    expect(chainText(10, 290)).toBe("10 x 290 = <>");
+    expect(chainText(10, 299.4)).toBe("10 x 299,4 = <>");
+    expect(chainText(3, 2900 / 3)).toBe("3 x 966,7 = <>");
+    expect(chainText(1, 2900)).toBe("1 x 2900 = <>");
   });
 });

@@ -379,3 +379,11 @@ export function piecesTable(options: DrillOption[]): string {
   );
   return [head, ...rows].join("\n");
 }
+
+/**
+ * Texte de remplacement d'une cote AutoCAD pour une suite d'entraxes egaux, ex. "10 x 290 = <>".
+ * "<>" est remplace par AutoCAD par la valeur mesuree ; virgule decimale, sans separateur de milliers.
+ */
+export function chainText(N: number, pitch: number): string {
+  return `${N} x ${cadNumber(Number(pitch.toFixed(1))).replace(".", ",")} = <>`;
+}
