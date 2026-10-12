@@ -12,3 +12,4 @@
 - The bar schema is drawn like a drawing dimension: a chain line (start distance, "N × pitch = span", end distance; narrow edge labels go outside the piece) and the overall length below.
 - The detail panel also offers the AutoCAD dimension text override "N x pitch = <>" (chainText, decimal comma) when there are at least 2 intervals.
 - In the maximum-pitch tab (single piece), the first row carries a "conseillé" badge: fewest holes under the maximum pitch.
+- Values meant to be pasted (AutoCAD input, dimension text) use the codeCls style: monospace without ligatures, each helper kept on one line.
