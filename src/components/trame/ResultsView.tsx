@@ -145,7 +145,7 @@ export function ResultsView({
           </div>
           <Button
             onClick={() => copy(sel.positions, selected, multi ? `${sel.mark} · ${sel.holes} perçages` : `${sel.holes} perçages`, integers)}
-            className="gap-1.5 bg-[var(--color-trame)] text-white hover:bg-[var(--color-trame)]/90"
+            className="gap-1.5 bg-[var(--color-trame)] text-white dark:text-zinc-950 hover:bg-[var(--color-trame)]/90"
           >
             {copiedIdx === selected ? <Check className="size-4" /> : <Copy className="size-4" />}
             Copier les cotes
