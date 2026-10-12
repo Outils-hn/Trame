@@ -261,6 +261,9 @@ export interface DrillOption {
   /** Entraxe et distance au bord debut en mm entiers : toutes les cotes tombent rond. */
   round: boolean;
   note?: string;
+  /** Mode plusieurs pieces : repere et longueur propres a la ligne. */
+  mark?: string;
+  length?: number;
 }
 
 const isRound = (n: number) => Math.abs(n - Math.round(n)) < 1e-9;
@@ -277,4 +280,102 @@ export function fromPitchRows(rows: PitchRow[]): DrillOption[] {
     N: r.N, holes: r.positions.length, pitch: r.entraxe, dStart: r.rDebut, dEnd: r.rFin, positions: r.positions,
     round: isRound(r.entraxe) && isRound(r.rDebut), note: r.option,
   }));
+}
+
+/** Valeur pour AutoCAD : point decimal, sans separateur de milliers, 4 decimales max. */
+export function cadNumber(n: number): string {
+  return String(Number(n.toFixed(4)));
+}
+
+/** Saisie relative AutoCAD de l'entraxe, ex. "@299.4<0" (0 = vers la droite, 90 = vers le haut). */
+export function cadPitch(pitch: number, angle = 0): string {
+  return `@${cadNumber(pitch)}<${angle}`;
+}
+
+// ---------- Mode plusieurs pieces (entraxe maximum) ----------
+
+export interface PieceInput {
+  mark: string;
+  length: number;
+}
+
+const parseLen = (s: string) => {
+  const t = s.trim().replace(/\s*mm$/i, "").replace(/[\s\u00a0\u202f']/g, "").replace(",", ".");
+  return /^\d+(\.\d+)?$/.test(t) ? Number(t) : NaN;
+};
+
+/**
+ * Lit une liste "Repere / Longueur" collee depuis Excel (colonnes separees par tabulation)
+ * ou tapee a la main ("A1 2450", "A1;2450", ou juste "2450"). La longueur est la derniere
+ * cellule ; les lignes illisibles (en-tetes...) sont comptees comme ignorees.
+ */
+export function parsePieces(text: string): { pieces: PieceInput[]; ignored: number } {
+  const pieces: PieceInput[] = [];
+  let ignored = 0;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    let mark = "";
+    let length = NaN;
+    const cells = line.split(/\t|;/).map((c) => c.trim()).filter((c) => c !== "");
+    if (cells.length > 1) {
+      length = parseLen(cells[cells.length - 1]!);
+      mark = cells[0]!;
+    } else {
+      const m = line.match(/^(.*?)[\s:=]*(\d+(?:[.,]\d+)?)\s*(?:mm)?$/i);
+      if (m) {
+        length = parseLen(m[2]!);
+        mark = m[1]!.trim();
+      }
+    }
+    if (!(length > 0)) {
+      ignored++;
+      continue;
+    }
+    pieces.push({ mark: mark || `P${pieces.length + 1}`, length });
+  }
+  return { pieces, ignored };
+}
+
+export interface MultiParams {
+  /** Distances au bord calculees automatiquement (sinon Ds / De imposees). */
+  auto: boolean;
+  Ds: number;
+  De: number;
+  Emax: number;
+  /** Distance au bord minimale (mode auto). */
+  minEdge: number;
+  /** Mode auto : distances au bord identiques. */
+  symmetric: boolean;
+  integers: boolean;
+}
+
+/**
+ * Pour chaque piece, la solution retenue : le moins de percages possible sous l'entraxe
+ * maximum (premiere proposition du mode une piece). Les pieces sans solution sont listees a part.
+ */
+export function buildMultiPieceOptions(
+  pieces: PieceInput[],
+  p: MultiParams,
+): { options: DrillOption[]; failed: PieceInput[] } {
+  const options: DrillOption[] = [];
+  const failed: PieceInput[] = [];
+  for (const piece of pieces) {
+    const first = p.auto
+      ? fromPitchRows(buildAutoRiveRows(piece.length, p.Emax, p.minEdge, p.symmetric, p.integers).rows)[0]
+      : fromIntervalRows(buildMaxPitchRows(piece.length, p.Ds, p.De, p.Emax, p.integers).rows, p.Ds, p.De)[0];
+    if (first) options.push({ ...first, note: undefined, mark: piece.mark, length: piece.length });
+    else failed.push(piece);
+  }
+  return { options, failed };
+}
+
+/** Tableau a coller dans Excel (tabulations, virgule decimale). */
+export function piecesTable(options: DrillOption[]): string {
+  const n = (v: number) => String(Number(v.toFixed(2))).replace(".", ",");
+  const head = ["Repère", "Longueur", "Perçages", "Entraxe", "Bord début", "Bord fin"].join("\t");
+  const rows = options.map((o) =>
+    [o.mark ?? "", n(o.length ?? 0), o.holes, n(o.pitch), n(o.dStart), n(o.dEnd)].join("\t"),
+  );
+  return [head, ...rows].join("\n");
 }

@@ -4,6 +4,7 @@ import { Moon, Sun } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -15,10 +16,12 @@ import {
   buildAutoRiveRows,
   buildIntervalRows,
   buildMaxPitchRows,
+  buildMultiPieceOptions,
   buildPitchRows,
   fmt,
   fromIntervalRows,
   fromPitchRows,
+  parsePieces,
   type Mode,
 } from "@/lib/trame-calc";
 import {
@@ -125,6 +128,9 @@ function TrameApp() {
   const [Emax, setEmax] = useState<number>(300);
   const [autoRives3, setAutoRives3] = useState(false);
   const [riveMin3, setRiveMin3] = useState<number>(30);
+  // Plusieurs pieces (entraxe max uniquement) : liste Repere / Longueur, memes parametres.
+  const [multi3, setMulti3] = useState(false);
+  const [pieces3, setPieces3] = useState<string>("A1\t3000\nA2\t2450\nA3\t1830");
 
   const [integers, setIntegers] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
@@ -156,6 +162,16 @@ function TrameApp() {
     [L3, Emax, riveMin3, sameEnd3, integers],
   );
 
+  const parsed3 = useMemo(() => parsePieces(pieces3), [pieces3]);
+  const multiData = useMemo(
+    () =>
+      buildMultiPieceOptions(parsed3.pieces, {
+        auto: autoRives3, Ds: Ds3, De: effectiveDe3, Emax, minEdge: riveMin3, symmetric: sameEnd3, integers,
+      }),
+    [parsed3, autoRives3, Ds3, effectiveDe3, Emax, riveMin3, sameEnd3, integers],
+  );
+  const isMulti = mode === "maxpitch" && multi3;
+
   const applyHistory = (p: HistoryParams) => {
     setMode((p.mode as Mode) ?? "intervals");
     setL(Number(p.L));
@@ -175,6 +191,8 @@ function TrameApp() {
     setEmax(Number(p.Emax));
     setAutoRives3(Boolean(p.autoRives3));
     if (p.riveMin3 !== undefined) setRiveMin3(Number(p.riveMin3));
+    setMulti3(Boolean(p.multi3));
+    if (typeof p.pieces3 === "string") setPieces3(p.pieces3);
     setIntegers(Boolean(p.integers));
     toast.success("Paramètres rechargés depuis l'historique");
   };
@@ -200,6 +218,8 @@ function TrameApp() {
     Emax,
     autoRives3,
     riveMin3,
+    multi3,
+    pieces3,
     integers,
   });
 
@@ -214,7 +234,7 @@ function TrameApp() {
         `Répartition Standard · ${
           mode === "pitch" ? "Entraxe fixe" : mode === "maxpitch" ? "Entraxe max" : "Nbre d'intervalles"
         }`,
-        `Barre ${fmt(total, 1)} mm — ${positions.length} trous`,
+        isMulti ? `Pièce ${label}` : `Barre ${fmt(total, 1)} mm — ${positions.length} trous`,
         snapshot(),
       );
       toast.success(`Cotes copiées (${label})`);
@@ -376,7 +396,50 @@ function TrameApp() {
                   </div>
 
                   <div className="space-y-4">
-                    <NumberField id="L3" label="Longueur totale (L)" value={isFinite(L3) ? L3 : ""} onChange={setL3} />
+                    <div className="grid grid-cols-2 gap-1 rounded-md border border-border bg-muted/40 p-1">
+                      {[false, true].map((m) => (
+                        <button
+                          key={String(m)}
+                          type="button"
+                          onClick={() => setMulti3(m)}
+                          aria-pressed={multi3 === m}
+                          className={
+                            "rounded px-2 py-1.5 text-xs font-medium transition-colors " +
+                            (multi3 === m
+                              ? "bg-background text-[var(--color-trame)] shadow-sm"
+                              : "text-muted-foreground hover:text-foreground")
+                          }
+                        >
+                          {m ? "Plusieurs pièces" : "Une pièce"}
+                        </button>
+                      ))}
+                    </div>
+
+                    {multi3 ? (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pieces3" className="text-xs font-medium text-muted-foreground">
+                          Repère / Longueur — une pièce par ligne
+                        </Label>
+                        <Textarea
+                          id="pieces3"
+                          value={pieces3}
+                          onChange={(e) => setPieces3(e.target.value)}
+                          rows={6}
+                          spellCheck={false}
+                          placeholder={"A1\t3000\nA2\t2450"}
+                          className="font-mono text-sm tabular-nums"
+                        />
+                        <p className="text-[11px] text-muted-foreground">
+                          Collez deux colonnes depuis Excel ou tapez « A1 3000 ».{" "}
+                          {parsed3.pieces.length} pièce{parsed3.pieces.length > 1 ? "s" : ""} lue
+                          {parsed3.pieces.length > 1 ? "s" : ""}
+                          {parsed3.ignored > 0 &&
+                            ` · ${parsed3.ignored} ligne${parsed3.ignored > 1 ? "s" : ""} ignorée${parsed3.ignored > 1 ? "s" : ""}`}
+                        </p>
+                      </div>
+                    ) : (
+                      <NumberField id="L3" label="Longueur totale (L)" value={isFinite(L3) ? L3 : ""} onChange={setL3} />
+                    )}
 
                     {!autoRives3 && (
                       <div className="grid grid-cols-2 gap-3">
@@ -435,22 +498,26 @@ function TrameApp() {
           {/* Résultats : tableau compact des possibilités + détail de la ligne choisie */}
           <section>
             <ResultsView
-              key={mode + (autoRives3 ? "-auto" : "")}
+              key={mode + (autoRives3 ? "-auto" : "") + (isMulti ? "-multi" : "")}
               title={
                 mode === "intervals"
                   ? "Répartitions possibles"
                   : mode === "pitch"
                     ? "Répartition"
-                    : autoRives3
-                      ? "Distances au bord optimisées"
-                      : "Répartitions sous l'entraxe maximum"
+                    : isMulti
+                      ? "Répartition par pièce"
+                      : autoRives3
+                        ? "Distances au bord optimisées"
+                        : "Répartitions sous l'entraxe maximum"
               }
               options={
                 mode === "intervals"
                   ? fromIntervalRows(intervalsData.rows, Ds, effectiveDe)
                   : mode === "pitch"
                     ? fromPitchRows(pitchRows)
-                    : autoRives3
+                    : isMulti
+                      ? multiData.options
+                      : autoRives3
                       ? fromPitchRows(autoRiveData.rows)
                       : fromIntervalRows(maxPitchData.rows, Ds3, effectiveDe3)
               }
@@ -458,7 +525,19 @@ function TrameApp() {
               totalLength={mode === "intervals" ? L : mode === "pitch" ? L2 : L3}
               copy={copy}
               copiedIdx={copiedIdx}
+              notice={
+                isMulti && multiData.failed.length > 0
+                  ? `Sans solution avec ces paramètres : ${multiData.failed
+                      .map((f) => `${f.mark} (${fmt(f.length)} mm)`)
+                      .join(", ")}`
+                  : undefined
+              }
               empty={
+                isMulti && !parsed3.pieces.length ? (
+                  <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
+                    Ajoutez des pièces (repère et longueur) pour voir leur répartition.
+                  </div>
+                ) : 
                 mode !== "pitch" && integers ? (
                   <EmptyIntegerNotice
                     message={
