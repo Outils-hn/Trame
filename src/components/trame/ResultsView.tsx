@@ -3,7 +3,7 @@ import { Check, ClipboardList, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { cadPitch, fmt, piecesTable, type DrillOption } from "@/lib/trame-calc";
+import { cadPitch, chainText, fmt, piecesTable, type DrillOption } from "@/lib/trame-calc";
 
 /**
  * Tableau compact des possibilites (une ligne par repartition, sans les cotes)
@@ -18,6 +18,7 @@ export function ResultsView({
   copy,
   copiedIdx,
   notice,
+  recommendFirst,
 }: {
   title: string;
   options: DrillOption[];
@@ -28,6 +29,8 @@ export function ResultsView({
   copiedIdx: number | null;
   /** Message sous le tableau (ex. pieces sans solution). */
   notice?: ReactNode;
+  /** Badge "conseillé" sur la premiere ligne (le moins de percages sous l'entraxe max). */
+  recommendFirst?: boolean;
 }) {
   const [selected, setSelected] = useState(0);
   // Si la liste raccourcit (nouvelles valeurs), on reste sur une ligne existante.
@@ -99,6 +102,11 @@ export function ResultsView({
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmt(o.dEnd)}</td>
                     <td className="px-4 py-2.5 text-left">
                       <div className="flex flex-wrap items-center gap-2">
+                        {recommendFirst && i === 0 && (
+                          <span className="rounded-full bg-[var(--color-trame)] px-2 py-0.5 text-[10px] font-semibold text-white dark:text-zinc-950">
+                            conseillé
+                          </span>
+                        )}
                         {o.round && (
                           <span className="rounded-full border border-[var(--color-trame)]/40 px-2 py-0.5 text-[10px] font-medium text-[var(--color-trame)]">
                             mm ronds
@@ -130,7 +138,7 @@ export function ResultsView({
           </span>
         </div>
 
-        <BarSchema positions={sel.positions} total={total} />
+        <BarSchema positions={sel.positions} total={total} N={sel.N} pitch={sel.pitch} />
 
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -163,6 +171,16 @@ export function ResultsView({
               <Copy className="size-3.5" />
             </CopyButton>
             <span className="text-[11px]">&lt;90 pour une pièce verticale</span>
+            {sel.N > 1 && (
+              <>
+                <span className="mx-1 hidden h-4 w-px bg-border sm:inline-block" />
+                <span>Texte de cote</span>
+                <code className="rounded border border-border bg-background px-1.5 py-0.5 font-mono text-foreground">{chainText(sel.N, sel.pitch)}</code>
+                <CopyButton text={chainText(sel.N, sel.pitch)} done={`« ${chainText(sel.N, sel.pitch)} » copié`} title="Copier le texte de cote">
+                  <Copy className="size-3.5" />
+                </CopyButton>
+              </>
+            )}
           </div>
         )}
       </section>
@@ -195,25 +213,52 @@ function CopyButton({ text, done, title, children }: { text: string; done: strin
   );
 }
 
-/** Schema de controle : la piece, ses percages et les deux distances au bord. */
-function BarSchema({ positions, total }: { positions: number[]; total: number }) {
-  if (!(total > 0)) return null;
-  const W = 700, x0 = 20, x1 = W - 20, y = 30;
+/** Schema facon plan : la piece, ses percages, une ligne de cotes en chaine et la cote totale. */
+function BarSchema({ positions, total, N, pitch }: { positions: number[]; total: number; N: number; pitch: number }) {
+  if (!(total > 0) || !positions.length) return null;
+  const W = 760, x0 = 56, x1 = W - 56, yBar = 22, yChain = 62, yTotal = 92;
   const X = (v: number) => x0 + (v / total) * (x1 - x0);
-  const first = positions[0], last = positions[positions.length - 1];
+  const first = positions[0]!, last = positions[positions.length - 1]!;
+  const dEnd = total - last;
+  // Points de la chaine : bord, premier percage, dernier percage, bord.
+  const ticks = positions.length > 1 ? [0, first, last, total] : [0, first, total];
+  const tick = (x: number, y: number) => <line x1={x - 4} y1={y + 4} x2={x + 4} y2={y - 4} className="stroke-foreground" strokeWidth={1.3} />;
+  // Un texte de bord trop large pour son segment passe a l'exterieur de la piece.
+  const edgeLabel = (a: number, b: number, value: number, side: "start" | "end") => {
+    const txt = fmt(value);
+    const fits = X(b) - X(a) >= txt.length * 7 + 10;
+    const x = fits ? (X(a) + X(b)) / 2 : side === "start" ? X(a) - 8 : X(b) + 8;
+    const anchor = fits ? "middle" : side === "start" ? "end" : "start";
+    return <text x={x} y={yChain - 5} textAnchor={anchor} className="fill-foreground text-[11px] tabular-nums">{txt}</text>;
+  };
   return (
-    <svg viewBox={`0 0 ${W} 74`} className="mt-4 w-full" role="img" aria-label="Schéma des perçages">
-      <rect x={x0} y={y - 10} width={x1 - x0} height={20} rx={3} className="fill-muted stroke-border" />
+    <svg viewBox={`0 0 ${W} 104`} className="mt-4 w-full" role="img" aria-label="Schéma des perçages coté">
+      {/* lignes d'attache vers les cotes */}
+      <g className="stroke-muted-foreground/50" strokeWidth={0.8}>
+        {[0, total].map((v, i) => <line key={`b${i}`} x1={X(v)} y1={yBar + 12} x2={X(v)} y2={yTotal + 6} />)}
+        {ticks.slice(1, -1).map((v, i) => <line key={`p${i}`} x1={X(v)} y1={yBar + 6} x2={X(v)} y2={yChain + 6} />)}
+      </g>
+      <rect x={x0} y={yBar - 10} width={x1 - x0} height={20} rx={3} className="fill-muted stroke-border" />
       {positions.length <= 80
-        ? positions.map((p, i) => <circle key={i} cx={X(p)} cy={y} r={3.5} className="fill-foreground" />)
-        : <text x={W / 2} y={y + 4} textAnchor="middle" className="fill-muted-foreground text-[11px]">{positions.length} perçages</text>}
-      {first !== undefined && last !== undefined && (
-        <g className="fill-muted-foreground text-[11px]">
-          <text x={x0} y={66}>← {fmt(first)}</text>
-          <text x={W / 2} y={66} textAnchor="middle">Longueur {fmt(total)} mm</text>
-          <text x={x1} y={66} textAnchor="end">{fmt(total - last)} →</text>
-        </g>
+        ? positions.map((p, i) => <circle key={i} cx={X(p)} cy={yBar} r={3.5} className="fill-foreground" />)
+        : <text x={W / 2} y={yBar + 4} textAnchor="middle" className="fill-muted-foreground text-[11px]">{positions.length} perçages</text>}
+
+      {/* cotes en chaine */}
+      <line x1={X(0)} y1={yChain} x2={X(total)} y2={yChain} className="stroke-foreground" strokeWidth={0.8} />
+      {ticks.map((v, i) => <g key={i}>{tick(X(v), yChain)}</g>)}
+      {edgeLabel(0, first, first, "start")}
+      {positions.length > 1 && (
+        <text x={(X(first) + X(last)) / 2} y={yChain - 5} textAnchor="middle" className="fill-[var(--color-trame)] text-[11px] font-semibold tabular-nums">
+          {N > 1 ? `${N} × ${fmt(pitch)} = ${fmt(last - first)}` : fmt(last - first)}
+        </text>
       )}
+      {edgeLabel(last, total, dEnd, "end")}
+
+      {/* cote totale */}
+      <line x1={X(0)} y1={yTotal} x2={X(total)} y2={yTotal} className="stroke-foreground" strokeWidth={0.8} />
+      {tick(X(0), yTotal)}
+      {tick(X(total), yTotal)}
+      <text x={W / 2} y={yTotal - 5} textAnchor="middle" className="fill-foreground text-[11px] font-semibold tabular-nums">{fmt(total)}</text>
     </svg>
   );
 }

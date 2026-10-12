@@ -525,6 +525,7 @@ function TrameApp() {
               totalLength={mode === "intervals" ? L : mode === "pitch" ? L2 : L3}
               copy={copy}
               copiedIdx={copiedIdx}
+              recommendFirst={mode === "maxpitch" && !isMulti}
               notice={
                 isMulti && multiData.failed.length > 0
                   ? `Sans solution avec ces paramètres : ${multiData.failed
