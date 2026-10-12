@@ -1,0 +1,240 @@
+// Calculs de repartition de percages : code pur, sans interface, teste dans trame-calc.test.ts.
+
+export type Mode = "intervals" | "pitch" | "maxpitch";
+
+export interface IntervalRow {
+  kind: "intervals";
+  N: number;
+  holes: number;
+  pitch: number;
+  positions: number[];
+}
+
+export interface PitchRow {
+  kind: "pitch";
+  option: string;
+  N: number;
+  rDebut: number;
+  entraxe: number;
+  rFin: number;
+  positions: number[];
+}
+
+export function fmt(n: number, d = 1) {
+  if (!isFinite(n)) return "—";
+  const cleaned = Number(n.toFixed(d));
+  return cleaned.toLocaleString("fr-FR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: d,
+  });
+}
+
+export function buildIntervalRows(
+  L: number,
+  Ds: number,
+  De: number,
+  maxIntervals: number,
+  integers: boolean,
+): { rows: IntervalRow[]; Lu: number; Nmax: number } {
+  const Lu = L - Ds - De;
+  const Nmax = Math.max(0, Math.floor(maxIntervals));
+  if (!isFinite(Lu) || Lu <= 0 || !isFinite(Nmax) || Nmax <= 0) {
+    return { rows: [], Lu, Nmax: 0 };
+  }
+  const rows: IntervalRow[] = [];
+  const integerDs = Number.isInteger(Ds);
+  const integerLu = Number.isInteger(Lu);
+  const upper = Math.min(20, Nmax);
+  for (let N = 1; N <= upper; N++) {
+    const rawPitch = Lu / N;
+    const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
+    if (integers && !isIntegerPitch) continue;
+    const pitch = rawPitch;
+    const positions: number[] = [];
+    for (let i = 0; i <= N; i++) {
+      positions.push(Ds + i * rawPitch);
+    }
+    rows.push({ kind: "intervals", N, holes: N + 1, pitch, positions });
+  }
+  return { rows, Lu, Nmax };
+}
+
+export function buildPitchRows(L: number, E: number, symmetric: boolean, Dstart: number, integers: boolean): PitchRow[] {
+  if (!isFinite(L) || !isFinite(E) || L <= 0 || E <= 0) return [];
+  const rows: PitchRow[] = [];
+
+  const makePositions = (start: number, N: number) => {
+    const arr: number[] = [];
+    for (let i = 0; i <= N; i++) {
+      const p = start + i * E;
+      arr.push(integers ? Math.round(p) : p);
+    }
+    return arr;
+  };
+
+  if (symmetric) {
+    const variants: number[] = [];
+    const N = Math.floor(L / E);
+    if (N >= 1) variants.push(N);
+    const rive = (L - N * E) / 2;
+    if (rive < 20 && N - 1 >= 1) variants.push(N - 1);
+
+    for (const Nv of variants) {
+      const r = (L - Nv * E) / 2;
+      // En mm entiers, un reste impair ne peut pas etre partage en deux : le mm de plus va en fin,
+      // pour que debut + entraxes + fin = longueur exacte.
+      const rD = integers ? Math.floor(r) : r;
+      const rF = integers ? L - Nv * E - rD : r;
+      rows.push({
+        kind: "pitch",
+        option: "Distances au bord identiques",
+        N: Nv,
+        rDebut: rD,
+        entraxe: E,
+        rFin: rF,
+        positions: makePositions(rD, Nv),
+      });
+    }
+  } else {
+    if (!isFinite(Dstart) || Dstart < 0 || Dstart > L) return [];
+    const rest = L - Dstart;
+    const N = Math.floor(rest / E);
+    if (N < 1) return [];
+    const dFin = rest - N * E;
+    rows.push({
+      kind: "pitch",
+      option: `Distance au bord début ${fmt(Dstart, 1)} mm`,
+      N,
+      rDebut: integers ? Math.round(Dstart) : Dstart,
+      entraxe: E,
+      rFin: integers ? Math.round(dFin) : dFin,
+      positions: makePositions(Dstart, N),
+    });
+  }
+  return rows;
+}
+
+export function buildMaxPitchRows(
+  L: number,
+  Ds: number,
+  De: number,
+  Emax: number,
+  integers: boolean,
+): { rows: IntervalRow[]; Lu: number; Nmin: number } {
+  const Lu = L - Ds - De;
+  if (!isFinite(Lu) || Lu <= 0 || !isFinite(Emax) || Emax <= 0) {
+    return { rows: [], Lu, Nmin: 0 };
+  }
+  const Nmin = Math.max(1, Math.ceil(Lu / Emax));
+  const rows: IntervalRow[] = [];
+  const integerDs = Number.isInteger(Ds);
+  const integerLu = Number.isInteger(Lu);
+  const target = 5;
+  const hardLimit = integers ? 40 : Math.min(40, Nmin + target - 1);
+  for (let N = Nmin; N <= hardLimit && rows.length < target; N++) {
+    const rawPitch = Lu / N;
+    const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
+    if (integers && !isIntegerPitch) continue;
+    const positions: number[] = [];
+    for (let i = 0; i <= N; i++) {
+      positions.push(Ds + i * rawPitch);
+    }
+    rows.push({ kind: "intervals", N, holes: N + 1, pitch: rawPitch, positions });
+  }
+  return { rows, Lu, Nmin };
+}
+
+
+/**
+ * Onglet 3 — rives calculées/optimisées automatiquement.
+ * Cherche, pour un nombre croissant d'intervalles, la plus petite rive >= riveMin
+ * telle que l'entraxe résultant reste <= Emax (et entier si demandé).
+ */
+export function buildAutoRiveRows(
+  L: number,
+  Emax: number,
+  riveMin: number,
+  symmetric: boolean,
+  integers: boolean,
+): { rows: PitchRow[]; Nmin: number } {
+  if (![L, Emax, riveMin].every((v) => isFinite(v)) || L <= 0 || Emax <= 0 || riveMin < 0) {
+    return { rows: [], Nmin: 0 };
+  }
+  if (integers && (!Number.isInteger(L) || !Number.isInteger(riveMin))) return { rows: [], Nmin: 0 };
+
+  const Nmin = Math.max(1, Math.ceil((L - 2 * riveMin) / Emax));
+  const rows: PitchRow[] = [];
+  const target = 6;
+  const hardLimit = integers ? Nmin + 400 : Nmin + target - 1;
+
+  for (let N = Nmin; N <= hardLimit && rows.length < target; N++) {
+    let rDebut: number | null = null;
+    let rFin: number | null = null;
+    let pitch = 0;
+
+    if (symmetric) {
+      const lower = Math.max(riveMin, (L - N * Emax) / 2);
+      if (integers) {
+        const start = Math.ceil(lower - 1e-9);
+        const maxRive = (L - N) / 2; // pas >= 1 mm
+        for (let r = start; r <= maxRive; r++) {
+          const Lu = L - 2 * r;
+          if (Lu <= 0) break;
+          if (Lu % N !== 0) continue;
+          const p = Lu / N;
+          if (p > Emax) continue;
+          rDebut = r;
+          rFin = r;
+          pitch = p;
+          break;
+        }
+      } else {
+        const Lu = L - 2 * lower;
+        if (Lu > 0) {
+          rDebut = lower;
+          rFin = lower;
+          pitch = Lu / N;
+        }
+      }
+    } else {
+      // Rive de début au minimum, le reliquat part sur la rive de fin
+      if (integers) {
+        const pStart = Math.floor(Math.min(Emax, (L - 2 * riveMin) / N));
+        for (let p = pStart; p >= 1; p--) {
+          const rest = L - riveMin - N * p;
+          if (rest < riveMin) continue;
+          rDebut = riveMin;
+          rFin = rest;
+          pitch = p;
+          break;
+        }
+      } else {
+        const p = Math.min(Emax, (L - 2 * riveMin) / N);
+        if (p > 0) {
+          rDebut = riveMin;
+          rFin = L - riveMin - N * p;
+          pitch = p;
+        }
+      }
+    }
+
+    if (rDebut === null || rFin === null || pitch <= 0 || pitch > Emax + 1e-9 || rFin < riveMin - 1e-9) continue;
+
+    const positions: number[] = [];
+    for (let i = 0; i <= N; i++) positions.push(rDebut + i * pitch);
+
+    rows.push({
+      kind: "pitch",
+      option: `Proposition ${rows.length + 1} · distances au bord ${fmt(rDebut)}${
+        symmetric ? "" : ` / ${fmt(rFin)}`
+      } mm · entraxe ${fmt(pitch)} mm`,
+      N,
+      rDebut,
+      entraxe: pitch,
+      rFin,
+      positions,
+    });
+  }
+
+  return { rows, Nmin };
+}
