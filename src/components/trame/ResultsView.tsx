@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Check, ClipboardList, Copy } from "lucide-react";
+import { Check, ClipboardList, Copy, ListPlus } from "lucide-react";
+import { useTasks } from "@/components/trame/Tasks";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ export function ResultsView({
   recommendFirst?: boolean;
 }) {
   const [selected, setSelected] = useState(0);
+  const { startAdd } = useTasks();
   // Si la liste raccourcit (nouvelles valeurs), on reste sur une ligne existante.
   useEffect(() => {
     if (selected >= options.length) setSelected(0);
@@ -151,6 +153,11 @@ export function ResultsView({
               ))}
             </div>
           </div>
+          <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => startAdd(sel, total)} className="gap-1.5">
+            <ListPlus className="size-4" />
+            Ajouter à la tâche
+          </Button>
           <Button
             onClick={() => copy(sel.positions, selected, multi ? `${sel.mark} · ${sel.holes} perçages` : `${sel.holes} perçages`, integers)}
             className="gap-1.5 bg-[var(--color-trame)] text-white dark:text-zinc-950 hover:bg-[var(--color-trame)]/90"
@@ -158,28 +165,30 @@ export function ResultsView({
             {copiedIdx === selected ? <Check className="size-4" /> : <Copy className="size-4" />}
             Copier les cotes
           </Button>
+          </div>
         </div>
 
         {sel.holes > 1 && (
-          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">Dans AutoCAD</span>
-            <span>
-              COPIER → <b className="font-medium text-foreground">Réseau</b> → {sel.holes} éléments →
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-2 whitespace-nowrap">
+              <span className="font-semibold text-foreground">Dans AutoCAD</span>
+              <span>
+                COPIER → <b className="font-medium text-foreground">Réseau</b> → {sel.holes} éléments →
+              </span>
+              <code className={codeCls}>{cadPitch(sel.pitch)}</code>
+              <CopyButton text={cadPitch(sel.pitch)} done={`${cadPitch(sel.pitch)} copié`} title="Copier la saisie AutoCAD">
+                <Copy className="size-3.5" />
+              </CopyButton>
+              <span className="text-[11px]">&lt;90 pour une pièce verticale</span>
             </span>
-            <code className="rounded border border-border bg-background px-1.5 py-0.5 font-mono text-foreground">{cadPitch(sel.pitch)}</code>
-            <CopyButton text={cadPitch(sel.pitch)} done={`${cadPitch(sel.pitch)} copié`} title="Copier la saisie AutoCAD">
-              <Copy className="size-3.5" />
-            </CopyButton>
-            <span className="text-[11px]">&lt;90 pour une pièce verticale</span>
             {sel.N > 1 && (
-              <>
-                <span className="mx-1 hidden h-4 w-px bg-border sm:inline-block" />
+              <span className="inline-flex items-center gap-2 whitespace-nowrap">
                 <span>Texte de cote</span>
-                <code className="rounded border border-border bg-background px-1.5 py-0.5 font-mono text-foreground">{chainText(sel.N, sel.pitch)}</code>
+                <code className={codeCls}>{chainText(sel.N, sel.pitch)}</code>
                 <CopyButton text={chainText(sel.N, sel.pitch)} done={`« ${chainText(sel.N, sel.pitch)} » copié`} title="Copier le texte de cote">
                   <Copy className="size-3.5" />
                 </CopyButton>
-              </>
+              </span>
             )}
           </div>
         )}
@@ -187,6 +196,9 @@ export function ResultsView({
     </div>
   );
 }
+
+/** Valeurs a coller : chasse fixe, sans ligature (sinon "<>" devient un losange). */
+const codeCls = "rounded border border-border bg-background px-1.5 py-0.5 font-mono text-foreground [font-variant-ligatures:none]";
 
 /** Petit bouton qui copie un texte et confirme 1,5 s. */
 function CopyButton({ text, done, title, children }: { text: string; done: string; title: string; children: ReactNode }) {

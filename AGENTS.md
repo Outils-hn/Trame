@@ -12,3 +12,5 @@
 - The bar schema is drawn like a drawing dimension: a chain line (start distance, "N × pitch = span", end distance; narrow edge labels go outside the piece) and the overall length below.
 - The detail panel also offers the AutoCAD dimension text override "N x pitch = <>" (chainText, decimal comma) when there are at least 2 intervals.
 - In the maximum-pitch tab (single piece), the first row carries a "conseillé" badge: fewest holes under the maximum pitch.
+- Tasks ("Tâche 0001"...): header button "Tâches" opens a side panel; "Ajouter à la tâche" in the detail panel adds the selected distribution with a repère, piece quantity, rows of holes per piece and one or more hole diameters (several = stepped hole). Fixings = qty × rows × holes, raw total (no margin), plus a per-diameter count (a stepped hole counts in each of its diameters). Pure logic in src/lib/trame-tasks.ts (tested), UI in src/components/trame/Tasks.tsx; stored in localStorage only (key trame:tasks:v1). The task can be copied for Excel.
+- Values meant to be pasted (AutoCAD input, dimension text) use the codeCls style: monospace without ligatures, each helper kept on one line.

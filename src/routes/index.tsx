@@ -12,6 +12,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { HistoryButton, HistoryPanel } from "@/components/trame/HistoryPanel";
 import { ResultsView } from "@/components/trame/ResultsView";
 import { AppFooter } from "@/components/trame/AppFooter";
+import { TasksButton, TasksPanel, TasksProvider } from "@/components/trame/Tasks";
 import {
   buildAutoRiveRows,
   buildIntervalRows,
@@ -97,7 +98,9 @@ function Index() {
   // Trame ne garde que la répartition standard : l'historique n'a plus de module à changer.
   return (
     <TrameHistoryProvider onModuleChange={() => {}}>
-      <TrameApp />
+      <TasksProvider>
+        <TrameApp />
+      </TasksProvider>
     </TrameHistoryProvider>
   );
 }
@@ -257,6 +260,7 @@ function TrameApp() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+          <TasksButton />
           <HistoryButton />
           <button
             onClick={() => setDark((d) => !d)}
@@ -269,6 +273,7 @@ function TrameApp() {
         </div>
       </header>
       <HistoryPanel />
+      <TasksPanel />
 
       <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
