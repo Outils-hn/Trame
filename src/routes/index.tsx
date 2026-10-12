@@ -9,18 +9,22 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
-import { ReinforcedModule } from "@/components/trame/ReinforcedModule";
-import { ObstacleModule } from "@/components/trame/ObstacleModule";
-import { PanelModule } from "@/components/trame/PanelModule";
-import { ExpansionModule } from "@/components/trame/ExpansionModule";
-import { ExportActions } from "@/components/trame/ExportActions";
 
 import { HistoryButton, HistoryPanel } from "@/components/trame/HistoryPanel";
+import {
+  buildAutoRiveRows,
+  buildIntervalRows,
+  buildMaxPitchRows,
+  buildPitchRows,
+  fmt,
+  type IntervalRow,
+  type Mode,
+  type PitchRow,
+} from "@/lib/trame-calc";
 import {
   TrameHistoryProvider,
   useModuleHistory,
   type HistoryParams,
-  type TrameModuleKey,
 } from "@/lib/trame-history";
 
 
@@ -39,240 +43,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Mode = "intervals" | "pitch" | "maxpitch";
-
-interface IntervalRow {
-  kind: "intervals";
-  N: number;
-  holes: number;
-  pitch: number;
-  positions: number[];
-}
-
-interface PitchRow {
-  kind: "pitch";
-  option: string;
-  N: number;
-  rDebut: number;
-  entraxe: number;
-  rFin: number;
-  positions: number[];
-}
-
-function fmt(n: number, d = 1) {
-  if (!isFinite(n)) return "—";
-  const cleaned = Number(n.toFixed(d));
-  return cleaned.toLocaleString("fr-FR", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: d,
-  });
-}
-
-function buildIntervalRows(
-  L: number,
-  Ds: number,
-  De: number,
-  maxIntervals: number,
-  integers: boolean,
-): { rows: IntervalRow[]; Lu: number; Nmax: number } {
-  const Lu = L - Ds - De;
-  const Nmax = Math.max(0, Math.floor(maxIntervals));
-  if (!isFinite(Lu) || Lu <= 0 || !isFinite(Nmax) || Nmax <= 0) {
-    return { rows: [], Lu, Nmax: 0 };
-  }
-  const rows: IntervalRow[] = [];
-  const integerDs = Number.isInteger(Ds);
-  const integerLu = Number.isInteger(Lu);
-  const upper = Math.min(20, Nmax);
-  for (let N = 1; N <= upper; N++) {
-    const rawPitch = Lu / N;
-    const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
-    if (integers && !isIntegerPitch) continue;
-    const pitch = rawPitch;
-    const positions: number[] = [];
-    for (let i = 0; i <= N; i++) {
-      positions.push(Ds + i * rawPitch);
-    }
-    rows.push({ kind: "intervals", N, holes: N + 1, pitch, positions });
-  }
-  return { rows, Lu, Nmax };
-}
-
-function buildPitchRows(L: number, E: number, symmetric: boolean, Dstart: number, integers: boolean): PitchRow[] {
-  if (!isFinite(L) || !isFinite(E) || L <= 0 || E <= 0) return [];
-  const rows: PitchRow[] = [];
-
-  const makePositions = (start: number, N: number) => {
-    const arr: number[] = [];
-    for (let i = 0; i <= N; i++) {
-      const p = start + i * E;
-      arr.push(integers ? Math.round(p) : p);
-    }
-    return arr;
-  };
-
-  if (symmetric) {
-    const variants: number[] = [];
-    const N = Math.floor(L / E);
-    if (N >= 1) variants.push(N);
-    const rive = (L - N * E) / 2;
-    if (rive < 20 && N - 1 >= 1) variants.push(N - 1);
-
-    for (const Nv of variants) {
-      const r = (L - Nv * E) / 2;
-      rows.push({
-        kind: "pitch",
-        option: "Rives symétriques",
-        N: Nv,
-        rDebut: integers ? Math.round(r) : r,
-        entraxe: integers ? Math.round(E) : E,
-        rFin: integers ? Math.round(r) : r,
-        positions: makePositions(r, Nv),
-      });
-    }
-  } else {
-    if (!isFinite(Dstart) || Dstart < 0 || Dstart > L) return [];
-    const rest = L - Dstart;
-    const N = Math.floor(rest / E);
-    if (N < 1) return [];
-    const dFin = rest - N * E;
-    rows.push({
-      kind: "pitch",
-      option: `Début fixé à ${fmt(Dstart, 1)} mm`,
-      N,
-      rDebut: integers ? Math.round(Dstart) : Dstart,
-      entraxe: integers ? Math.round(E) : E,
-      rFin: integers ? Math.round(dFin) : dFin,
-      positions: makePositions(Dstart, N),
-    });
-  }
-  return rows;
-}
-
-function buildMaxPitchRows(
-  L: number,
-  Ds: number,
-  De: number,
-  Emax: number,
-  integers: boolean,
-): { rows: IntervalRow[]; Lu: number; Nmin: number } {
-  const Lu = L - Ds - De;
-  if (!isFinite(Lu) || Lu <= 0 || !isFinite(Emax) || Emax <= 0) {
-    return { rows: [], Lu, Nmin: 0 };
-  }
-  const Nmin = Math.max(1, Math.ceil(Lu / Emax));
-  const rows: IntervalRow[] = [];
-  const integerDs = Number.isInteger(Ds);
-  const integerLu = Number.isInteger(Lu);
-  const target = 5;
-  const hardLimit = integers ? 40 : Math.min(40, Nmin + target - 1);
-  for (let N = Nmin; N <= hardLimit && rows.length < target; N++) {
-    const rawPitch = Lu / N;
-    const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
-    if (integers && !isIntegerPitch) continue;
-    const positions: number[] = [];
-    for (let i = 0; i <= N; i++) {
-      positions.push(Ds + i * rawPitch);
-    }
-    rows.push({ kind: "intervals", N, holes: N + 1, pitch: rawPitch, positions });
-  }
-  return { rows, Lu, Nmin };
-}
-
-
-/**
- * Onglet 3 — rives calculées/optimisées automatiquement.
- * Cherche, pour un nombre croissant d'intervalles, la plus petite rive >= riveMin
- * telle que l'entraxe résultant reste <= Emax (et entier si demandé).
- */
-function buildAutoRiveRows(
-  L: number,
-  Emax: number,
-  riveMin: number,
-  symmetric: boolean,
-  integers: boolean,
-): { rows: PitchRow[]; Nmin: number } {
-  if (![L, Emax, riveMin].every((v) => isFinite(v)) || L <= 0 || Emax <= 0 || riveMin < 0) {
-    return { rows: [], Nmin: 0 };
-  }
-  if (integers && (!Number.isInteger(L) || !Number.isInteger(riveMin))) return { rows: [], Nmin: 0 };
-
-  const Nmin = Math.max(1, Math.ceil((L - 2 * riveMin) / Emax));
-  const rows: PitchRow[] = [];
-  const target = 6;
-  const hardLimit = integers ? Nmin + 400 : Nmin + target - 1;
-
-  for (let N = Nmin; N <= hardLimit && rows.length < target; N++) {
-    let rDebut: number | null = null;
-    let rFin: number | null = null;
-    let pitch = 0;
-
-    if (symmetric) {
-      const lower = Math.max(riveMin, (L - N * Emax) / 2);
-      if (integers) {
-        const start = Math.ceil(lower - 1e-9);
-        const maxRive = (L - N) / 2; // pas >= 1 mm
-        for (let r = start; r <= maxRive; r++) {
-          const Lu = L - 2 * r;
-          if (Lu <= 0) break;
-          if (Lu % N !== 0) continue;
-          const p = Lu / N;
-          if (p > Emax) continue;
-          rDebut = r;
-          rFin = r;
-          pitch = p;
-          break;
-        }
-      } else {
-        const Lu = L - 2 * lower;
-        if (Lu > 0) {
-          rDebut = lower;
-          rFin = lower;
-          pitch = Lu / N;
-        }
-      }
-    } else {
-      // Rive de début au minimum, le reliquat part sur la rive de fin
-      if (integers) {
-        const pStart = Math.floor(Math.min(Emax, (L - 2 * riveMin) / N));
-        for (let p = pStart; p >= 1; p--) {
-          const rest = L - riveMin - N * p;
-          if (rest < riveMin) continue;
-          rDebut = riveMin;
-          rFin = rest;
-          pitch = p;
-          break;
-        }
-      } else {
-        const p = Math.min(Emax, (L - 2 * riveMin) / N);
-        if (p > 0) {
-          rDebut = riveMin;
-          rFin = L - riveMin - N * p;
-          pitch = p;
-        }
-      }
-    }
-
-    if (rDebut === null || rFin === null || pitch <= 0 || pitch > Emax + 1e-9 || rFin < riveMin - 1e-9) continue;
-
-    const positions: number[] = [];
-    for (let i = 0; i <= N; i++) positions.push(rDebut + i * pitch);
-
-    rows.push({
-      kind: "pitch",
-      option: `Proposition ${rows.length + 1} · rives ${fmt(rDebut)}${
-        symmetric ? "" : `/${fmt(rFin)}`
-      } mm · pas ${fmt(pitch)} mm`,
-      N,
-      rDebut,
-      entraxe: pitch,
-      rFin,
-      positions,
-    });
-  }
-
-  return { rows, Nmin };
-}
 
 
 
@@ -345,21 +115,15 @@ function SummaryRow({ label, value, strong }: { label: string; value: string; st
 }
 
 function Index() {
-  const [mainModule, setMainModule] = useState<TrameModuleKey>("standard");
+  // Trame ne garde que la répartition standard : l'historique n'a plus de module à changer.
   return (
-    <TrameHistoryProvider onModuleChange={setMainModule}>
-      <TrameApp mainModule={mainModule} setMainModule={setMainModule} />
+    <TrameHistoryProvider onModuleChange={() => {}}>
+      <TrameApp />
     </TrameHistoryProvider>
   );
 }
 
-function TrameApp({
-  mainModule,
-  setMainModule,
-}: {
-  mainModule: TrameModuleKey;
-  setMainModule: (m: TrameModuleKey) => void;
-}) {
+function TrameApp() {
   const [dark, setDark] = useState(false);
   const [mode, setMode] = useState<Mode>("intervals");
 
@@ -387,7 +151,6 @@ function TrameApp({
 
   const [integers, setIntegers] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
-  const [exportIdx, setExportIdx] = useState(0);
 
 
   useEffect(() => {
@@ -509,42 +272,6 @@ function TrameApp({
       <HistoryPanel />
 
       <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6 hidden rounded-lg border border-border bg-card p-1">
-          {(
-            [
-              ["standard", "Répartition Standard"],
-              ["reinforced", "Zone Renforcée"],
-              ["obstacle", "Évitement d'Obstacle"],
-              ["panel", "Panneaux & Cassettes"],
-              ["expansion", "Dilatation (PF/PG)"],
-            ] as const
-          ).map(([v, label]) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setMainModule(v)}
-              className={cn(
-                "rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-colors",
-                mainModule === v
-                  ? "bg-[var(--color-trame)] text-white"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {mainModule === "reinforced" ? (
-          <ReinforcedModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
-        ) : mainModule === "obstacle" ? (
-          <ObstacleModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
-        ) : mainModule === "panel" ? (
-          <PanelModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
-        ) : mainModule === "expansion" ? (
-          <ExpansionModule integers={integers} setIntegers={setIntegers} EmptyNotice={EmptyIntegerNotice} />
-        ) : (
-          <>
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
           <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-grid">
 
@@ -587,10 +314,10 @@ function TrameApp({
                     <NumberField id="L" label="Longueur totale (L)" value={isFinite(L) ? L : ""} onChange={setL} />
 
                     <div className="grid grid-cols-2 gap-3">
-                      <NumberField id="ds" label="Distance début" value={isFinite(Ds) ? Ds : ""} onChange={setDs} />
+                      <NumberField id="ds" label="Distance au bord début" value={isFinite(Ds) ? Ds : ""} onChange={setDs} />
                       <NumberField
                         id="de"
-                        label="Distance fin"
+                        label="Distance au bord fin"
                         value={sameEnd ? (isFinite(Ds) ? Ds : "") : isFinite(De) ? De : ""}
                         onChange={setDe}
                         disabled={sameEnd}
@@ -598,7 +325,7 @@ function TrameApp({
                     </div>
 
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                      <span className="text-xs font-medium text-foreground">Identique au début</span>
+                      <span className="text-xs font-medium text-foreground">Distances au bord identiques</span>
                       <Switch checked={sameEnd} onCheckedChange={setSameEnd} />
                     </label>
                   </div>
@@ -628,8 +355,8 @@ function TrameApp({
                   </h2>
                   <dl className="space-y-2 text-xs">
                     <SummaryRow label="Longueur totale" value={`${fmt(L)} mm`} />
-                    <SummaryRow label="Marge début" value={`${fmt(Ds)} mm`} />
-                    <SummaryRow label="Marge fin" value={`${fmt(effectiveDe)} mm`} />
+                    <SummaryRow label="Distance au bord début" value={`${fmt(Ds)} mm`} />
+                    <SummaryRow label="Distance au bord fin" value={`${fmt(effectiveDe)} mm`} />
                     <div className="my-2 h-px bg-border" />
                     <SummaryRow label="Longueur utile" value={`${fmt(intervalsData.Lu)} mm`} strong />
                     <SummaryRow
@@ -654,14 +381,14 @@ function TrameApp({
                     <NumberField id="E" label="Entraxe imposé (E)" value={isFinite(E) ? E : ""} onChange={setE} />
 
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                      <span className="text-xs font-medium text-foreground">Rives symétriques (Début = Fin)</span>
+                      <span className="text-xs font-medium text-foreground">Distances au bord identiques</span>
                       <Switch checked={symmetric} onCheckedChange={setSymmetric} />
                     </label>
 
                     {!symmetric && (
                       <NumberField
                         id="dstart"
-                        label="Distance début souhaitée"
+                        label="Distance au bord début"
                         value={isFinite(Dstart) ? Dstart : ""}
                         onChange={setDstart}
                       />
@@ -677,8 +404,8 @@ function TrameApp({
                   <dl className="space-y-2 text-xs">
                     <SummaryRow label="Longueur totale" value={`${fmt(L2)} mm`} />
                     <SummaryRow label="Entraxe imposé" value={`${fmt(E)} mm`} />
-                    <SummaryRow label="Mode" value={symmetric ? "Symétrique" : "Début fixé"} />
-                    {!symmetric && <SummaryRow label="Début" value={`${fmt(Dstart)} mm`} />}
+                    <SummaryRow label="Distances au bord" value={symmetric ? "Identiques" : "Début imposé"} />
+                    {!symmetric && <SummaryRow label="Distance au bord début" value={`${fmt(Dstart)} mm`} />}
                   </dl>
                 </section>
               </>
@@ -697,10 +424,10 @@ function TrameApp({
 
                     {!autoRives3 && (
                       <div className="grid grid-cols-2 gap-3">
-                        <NumberField id="ds3" label="Distance début" value={isFinite(Ds3) ? Ds3 : ""} onChange={setDs3} />
+                        <NumberField id="ds3" label="Distance au bord début" value={isFinite(Ds3) ? Ds3 : ""} onChange={setDs3} />
                         <NumberField
                           id="de3"
-                          label="Distance fin"
+                          label="Distance au bord fin"
                           value={sameEnd3 ? (isFinite(Ds3) ? Ds3 : "") : isFinite(De3) ? De3 : ""}
                           onChange={setDe3}
                           disabled={sameEnd3}
@@ -709,20 +436,20 @@ function TrameApp({
                     )}
 
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
-                      <span className="text-xs font-medium text-foreground">Identique au début</span>
+                      <span className="text-xs font-medium text-foreground">Distances au bord identiques</span>
                       <Switch checked={sameEnd3} onCheckedChange={setSameEnd3} />
                     </label>
 
                     <NumberField
                       id="emax"
-                      label="Entraxe maximum plafond (E_max)"
+                      label="Entraxe maximum"
                       value={isFinite(Emax) ? Emax : ""}
                       onChange={setEmax}
                     />
 
                     <label className="flex cursor-pointer items-center justify-between rounded-md border border-[var(--color-trame)]/40 bg-[var(--color-trame)]/5 px-3 py-2">
                       <span className="text-xs font-medium text-foreground">
-                        Calculer / optimiser les rives automatiquement
+                        Calculer les distances au bord automatiquement
                       </span>
                       <Switch checked={autoRives3} onCheckedChange={setAutoRives3} />
                     </label>
@@ -730,7 +457,7 @@ function TrameApp({
                     {autoRives3 && (
                       <NumberField
                         id="rivemin3"
-                        label="Rive minimale de sécurité"
+                        label="Distance au bord minimale"
                         value={isFinite(riveMin3) ? riveMin3 : ""}
                         onChange={setRiveMin3}
                       />
@@ -754,8 +481,8 @@ function TrameApp({
                     <SummaryRow label="Longueur totale" value={`${fmt(L3)} mm`} />
                     {autoRives3 ? (
                       <>
-                        <SummaryRow label="Rives" value="Calculées" />
-                        <SummaryRow label="Rive mini." value={`${fmt(riveMin3)} mm`} />
+                        <SummaryRow label="Distances au bord" value="Calculées" />
+                        <SummaryRow label="Distance au bord mini." value={`${fmt(riveMin3)} mm`} />
                         <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
                         <div className="my-2 h-px bg-border" />
                         <SummaryRow
@@ -770,8 +497,8 @@ function TrameApp({
                       </>
                     ) : (
                       <>
-                        <SummaryRow label="Marge début" value={`${fmt(Ds3)} mm`} />
-                        <SummaryRow label="Marge fin" value={`${fmt(effectiveDe3)} mm`} />
+                        <SummaryRow label="Distance au bord début" value={`${fmt(Ds3)} mm`} />
+                        <SummaryRow label="Distance au bord fin" value={`${fmt(effectiveDe3)} mm`} />
                         <SummaryRow label="Entraxe max" value={`${fmt(Emax)} mm`} />
                         <div className="my-2 h-px bg-border" />
                         <SummaryRow label="Longueur utile" value={`${fmt(maxPitchData.Lu)} mm`} strong />
@@ -789,82 +516,6 @@ function TrameApp({
 
           {/* Résultats */}
           <section>
-            {(() => {
-              const list: (IntervalRow | PitchRow)[] =
-                mode === "intervals"
-                  ? intervalsData.rows
-                  : mode === "pitch"
-                    ? pitchRows
-                    : autoRives3
-                      ? autoRiveData.rows
-                      : maxPitchData.rows;
-              if (!list.length) return null;
-              const idx = Math.min(exportIdx, list.length - 1);
-              const sel = list[idx];
-              const totalL = mode === "intervals" ? L : mode === "pitch" ? L2 : L3;
-              const label = (r: IntervalRow | PitchRow) =>
-                r.kind === "intervals"
-                  ? `${r.N} intervalles · pas ${fmt(r.pitch)} mm · ${r.holes} trous`
-                  : `${r.option} · ${r.N} int. · entraxe ${fmt(r.entraxe)} mm`;
-              const params =
-                sel.kind === "intervals"
-                  ? [
-                      { label: "Longueur totale", value: `${fmt(totalL)} mm` },
-                      {
-                        label: "Distance début",
-                        value: `${fmt(mode === "intervals" ? Ds : Ds3)} mm`,
-                      },
-                      {
-                        label: "Distance fin",
-                        value: `${fmt(mode === "intervals" ? (sameEnd ? Ds : De) : sameEnd3 ? Ds3 : De3)} mm`,
-                      },
-                      { label: "Intervalles", value: String(sel.N) },
-                      { label: "Entraxe retenu", value: `${fmt(sel.pitch)} mm` },
-                      { label: "Nombre de trous", value: String(sel.holes) },
-                    ]
-                  : [
-                      { label: "Longueur totale", value: `${fmt(totalL)} mm` },
-                      { label: "Option", value: sel.option },
-                      { label: "Entraxe imposé", value: `${fmt(sel.entraxe)} mm` },
-                      { label: "Rive début", value: `${fmt(sel.rDebut)} mm` },
-                      { label: "Rive fin", value: `${fmt(sel.rFin)} mm` },
-                      { label: "Intervalles", value: String(sel.N) },
-                      { label: "Nombre de trous", value: String(sel.positions.length) },
-                    ];
-              return (
-                <div className="mb-5 space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <label htmlFor="exp-sel" className="text-xs text-muted-foreground">
-                      Répartition à exporter
-                    </label>
-                    <select
-                      id="exp-sel"
-                      value={idx}
-                      onChange={(e) => setExportIdx(Number(e.target.value))}
-                      className="h-9 rounded-md border border-border bg-card px-2 text-xs font-mono"
-                    >
-                      {list.map((r, i) => (
-                        <option key={i} value={i}>
-                          {label(r)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <ExportActions
-                    moduleName={mode === "intervals" ? "Intervalles" : mode === "pitch" ? "Entraxe-fixe" : "Entraxe-max"}
-                    subtitle={label(sel)}
-                    is2D={false}
-                    width={totalL}
-                    holes={sel.positions.map((p) => ({ x: p, y: 0 }))}
-                    params={params}
-                    columns={["N°", "Position (mm)"]}
-                    rows={sel.positions.map((p, i) => [String(i + 1), fmt(p)])}
-                    notes={["Ø perçage DXF par défaut : 8 mm.", "Cotes cumulées depuis l'extrémité gauche."]}
-                  />
-                </div>
-              );
-            })()}
-
             {mode === "intervals" ? (
               <IntervalsTable
                 rows={intervalsData.rows}
@@ -889,10 +540,10 @@ function TrameApp({
                 rows={autoRiveData.rows}
                 integers={integers}
                 onShowDecimals={() => setIntegers(false)}
-                emptyIntegerMessage="Aucune répartition à rives et pas entiers trouvée avec cette rive minimale et cet entraxe max."
+                emptyIntegerMessage="Aucune répartition en millimètres entiers trouvée avec cette distance au bord minimale et cet entraxe maximum."
                 copy={copy}
                 copiedIdx={copiedIdx}
-                title="Rives optimisées"
+                title="Distances au bord optimisées"
               />
             ) : (
               <IntervalsTable
@@ -907,10 +558,6 @@ function TrameApp({
             )}
           </section>
         </div>
-          </>
-        )}
-
-
 
         <footer className="mt-10 border-t border-border pt-4 text-center text-[11px] text-muted-foreground">
           Cotes en millimètres · cumulées depuis le bord de départ
@@ -1021,7 +668,7 @@ function PitchTable({
   emptyIntegerMessage,
   copy,
   copiedIdx,
-  title = "Calcul des rives",
+  title = "Répartition",
 }: {
   rows: PitchRow[];
   integers: boolean;
@@ -1053,9 +700,9 @@ function PitchTable({
           <div className="hidden grid-cols-[1.2fr_50px_90px_90px_90px_1.4fr_90px] gap-4 border-b border-border bg-muted/40 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid">
             <div>Option</div>
             <div>Int.</div>
-            <div>Rive début</div>
+            <div>Bord début</div>
             <div>Entraxe</div>
-            <div>Rive fin</div>
+            <div>Bord fin</div>
             <div>Positions (mm)</div>
             <div className="text-right">Action</div>
           </div>
