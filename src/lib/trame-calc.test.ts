@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAutoRiveRows, buildIntervalRows, buildMaxPitchRows, buildPitchRows } from "./trame-calc";
+import { buildAutoRiveRows, buildIntervalRows, buildMaxPitchRows, buildPitchRows, fromIntervalRows, fromPitchRows } from "./trame-calc";
 
 const close = (a: number, b: number) => Math.abs(a - b) < 1e-9;
 
@@ -57,5 +57,18 @@ describe("entraxe maximum", () => {
           if (integers) expect([r.rDebut, r.entraxe, r.rFin].every(Number.isInteger)).toBe(true);
         }
       }
+  });
+});
+
+describe("affichage unifie", () => {
+  it("repere les repartitions en mm ronds", () => {
+    const { rows } = buildIntervalRows(3094, 50, 50, 5, false);
+    const opts = fromIntervalRows(rows, 50, 50);
+    expect(opts.map((o) => o.round)).toEqual([true, true, true, false, false]);
+    expect(opts[2]!.dEnd).toBe(50);
+  });
+  it("reprend les distances au bord calculees en entraxe fixe", () => {
+    const [o] = fromPitchRows(buildPitchRows(3094, 100, true, 0, false));
+    expect([o!.dStart, o!.pitch, o!.dEnd, o!.holes]).toEqual([47, 100, 47, 31]);
   });
 });

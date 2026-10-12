@@ -238,3 +238,32 @@ export function buildAutoRiveRows(
 
   return { rows, Nmin };
 }
+
+/** Une repartition prete a afficher, quel que soit le mode de calcul. */
+export interface DrillOption {
+  N: number;
+  holes: number;
+  pitch: number;
+  dStart: number;
+  dEnd: number;
+  positions: number[];
+  /** Entraxe et distance au bord debut en mm entiers : toutes les cotes tombent rond. */
+  round: boolean;
+  note?: string;
+}
+
+const isRound = (n: number) => Math.abs(n - Math.round(n)) < 1e-9;
+
+export function fromIntervalRows(rows: IntervalRow[], dStart: number, dEnd: number): DrillOption[] {
+  return rows.map((r) => ({
+    N: r.N, holes: r.holes, pitch: r.pitch, dStart, dEnd, positions: r.positions,
+    round: isRound(r.pitch) && isRound(dStart),
+  }));
+}
+
+export function fromPitchRows(rows: PitchRow[]): DrillOption[] {
+  return rows.map((r) => ({
+    N: r.N, holes: r.positions.length, pitch: r.entraxe, dStart: r.rDebut, dEnd: r.rFin, positions: r.positions,
+    round: isRound(r.entraxe) && isRound(r.rDebut), note: r.option,
+  }));
+}
