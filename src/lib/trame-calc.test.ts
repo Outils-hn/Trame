@@ -148,3 +148,32 @@ describe("cote de chaine", () => {
     expect(chainText(1, 2900)).toBe("1 x 2900 = <>");
   });
 });
+
+describe("limites de calcul", () => {
+  it("entraxe maximum : plus de plafond a 40 intervalles (6000 / 120)", () => {
+    const { rows, Nmin } = buildMaxPitchRows(6000, 30, 30, 120, false);
+    expect(Nmin).toBe(50);
+    expect(rows[0]!.N).toBe(50);
+    for (const r of rows) expect(r.pitch).toBeLessThanOrEqual(120);
+  });
+  it("entraxe maximum en mm entiers au-dela de 40 intervalles", () => {
+    const { rows } = buildMaxPitchRows(12000, 0, 0, 250, true);
+    expect(rows[0]!.N).toBe(48);
+    expect(rows[0]!.pitch).toBe(250);
+  });
+  it("plusieurs pieces : une piece longue a petit entraxe trouve sa solution", () => {
+    const { options, failed } = buildMultiPieceOptions([{ mark: "L", length: 6000 }], {
+      auto: false, Ds: 30, De: 30, Emax: 120, minEdge: 0, symmetric: true, integers: false,
+    });
+    expect(failed).toHaveLength(0);
+    expect(options[0]!.N).toBe(50);
+  });
+  it("nombre d'intervalles : plus de limite cachee a 20", () => {
+    expect(buildIntervalRows(6000, 50, 50, 40, false).rows).toHaveLength(40);
+  });
+  it("entraxe fixe, debut impose en mm entiers : la somme reste exacte", () => {
+    const [r] = buildPitchRows(1000, 300, false, 12.5, true);
+    expect(r!.rDebut + r!.N * r!.entraxe + r!.rFin).toBe(1000);
+    expect(r!.positions[0]).toBe(r!.rDebut);
+  });
+});

@@ -546,7 +546,7 @@ function TrameApp() {
                         ? "Aucune répartition en millimètres entiers jusqu'à ce nombre d'intervalles."
                         : autoRives3
                           ? "Aucune répartition en millimètres entiers trouvée avec cette distance au bord minimale et cet entraxe maximum."
-                          : "Aucune répartition en millimètres entiers trouvée sous la limite de 40 intervalles."
+                          : "Aucune répartition en millimètres entiers trouvée sous cet entraxe maximum."
                     }
                     onShowDecimals={() => setIntegers(false)}
                   />
