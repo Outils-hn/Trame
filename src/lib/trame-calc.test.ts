@@ -177,3 +177,10 @@ describe("limites de calcul", () => {
     expect(r!.positions[0]).toBe(r!.rDebut);
   });
 });
+
+describe("collage : separateurs suisses", () => {
+  it("apostrophe droite et typographique", () => {
+    const { pieces } = parsePieces("A\t3'094\nB\t3’094\nC\t3 094");
+    expect(pieces.map((p) => p.length)).toEqual([3094, 3094, 3094]);
+  });
+});

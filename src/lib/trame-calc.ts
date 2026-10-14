@@ -307,7 +307,7 @@ export interface PieceInput {
 }
 
 const parseLen = (s: string) => {
-  const t = s.trim().replace(/\s*mm$/i, "").replace(/[\s\u00a0\u202f']/g, "").replace(",", ".");
+  const t = s.trim().replace(/\s*mm$/i, "").replace(/[\s\u00a0\u202f'\u2019\u2018]/g, "").replace(",", ".");
   return /^\d+(\.\d+)?$/.test(t) ? Number(t) : NaN;
 };
 
