@@ -20,6 +20,9 @@ export interface PitchRow {
   positions: number[];
 }
 
+/** Garde-fou : nombre d'intervalles maximum examine (evite de figer la page sur une saisie aberrante). */
+export const MAX_INTERVALS = 500;
+
 export function fmt(n: number, d = 1) {
   if (!isFinite(n)) return "—";
   const cleaned = Number(n.toFixed(d));
@@ -44,7 +47,8 @@ export function buildIntervalRows(
   const rows: IntervalRow[] = [];
   const integerDs = Number.isInteger(Ds);
   const integerLu = Number.isInteger(Lu);
-  const upper = Math.min(20, Nmax);
+  // Plafond de securite (affichage) : bien au-dela de tout besoin reel en facade.
+  const upper = Math.min(MAX_INTERVALS, Nmax);
   for (let N = 1; N <= upper; N++) {
     const rawPitch = Lu / N;
     const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
@@ -118,8 +122,9 @@ export function buildPitchRows(
       N,
       rDebut: integers ? Math.round(Dstart) : Dstart,
       entraxe: E,
-      rFin: integers ? Math.round(dFin) : dFin,
-      positions: makePositions(Dstart, N),
+      // En mm entiers, la fin prend le reste exact : debut + entraxes + fin = longueur.
+      rFin: integers ? L - Math.round(Dstart) - N * E : dFin,
+      positions: makePositions(integers ? Math.round(Dstart) : Dstart, N),
     });
   }
   return rows;
@@ -141,7 +146,9 @@ export function buildMaxPitchRows(
   const integerDs = Number.isInteger(Ds);
   const integerLu = Number.isInteger(Lu);
   const target = 5;
-  const hardLimit = integers ? 40 : Math.min(40, Nmin + target - 1);
+  // On part toujours du minimum d'intervalles necessaire, sans plafond fixe :
+  // en mm entiers on fouille plus loin pour trouver des entraxes ronds.
+  const hardLimit = integers ? Nmin + 400 : Nmin + target - 1;
   for (let N = Nmin; N <= hardLimit && rows.length < target; N++) {
     const rawPitch = Lu / N;
     const isIntegerPitch = integerLu && Lu % N === 0 && integerDs;
