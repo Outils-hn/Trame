@@ -13,3 +13,4 @@
 - The detail panel also offers the AutoCAD dimension text override "N x pitch = <>" (chainText, decimal comma) when there are at least 2 intervals.
 - In the maximum-pitch tab (single piece), the first row carries a "conseillé" badge: fewest holes under the maximum pitch.
 - Values meant to be pasted (AutoCAD input, dimension text) use the codeCls style: monospace without ligatures, each helper kept on one line.
+- Full backup (src/lib/full-backup.ts, pure and tested; config in src/lib/backup-config.ts): the footer "Sauvegarde" link downloads every localStorage key owned by the app into one .json and restores it; restore validates app/kind/version, first downloads the current data as "-avant-restauration", replaces only this app's keys, then reloads. BackupReminder shows a dismissible pill when data exists and the last backup is older than reminderDays (null = no reminder). The same two files are shared verbatim by Linear, Format and Trame.

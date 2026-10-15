@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { BackupLink, BackupReminder } from "@/components/BackupControls";
+import { BACKUP_CONFIG } from "@/lib/backup-config";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { APP_AUTHOR, APP_NAME, APP_TAGLINE, APP_UPDATED, APP_VERSION, APP_YEAR } from "@/lib/version";
 
@@ -19,8 +21,9 @@ export function AppFooter() {
         >
           Conçu par {APP_AUTHOR}
         </button>{" "}
-        · {APP_YEAR}
+        · {APP_YEAR} · <BackupLink cfg={BACKUP_CONFIG} appName={APP_NAME} />
       </p>
+      <BackupReminder cfg={BACKUP_CONFIG} />
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader className="items-center text-center">
