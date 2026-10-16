@@ -1,0 +1,22 @@
+# Tests automatiques : a chaque modification (Lovable, Claude ou toi), GitHub
+# relance les controles de calcul puis construit l'appli. Une croix rouge
+# sur une branche = quelque chose est casse, a regarder avant de fusionner.
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Installation
+        run: bun install
+      - name: Tests des calculs
+        run: bunx vitest@3.2.4 run
+      - name: Construction de l'appli
+        run: bun run build
