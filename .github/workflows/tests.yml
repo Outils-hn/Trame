@@ -1,0 +1,29 @@
+# Tests automatiques : a chaque modification (Lovable, Claude ou toi), GitHub
+# relance les controles de calcul puis construit l'appli. Une croix rouge
+# sur une branche = quelque chose est casse, a regarder avant de fusionner.
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - name: Installation
+        run: bun install
+      - name: Tests des calculs
+        # En cas d'echec, les 60 dernieres lignes sont affichees en annotation
+        run: |
+          set -o pipefail
+          bunx vitest@3.2.4 run 2>&1 | tee test-output.txt || { echo "::error title=Tests::$(grep -v '^\s*$' test-output.txt | tail -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
+      - name: Verification des types
+        run: |
+          set -o pipefail
+          bunx tsc --noEmit -p tsconfig.ci.json 2>&1 | tee tsc-output.txt || { echo "::error title=Types::$(grep 'error TS' tsc-output.txt | head -40 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
+      - name: Construction de l'appli
+        run: bun run build

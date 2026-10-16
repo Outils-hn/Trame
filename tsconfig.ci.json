@@ -1,0 +1,5 @@
+{
+  "//": "Verification des types sur GitHub : les tests (lances par vitest via bunx) sont exclus car vitest n est pas une dependance du projet.",
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "src/**/*.test.ts"]
+}
