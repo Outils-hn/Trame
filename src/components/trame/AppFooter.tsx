@@ -12,7 +12,7 @@ export function AppFooter() {
   const [open, setOpen] = useState(false);
   return (
     <footer className="py-4 text-center">
-      <p className="text-xs text-muted-foreground/60">
+      <p className="text-xs text-foreground/60">
         {APP_NAME} v{APP_VERSION} ·{" "}
         <button
           type="button"
