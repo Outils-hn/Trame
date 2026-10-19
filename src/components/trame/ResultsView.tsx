@@ -51,13 +51,11 @@ export function ResultsView({
         <div className="mb-3 flex items-baseline justify-between">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">{title}</h2>
           <div className="flex items-center gap-3">
-            {/* Contraste renforce : lisible sur le fond a points */}
-            <span className="text-xs text-foreground/75">
-              <span className="font-semibold text-foreground">
-                {multi
-                  ? `${options.length} pièce${options.length > 1 ? "s" : ""}`
-                  : `${options.length} possibilité${options.length > 1 ? "s" : ""}`}
-              </span>{" "}
+            {/* Fond leger : les points du fond ne passent pas derriere le texte */}
+            <span className="rounded-md bg-background px-2 py-0.5 text-xs text-muted-foreground">
+              {multi
+                ? `${options.length} pièce${options.length > 1 ? "s" : ""}`
+                : `${options.length} possibilité${options.length > 1 ? "s" : ""}`}{" "}
               · cliquez une ligne pour le détail
             </span>
             {multi && (
