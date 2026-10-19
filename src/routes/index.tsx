@@ -560,7 +560,7 @@ function TrameApp() {
           </section>
         </div>
 
-        <p className="mt-10 border-t border-border pt-4 text-center text-[11px] text-muted-foreground">
+        <p className="mt-10 border-t border-border pt-4 text-center text-xs text-foreground/70">
           Cotes en millimètres · cumulées depuis le bord de départ
         </p>
         <AppFooter />
