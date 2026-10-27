@@ -65,7 +65,7 @@ export function ResultsView({
             )}
           </div>
         </div>
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/40 text-[11px] font-semibold text-muted-foreground">
               <tr>
@@ -163,7 +163,7 @@ export function ResultsView({
 
         {sel.holes > 1 && (
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-2 whitespace-nowrap">
+            <span className="inline-flex flex-wrap items-center gap-2">
               <span className="font-semibold text-foreground">Dans AutoCAD</span>
               <span>
                 COPIER → <b className="font-medium text-foreground">Réseau</b> → {sel.holes} éléments →
@@ -175,7 +175,7 @@ export function ResultsView({
               <span className="text-[11px]">&lt;90 pour une pièce verticale</span>
             </span>
             {sel.N > 1 && (
-              <span className="inline-flex items-center gap-2 whitespace-nowrap">
+              <span className="inline-flex flex-wrap items-center gap-2">
                 <span>Texte de cote</span>
                 <code className={codeCls}>{chainText(sel.N, sel.pitch)}</code>
                 <CopyButton text={chainText(sel.N, sel.pitch)} done={`« ${chainText(sel.N, sel.pitch)} » copié`} title="Copier le texte de cote">
