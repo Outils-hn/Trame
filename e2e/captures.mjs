@@ -33,7 +33,7 @@ await session("bureau", false, async (page) => {
   await shot(page, "02-intervalles-longueur-decimale");
   await tab(page, /entraxe fixe/);
   await shot(page, "03-entraxe-fixe");
-  await tab(page, /entraxe maximum/);
+  await tab(page, /entraxe max/i);
   await shot(page, "04-entraxe-maximum-une-piece");
   await page.getByRole("button", { name: "Plusieurs pièces" }).click(); await page.waitForTimeout(600);
   await shot(page, "05-entraxe-maximum-plusieurs-pieces");
@@ -46,7 +46,7 @@ await session("sombre", false, async (page) => {
 });
 await session("mobile", true, async (page) => {
   await shot(page, "08-mobile");
-  await tab(page, /entraxe maximum/);
+  await tab(page, /entraxe max/i);
   await shot(page, "09-mobile-entraxe-maximum");
 });
 await browser.close();
