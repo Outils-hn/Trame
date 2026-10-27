@@ -24,7 +24,7 @@ jobs:
           (bun run dev --port 8080 --host 127.0.0.1 > dev.log 2>&1 &)
           for i in $(seq 1 60); do curl -sf http://127.0.0.1:8080/ >/dev/null && break; sleep 2; done
           node e2e/captures.mjs out
-          for f in out/*.pdf; do [ -f "$f" ] && pdftoppm -png -r 60 "$f" "${f%.pdf}-page"; done
+          for f in out/*.pdf; do if [ -f "$f" ]; then pdftoppm -png -r 60 "$f" "${f%.pdf}-page"; fi; done
       - name: Publier sur la branche captures
         run: |
           cd out
