@@ -278,24 +278,27 @@ function TrameApp() {
               value="intervals"
               className="data-[state=active]:bg-muted data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
             >
-              Par nombre d'intervalles
+              <span className="sm:hidden">Intervalles</span>
+              <span className="hidden sm:inline">Par nombre d'intervalles</span>
             </TabsTrigger>
             <TabsTrigger
               value="pitch"
               className="data-[state=active]:bg-muted data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
             >
-              Par entraxe fixe
+              <span className="sm:hidden">Entraxe fixe</span>
+              <span className="hidden sm:inline">Par entraxe fixe</span>
             </TabsTrigger>
             <TabsTrigger
               value="maxpitch"
               className="data-[state=active]:bg-muted data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
             >
-              Par entraxe maximum
+              <span className="sm:hidden">Entraxe max</span>
+              <span className="hidden sm:inline">Par entraxe maximum</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
-        <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
           {/* Paramètres */}
           <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
             
