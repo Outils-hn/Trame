@@ -60,7 +60,13 @@ function lireNombre(v: string): number {
   return c === "" || !/^-?\d*\.?\d+$/.test(c) ? NaN : Number(c);
 }
 
-function NumberField({
+/** Un champ par identifiant : en changeant de mode, React ne reutilise pas le champ d'un autre
+ *  parametre (sinon la longueur du mode precedent restait affichee). */
+function NumberField(props: Parameters<typeof ChampTrame>[0]) {
+  return <ChampTrame key={props.id} {...props} />;
+}
+
+function ChampTrame({
   id,
   label,
   value,
