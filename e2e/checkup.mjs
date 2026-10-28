@@ -14,13 +14,16 @@ try {
   await page.goto(BASE, { waitUntil: "networkidle" }); await page.waitForTimeout(500);
   verif("Curseur dans la longueur a l'ouverture", await page.evaluate(() => document.activeElement?.id === "L"));
   await page.keyboard.type("2500"); await page.waitForTimeout(300);
+  verif("Diagnostic : longueur tapee", true, `champ « ${await page.locator("#L").inputValue()} », memoire « ${await page.evaluate(() => localStorage.getItem("trame:etat:L"))} », focus ${await page.evaluate(() => document.activeElement?.id)}`);
   await page.getByRole("tab", { name: /entraxe fixe/i }).click(); await page.waitForTimeout(300);
+  const apresOnglet = await page.evaluate(() => localStorage.getItem("trame:etat:L"));
   await page.reload({ waitUntil: "networkidle" }); await page.waitForTimeout(500);
+  verif("Diagnostic : memoire apres changement d'onglet / apres rechargement", true, `${apresOnglet} / ${await page.evaluate(() => localStorage.getItem("trame:etat:L"))}`);
   const ongletActif = await page.getByRole("tab", { selected: true }).textContent();
   verif("Mode retenu apres rechargement", /entraxe fixe/i.test(ongletActif ?? ""), ongletActif ?? "");
   verif("Curseur dans la longueur du mode", await page.evaluate(() => document.activeElement?.id === "L2"));
   await page.getByRole("tab", { name: /intervalles/i }).click(); await page.waitForTimeout(300);
-  const L = await page.locator("#L").inputValue();
+  const L = (await page.locator("#L").inputValue()).replace(/[\s\u00a0\u202f]/g, "");
   verif("Longueur retenue apres rechargement", L === "2500", `lu : ${L}`);
   await page.getByRole("button", { name: "Basculer le thème" }).click(); await page.waitForTimeout(200);
   await page.reload({ waitUntil: "networkidle" });
@@ -49,6 +52,11 @@ try {
   await p2.locator("#L2").fill("3000"); await p2.locator("#E").fill("0.01"); await p2.waitForTimeout(500);
   verif("Entraxe 0,01 mm : la page reste fluide (< 10 s)", Date.now() - t0 < 10000, `${Date.now() - t0} ms`);
   verif("Entraxe 0,01 mm : cotes limitees a 200", await p2.getByText(/et .* autres/).first().isVisible());
+  await p2.getByRole("tab", { name: /intervalles/i }).click(); await p2.waitForTimeout(300);
+  await p2.locator("#L").fill("2737.5"); await p2.keyboard.press("Tab"); await p2.waitForTimeout(200);
+  verif("Saisie : « 2737.5 » affiche « 2 737,5 »", (await p2.locator("#L").inputValue()).replace(/[\u00a0\u202f]/g, " ") === "2 737,5", await p2.locator("#L").inputValue());
+  await p2.locator("#ds").fill("50"); await p2.locator("#L").fill("3'000"); await p2.waitForTimeout(300);
+  verif("Saisie : apostrophe suisse acceptee (3'000)", /580/.test(await p2.locator("tr[aria-selected='true']").innerText()));
   await c2.close();
 } catch (e) { verif("Deroulement des quick wins", false, e.message.split("\n")[0]); }
 await browser.close();
