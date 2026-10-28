@@ -16,7 +16,9 @@ try {
   await page.keyboard.type("2500"); await page.waitForTimeout(300);
   verif("Diagnostic : longueur tapee", true, `champ « ${await page.locator("#L").inputValue()} », memoire « ${await page.evaluate(() => localStorage.getItem("trame:etat:L"))} », focus ${await page.evaluate(() => document.activeElement?.id)}`);
   await page.getByRole("tab", { name: /entraxe fixe/i }).click(); await page.waitForTimeout(300);
+  const apresOnglet = await page.evaluate(() => localStorage.getItem("trame:etat:L"));
   await page.reload({ waitUntil: "networkidle" }); await page.waitForTimeout(500);
+  verif("Diagnostic : memoire apres changement d'onglet / apres rechargement", true, `${apresOnglet} / ${await page.evaluate(() => localStorage.getItem("trame:etat:L"))}`);
   const ongletActif = await page.getByRole("tab", { selected: true }).textContent();
   verif("Mode retenu apres rechargement", /entraxe fixe/i.test(ongletActif ?? ""), ongletActif ?? "");
   verif("Curseur dans la longueur du mode", await page.evaluate(() => document.activeElement?.id === "L2"));
