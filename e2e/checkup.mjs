@@ -57,6 +57,16 @@ try {
   verif("Saisie : « 2737.5 » affiche « 2 737,5 »", (await p2.locator("#L").inputValue()).replace(/[\u00a0\u202f]/g, " ") === "2 737,5", await p2.locator("#L").inputValue());
   await p2.locator("#ds").fill("50"); await p2.locator("#L").fill("3'000"); await p2.waitForTimeout(300);
   verif("Saisie : apostrophe suisse acceptee (3'000)", /580/.test(await p2.locator("tr[aria-selected='true']").innerText()));
+  // Clavier dans le tableau : Tab jusqu'a la ligne choisie, fleche haut, Entree copie les cotes
+  await c2.grantPermissions(["clipboard-read", "clipboard-write"]);
+  let surLigne = false;
+  for (let n = 0; n < 40 && !surLigne; n++) { await p2.keyboard.press("Tab"); surLigne = await p2.evaluate(() => document.activeElement?.tagName === "TR"); }
+  verif("Clavier : la ligne choisie est atteignable avec Tab", surLigne);
+  await p2.keyboard.press("ArrowUp"); await p2.waitForTimeout(150);
+  const choisie = (await p2.locator("tr[aria-selected='true']").innerText()).replace(/\s+/g, " ");
+  verif("Clavier : fleche haut change de repartition", /^4 /.test(choisie), choisie);
+  await p2.keyboard.press("Enter"); await p2.waitForTimeout(300);
+  verif("Clavier : Entree copie les cotes", /^50; /.test(await p2.evaluate(() => navigator.clipboard.readText())), await p2.evaluate(() => navigator.clipboard.readText()));
   await c2.close();
 } catch (e) { verif("Deroulement des quick wins", false, e.message.split("\n")[0]); }
 await browser.close();

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Check, ClipboardList, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,20 @@ export function ResultsView({
   defaultIndex?: number;
 }) {
   const [selected, setSelected] = useState(defaultIndex);
+  // Clavier : Tab amene sur la ligne choisie, fleches haut/bas pour changer, Entree pour copier les cotes
+  const lignes = useRef<(HTMLTableRowElement | null)[]>([]);
+  const auClavier = (e: KeyboardEvent<HTMLTableSectionElement>) => {
+    const dernier = options.length - 1;
+    const cible = e.key === "ArrowDown" ? Math.min(dernier, selected + 1)
+      : e.key === "ArrowUp" ? Math.max(0, selected - 1)
+      : e.key === "Home" ? 0 : e.key === "End" ? dernier : null;
+    if (cible !== null) { e.preventDefault(); setSelected(cible); lignes.current[cible]?.focus(); return; }
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      const o = options[selected];
+      if (o) copy(o.positions, selected, o.mark !== undefined ? `${o.mark} · ${o.holes} perçages` : `${o.holes} perçages`, integers);
+    }
+  };
   // Nouvelles valeurs saisies (autres entraxes) : on revient sur la ligne choisie d'office.
   const signature = options.map((o) => `${o.pitch}|${o.N}`).join(";");
   useEffect(() => {
@@ -71,7 +85,7 @@ export function ResultsView({
           </div>
         </div>
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm" role="grid" aria-label={`${title} : flèches haut et bas pour choisir, Entrée pour copier les cotes`}>
             <thead className="border-b border-foreground text-[12px] font-medium text-muted-foreground">
               <tr>
                 {multi && <th className="px-4 py-2.5 text-left">Repère</th>}
@@ -84,16 +98,18 @@ export function ResultsView({
                 <th className="px-4 py-2.5 text-left">{showNotes ? "Option" : ""}</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody onKeyDown={auClavier}>
               {options.map((o, i) => {
                 const active = i === selected;
                 return (
                   <tr
                     key={i}
+                    ref={(el) => { lignes.current[i] = el; }}
+                    tabIndex={active ? 0 : -1}
                     onClick={() => setSelected(i)}
                     aria-selected={active}
                     className={cn(
-                      "cursor-pointer border-b border-border/60 last:border-0 transition-colors",
+                      "cursor-pointer border-b border-border/60 outline-none last:border-0 transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-trame)]",
                       active ? "bg-[var(--color-trame)]/10" : "hover:bg-muted/50",
                     )}
                   >
