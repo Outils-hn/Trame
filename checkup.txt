@@ -1,0 +1,6 @@
+OK     Curseur dans la longueur a l'ouverture
+OK     Mode retenu apres rechargement (Entraxe fixePar entraxe fixe)
+OK     Curseur dans la longueur du mode
+OK     Longueur retenue apres rechargement (lu : 2500)
+OK     Mode sombre retenu apres rechargement
+OK     Sauvegarde complete : reglages inclus (22 cles)
