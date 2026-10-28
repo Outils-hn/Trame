@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SelecteurApplis } from "@/components/trame/SelecteurApplis";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,6 +54,12 @@ export const Route = createFileRoute("/")({
 
 
 
+/** Lecture d'une saisie : virgule ou point, espaces et apostrophes suisses acceptes (« 2'737,5 »). */
+function lireNombre(v: string): number {
+  const c = v.replace(/[\s\u00a0\u202f'\u2019\u2018]/g, "").replace(",", ".");
+  return c === "" || !/^-?\d*\.?\d+$/.test(c) ? NaN : Number(c);
+}
+
 function NumberField({
   id,
   label,
@@ -61,7 +67,6 @@ function NumberField({
   onChange,
   disabled,
   suffix = "mm",
-  step = "0.1",
   error,
 }: {
   id: string;
@@ -74,6 +79,14 @@ function NumberField({
   /** Raison du refus : contour rouge et message sous le champ. */
   error?: string;
 }) {
+  // Meme format que les resultats : « 3 000 », « 2 737,5 » ; le texte tape est garde pendant la saisie
+  const afficher = (v: number | "") => (v === "" || !Number.isFinite(v) ? "" : fmt(v, 3));
+  const [texte, setTexte] = useState(() => afficher(value));
+  const focus = useRef(false);
+  useEffect(() => {
+    if (!focus.current) setTexte(afficher(value));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-xs font-medium text-muted-foreground">
@@ -82,16 +95,18 @@ function NumberField({
       <div className="relative">
         <Input
           id={id}
-          type="number"
+          type="text"
           inputMode="decimal"
-          step={step}
-          value={value}
+          autoComplete="off"
+          value={texte}
           disabled={disabled}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-erreur` : undefined}
+          onFocus={(e) => { focus.current = true; e.target.select(); }}
+          onBlur={() => { focus.current = false; const n = lireNombre(texte); if (Number.isFinite(n)) setTexte(afficher(n)); }}
           onChange={(e) => {
-            const v = e.target.value;
-            onChange(v === "" ? NaN : parseFloat(v));
+            setTexte(e.target.value);
+            onChange(lireNombre(e.target.value));
           }}
           className={"h-11 pr-12 text-right text-base tabular-nums" + (error ? " border-destructive focus-visible:ring-destructive" : "")}
         />
