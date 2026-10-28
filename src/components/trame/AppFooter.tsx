@@ -25,17 +25,27 @@ export function AppFooter() {
       </p>
       <BackupReminder cfg={BACKUP_CONFIG} />
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader className="items-center text-center">
-            <DialogTitle className="text-xl uppercase tracking-[0.22em]">{APP_NAME}</DialogTitle>
+        <DialogContent className="max-w-sm text-left">
+          {/* Meme presentation que Format : titre, logo + nom + version, auteur, description, date */}
+          <DialogHeader className="text-left">
+            <DialogTitle className="mb-1 text-sm font-semibold text-foreground">À propos</DialogTitle>
             <DialogDescription className="sr-only">À propos de {APP_NAME}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 text-center text-sm text-muted-foreground">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground/80">Version {APP_VERSION}</p>
-            <p className="text-foreground">Conçu et développé par {APP_AUTHOR}</p>
-            <p className="leading-relaxed">{APP_TAGLINE}</p>
-            <p className="pt-1 text-xs text-muted-foreground/70">Dernière mise à jour : {APP_UPDATED}</p>
+          <div className="flex items-center gap-3">
+            <svg width="40" height="40" viewBox="0 0 22 22" aria-hidden="true" className="shrink-0">
+              <rect x="1" y="7" width="20" height="8" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-foreground" />
+              <circle cx="5" cy="11" r="1.6" fill="currentColor" className="text-foreground" />
+              <circle cx="11" cy="11" r="1.6" fill="var(--color-trame)" />
+              <circle cx="17" cy="11" r="1.6" fill="currentColor" className="text-foreground" />
+            </svg>
+            <div>
+              <p className="text-lg font-bold leading-tight text-foreground">{APP_NAME}</p>
+              <p className="text-xs text-muted-foreground">Version {APP_VERSION}</p>
+            </div>
           </div>
+          <p className="text-sm text-foreground">Conçu et développé par {APP_AUTHOR}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{APP_TAGLINE}</p>
+          <p className="border-t border-border pt-3 text-xs text-muted-foreground">Dernière mise à jour : {APP_UPDATED}</p>
         </DialogContent>
       </Dialog>
     </footer>
