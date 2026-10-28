@@ -49,6 +49,10 @@ await session("mobile", true, async (page) => {
   await tab(page, /entraxe max/i);
   await shot(page, "09-mobile-entraxe-maximum");
 });
+await session("apropos", false, async (page) => {
+  await page.getByRole("button", { name: /Conçu par/ }).first().click(); await page.waitForTimeout(500);
+  await shot(page, "09-a-propos", false);
+});
 await browser.close();
 writeFileSync(`${OUT}/erreurs.txt`, errors.length ? errors.join("\n") : "aucune");
 console.log(errors.length ? errors.join("\n") : "Captures OK, aucune erreur");
