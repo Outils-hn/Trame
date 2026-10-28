@@ -33,6 +33,8 @@ import {
 
 
 export const Route = createFileRoute("/")({
+  // Rendu dans le navigateur uniquement : les reglages retenus sont lus des le depart
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Trame ·" },
@@ -102,43 +104,74 @@ function Index() {
   );
 }
 
+/**
+ * Comme useState, mais la valeur est retenue dans le navigateur (cle « trame:etat:… », comprise
+ * dans la sauvegarde complete) : on retrouve ses derniers reglages a la prochaine ouverture.
+ * Une valeur abimee ou d'un autre type est ignoree.
+ */
+function useMemoire<T>(nom: string, defaut: T) {
+  const cle = `trame:etat:${nom}`;
+  const [valeur, setValeur] = useState<T>(() => {
+    try {
+      const brut = window.localStorage.getItem(cle);
+      if (brut == null) return defaut;
+      const lu = JSON.parse(brut) as unknown;
+      return typeof lu === typeof defaut && (typeof lu !== "number" || Number.isFinite(lu)) ? (lu as T) : defaut;
+    } catch {
+      return defaut;
+    }
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem(cle, JSON.stringify(valeur)); } catch { /* stockage bloque */ }
+  }, [cle, valeur]);
+  return [valeur, setValeur] as const;
+}
+
 function TrameApp() {
-  const [dark, setDark] = useState(false);
-  const [mode, setMode] = useState<Mode>("intervals");
+  const [dark, setDark] = useMemoire("dark", false);
+  const [mode, setMode] = useMemoire<Mode>("mode", "intervals");
 
   // Mode 1 — intervals
-  const [L, setL] = useState<number>(3000);
-  const [Ds, setDs] = useState<number>(50);
-  const [De, setDe] = useState<number>(50);
-  const [sameEnd, setSameEnd] = useState(true);
-  const [maxIntervals, setMaxIntervals] = useState<number>(5);
+  const [L, setL] = useMemoire<number>("L", 3000);
+  const [Ds, setDs] = useMemoire<number>("Ds", 50);
+  const [De, setDe] = useMemoire<number>("De", 50);
+  const [sameEnd, setSameEnd] = useMemoire("sameEnd", true);
+  const [maxIntervals, setMaxIntervals] = useMemoire<number>("maxIntervals", 5);
 
   // Mode 2 — fixed pitch
-  const [L2, setL2] = useState<number>(3000);
-  const [E, setE] = useState<number>(100);
-  const [symmetric, setSymmetric] = useState(true);
-  const [Dstart, setDstart] = useState<number>(50);
-  const [minEdge2, setMinEdge2] = useState<number>(30);
+  const [L2, setL2] = useMemoire<number>("L2", 3000);
+  const [E, setE] = useMemoire<number>("E", 100);
+  const [symmetric, setSymmetric] = useMemoire("symmetric", true);
+  const [Dstart, setDstart] = useMemoire<number>("Dstart", 50);
+  const [minEdge2, setMinEdge2] = useMemoire<number>("minEdge2", 30);
 
   // Mode 3 — max pitch ceiling
-  const [L3, setL3] = useState<number>(3000);
-  const [Ds3, setDs3] = useState<number>(50);
-  const [De3, setDe3] = useState<number>(50);
-  const [sameEnd3, setSameEnd3] = useState(true);
-  const [Emax, setEmax] = useState<number>(300);
-  const [autoRives3, setAutoRives3] = useState(false);
-  const [riveMin3, setRiveMin3] = useState<number>(30);
+  const [L3, setL3] = useMemoire<number>("L3", 3000);
+  const [Ds3, setDs3] = useMemoire<number>("Ds3", 50);
+  const [De3, setDe3] = useMemoire<number>("De3", 50);
+  const [sameEnd3, setSameEnd3] = useMemoire("sameEnd3", true);
+  const [Emax, setEmax] = useMemoire<number>("Emax", 300);
+  const [autoRives3, setAutoRives3] = useMemoire("autoRives3", false);
+  const [riveMin3, setRiveMin3] = useMemoire<number>("riveMin3", 30);
   // Plusieurs pieces (entraxe max uniquement) : liste Repere / Longueur, memes parametres.
-  const [multi3, setMulti3] = useState(false);
-  const [pieces3, setPieces3] = useState<string>("A1\t3000\nA2\t2450\nA3\t1830");
+  const [multi3, setMulti3] = useMemoire("multi3", false);
+  const [pieces3, setPieces3] = useMemoire<string>("pieces3", "A1\t3000\nA2\t2450\nA3\t1830");
 
-  const [integers, setIntegers] = useState(false);
+  const [integers, setIntegers] = useMemoire("integers", false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
+
+  // Curseur directement dans la longueur du mode choisi : on tape sans cliquer
+  useEffect(() => {
+    const id = mode === "intervals" ? "L" : mode === "pitch" ? "L2" : multi3 ? "pieces3" : "L3";
+    const champ = document.getElementById(id) as HTMLInputElement | null;
+    champ?.focus();
+    if (champ instanceof HTMLInputElement) champ.select();
+  }, [mode, multi3]);
 
   const effectiveDe = sameEnd ? Ds : De;
 
