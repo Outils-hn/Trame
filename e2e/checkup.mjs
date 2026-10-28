@@ -52,7 +52,7 @@ try {
   await p2.getByRole("tab", { name: /intervalles/i }).click(); await p2.waitForTimeout(300);
   await p2.locator("#L").fill("2737.5"); await p2.keyboard.press("Tab"); await p2.waitForTimeout(200);
   verif("Saisie : « 2737.5 » affiche « 2 737,5 »", (await p2.locator("#L").inputValue()).replace(/[\u00a0\u202f]/g, " ") === "2 737,5", await p2.locator("#L").inputValue());
-  await p2.locator("#L").fill("3'000"); await p2.waitForTimeout(300);
+  await p2.locator("#ds").fill("50"); await p2.locator("#L").fill("3'000"); await p2.waitForTimeout(300);
   verif("Saisie : apostrophe suisse acceptee (3'000)", /580/.test(await p2.locator("tr[aria-selected='true']").innerText()));
   await c2.close();
 } catch (e) { verif("Deroulement des quick wins", false, e.message.split("\n")[0]); }
