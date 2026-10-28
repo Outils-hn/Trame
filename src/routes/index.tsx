@@ -214,7 +214,7 @@ function TrameApp() {
   );
   const isMulti = mode === "maxpitch" && multi3;
   // Champs a corriger : contour rouge + raison sous le champ, au lieu d'un message general
-  const erreurs = champsInvalides(mode, { L, Ds, De, maxIntervals, L2, E, symmetric, Dstart, minEdge2, L3, Ds3, De3, Emax, autoRives3, riveMin3, multi3 });
+  const erreurs = champsInvalides(mode, { L, Ds, De: effectiveDe, maxIntervals, L2, E, symmetric, Dstart, minEdge2, L3, Ds3, De3: effectiveDe3, Emax, autoRives3, riveMin3, multi3 });
   const premiereErreur = Object.values(erreurs)[0];
 
   const applyHistory = (p: HistoryParams) => {
