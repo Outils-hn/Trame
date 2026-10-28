@@ -13,6 +13,8 @@ async function session(name, mobile, fn) {
   const ctx = await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 900 } });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => errors.push(`[${name}] ${e.message}`));
+  // Erreurs affichees dans la console du navigateur (souvent invisibles a l'ecran)
+  page.on("console", (m) => { if (m.type() === "error" && !/favicon|Failed to load resource/i.test(m.text())) errors.push(`[${name}] console : ${m.text().slice(0, 300)}`); });
   await page.addInitScript(() => {
     if (sessionStorage.getItem("seeded")) return;
     localStorage.setItem("trame:full-backup-date", new Date().toISOString());
