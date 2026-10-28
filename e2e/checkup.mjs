@@ -14,6 +14,7 @@ try {
   await page.goto(BASE, { waitUntil: "networkidle" }); await page.waitForTimeout(500);
   verif("Curseur dans la longueur a l'ouverture", await page.evaluate(() => document.activeElement?.id === "L"));
   await page.keyboard.type("2500"); await page.waitForTimeout(300);
+  verif("Diagnostic : longueur tapee", true, `champ « ${await page.locator("#L").inputValue()} », memoire « ${await page.evaluate(() => localStorage.getItem("trame:etat:L"))} », focus ${await page.evaluate(() => document.activeElement?.id)}`);
   await page.getByRole("tab", { name: /entraxe fixe/i }).click(); await page.waitForTimeout(300);
   await page.reload({ waitUntil: "networkidle" }); await page.waitForTimeout(500);
   const ongletActif = await page.getByRole("tab", { selected: true }).textContent();
