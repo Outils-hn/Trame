@@ -247,20 +247,18 @@ function TrameApp() {
   return (
     <div className="min-h-screen text-foreground">
       <Toaster richColors position="top-right" />
-      <header className="border-b border-border bg-background/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <TrameLogo className="h-10 w-10" />
-            <div>
-              <h1 className="font-display text-lg font-bold uppercase tracking-[0.22em] text-foreground">Trame</h1>
-              <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Répartition de perçages</p>
-            </div>
+      <header className="border-b border-border bg-background">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-3.5 sm:px-6">
+          <div className="flex items-center gap-2.5">
+            <TrameMark />
+            <h1 className="text-[17px] font-semibold leading-none tracking-tight text-foreground">Trame</h1>
+            <span className="sr-only">Répartition de perçages</span>
           </div>
           <div className="flex items-center gap-2">
           <HistoryButton />
           <button
             onClick={() => setDark((d) => !d)}
-            className="inline-flex size-9 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:bg-muted"
+            className="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Basculer le thème"
           >
             {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -272,25 +270,25 @@ function TrameApp() {
 
       <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
-          <TabsList className="grid w-full grid-cols-3 border border-border bg-card shadow-sm sm:w-auto sm:inline-grid">
+          <TabsList className="grid h-auto w-full grid-cols-3 rounded-xl bg-muted p-1 sm:w-auto sm:inline-grid">
 
             <TabsTrigger
               value="intervals"
-              className="data-[state=active]:bg-muted data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
+              className="h-9 rounded-lg px-4 text-[13px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
               <span className="sm:hidden">Intervalles</span>
               <span className="hidden sm:inline">Par nombre d'intervalles</span>
             </TabsTrigger>
             <TabsTrigger
               value="pitch"
-              className="data-[state=active]:bg-muted data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
+              className="h-9 rounded-lg px-4 text-[13px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
               <span className="sm:hidden">Entraxe fixe</span>
               <span className="hidden sm:inline">Par entraxe fixe</span>
             </TabsTrigger>
             <TabsTrigger
               value="maxpitch"
-              className="data-[state=active]:bg-muted data-[state=active]:text-[var(--color-trame)] data-[state=active]:shadow-[inset_0_-2px_0_var(--color-trame)]"
+              className="h-9 rounded-lg px-4 text-[13px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
               <span className="sm:hidden">Entraxe max</span>
               <span className="hidden sm:inline">Par entraxe maximum</span>
@@ -591,29 +589,6 @@ function EmptyIntegerNotice({ message, onShowDecimals }: { message: string; onSh
   );
 }
 
-function TrameLogo({ className }: { className?: string }) {
-  // 5x5 dot grid; 3 successive diagonal dots highlighted with orange rings
-  const dots: Array<[number, number]> = [];
-  for (let y = 0; y < 5; y++) for (let x = 0; x < 5; x++) dots.push([x, y]);
-  const highlights = new Set(["1,3", "2,2", "3,1"]);
-  return (
-    <svg viewBox="0 0 50 50" className={className} aria-hidden="true">
-      <rect width="50" height="50" rx="8" className="fill-muted/40" />
-      {dots.map(([x, y]) => {
-        const cx = 5 + x * 10;
-        const cy = 5 + y * 10;
-        const isHi = highlights.has(`${x},${y}`);
-        return (
-          <g key={`${x}-${y}`}>
-            {isHi && <circle cx={cx} cy={cy} r={3.6} fill="none" stroke="var(--color-trame)" strokeWidth={1.2} opacity={0.95} />}
-            <circle cx={cx} cy={cy} r={1.3} className="fill-zinc-500 dark:fill-zinc-400" />
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
 function HexWireframe({ className }: { className?: string }) {
   // Wireframe hexagon, thin slate lines + a single orange accent edge / vertex
   const cx = 50;
@@ -651,6 +626,18 @@ function HexWireframe({ className }: { className?: string }) {
         strokeLinecap="round"
       />
       <circle cx={pts[0][0]} cy={pts[0][1]} r={2.2} fill="var(--color-trame)" />
+    </svg>
+  );
+}
+
+/** Logo « Trame » (style Epure) : une piece et ses percages, celui du milieu en vert. */
+function TrameMark() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+      <rect x="1" y="7" width="20" height="8" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-foreground" />
+      <circle cx="5" cy="11" r="1.6" fill="currentColor" className="text-foreground" />
+      <circle cx="11" cy="11" r="1.6" fill="var(--color-trame)" />
+      <circle cx="17" cy="11" r="1.6" fill="currentColor" className="text-foreground" />
     </svg>
   );
 }

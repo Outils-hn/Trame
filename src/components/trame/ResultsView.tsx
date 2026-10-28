@@ -67,7 +67,7 @@ export function ResultsView({
         </div>
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full text-sm">
-            <thead className="border-b border-border bg-muted/40 text-[11px] font-semibold text-muted-foreground">
+            <thead className="border-b border-foreground text-[12px] font-medium text-muted-foreground">
               <tr>
                 {multi && <th className="px-4 py-2.5 text-left">Repère</th>}
                 {multi && <th className="px-4 py-2.5 text-right">Longueur</th>}
@@ -126,17 +126,17 @@ export function ResultsView({
       </div>
 
       <section className="rounded-xl border border-border bg-card p-5">
-        <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-          {multi && (
-            <span className="text-xl font-semibold">
-              {sel.mark} <span className="text-sm font-normal text-muted-foreground tabular-nums">· {fmt(total)} mm</span>
-            </span>
-          )}
-          <span className="text-xl font-semibold tabular-nums">{sel.holes} perçages</span>
-          <span className="text-xl font-semibold tabular-nums text-[var(--color-trame)]">entraxe {fmt(sel.pitch)} mm</span>
-          <span className="text-sm text-muted-foreground tabular-nums">
-            distances au bord {fmt(sel.dStart)} / {fmt(sel.dEnd)} mm
-          </span>
+        {/* Repartition choisie (style Epure) : l'entraxe en grand, le reste en dessous */}
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+            {multi ? `${sel.mark} · ${fmt(total)} mm` : "Répartition choisie"}
+          </p>
+          <p className="mt-2 text-[52px] font-semibold leading-none tracking-[-0.04em] tabular-nums">
+            {fmt(sel.pitch)}<span className="text-2xl text-muted-foreground"> mm</span>
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground tabular-nums">
+            entraxe · <span className="font-medium text-foreground">{sel.holes} perçages</span> · bords {fmt(sel.dStart)} / {fmt(sel.dEnd)} mm
+          </p>
         </div>
 
         <BarSchema positions={sel.positions} total={total} N={sel.N} pitch={sel.pitch} />
@@ -146,7 +146,7 @@ export function ResultsView({
             <div className="mb-1 text-[11px] font-semibold text-muted-foreground">Cotes cumulées depuis le bord de début (mm)</div>
             <div className="flex flex-wrap gap-1.5 text-sm tabular-nums">
               {sel.positions.map((p, i) => (
-                <span key={i} className="rounded border border-border px-1.5 py-0.5">
+                <span key={i} className="rounded-md border border-border bg-background px-2 py-0.5 font-mono text-[13px]">
                   {fmt(p, 1)}
                 </span>
               ))}
@@ -154,7 +154,7 @@ export function ResultsView({
           </div>
           <Button
             onClick={() => copy(sel.positions, selected, multi ? `${sel.mark} · ${sel.holes} perçages` : `${sel.holes} perçages`, integers)}
-            className="gap-1.5 bg-[var(--color-trame)] text-white dark:text-zinc-950 hover:bg-[var(--color-trame)]/90"
+            className="gap-1.5 rounded-full bg-[var(--color-trame)] px-5 text-white dark:text-zinc-950 hover:bg-[var(--color-trame)]/90"
           >
             {copiedIdx === selected ? <Check className="size-4" /> : <Copy className="size-4" />}
             Copier les cotes
