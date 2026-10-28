@@ -1,0 +1,11 @@
+OK     Curseur dans la longueur a l'ouverture
+OK     Mode retenu apres rechargement (Entraxe fixePar entraxe fixe)
+OK     Curseur dans la longueur du mode
+OK     Longueur retenue apres rechargement (lu : 2500)
+OK     Mode sombre retenu apres rechargement
+OK     Sauvegarde complete : reglages inclus (22 cles)
+OK     Titre de l'onglet (Trame · Répartition de perçages)
+OK     3000 mm, bords 50 : entraxe 580 choisi d'office (5 6 50 580 50 mm ronds)
+OK     Bords trop grands : champ designe
+OK     Entraxe 0,01 mm : la page reste fluide (< 10 s) (1355 ms)
+OK     Entraxe 0,01 mm : cotes limitees a 200
