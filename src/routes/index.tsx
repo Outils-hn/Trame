@@ -291,7 +291,7 @@ function TrameApp() {
 
 
   const copy = async (positions: number[], idx: number, label: string, useIntegers: boolean) => {
-    const txt = positions.map((p) => (useIntegers ? String(p) : fmt(p, 1).replace(/\s/g, ""))).join("; ");
+    const txt = positions.map((p) => (useIntegers ? String(p) : fmt(p, 1).replace(/[\s']/g, ""))).join("; ");
     try {
       await navigator.clipboard.writeText(txt);
       setCopiedIdx(idx);
