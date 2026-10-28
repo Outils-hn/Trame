@@ -31,6 +31,26 @@ try {
   const json = JSON.parse(readFileSync(chemin, "utf8"));
   verif("Sauvegarde complete : reglages inclus", json.app === "trame" && "trame:etat:L" in json.data && "trame:etat:dark" in json.data, Object.keys(json.data).length + " cles");
 } catch (e) { verif("Deroulement du check-up", false, e.message.split("\n")[0]); }
+// Quick wins : titre, entraxe le plus rond, champ fautif, cotes limitees
+try {
+  const c2 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const p2 = await c2.newPage();
+  p2.on("pageerror", (e) => verif("Aucune erreur JavaScript", false, e.message));
+  await p2.goto(BASE, { waitUntil: "networkidle" }); await p2.waitForTimeout(500);
+  verif("Titre de l'onglet", (await p2.title()) === "Trame · Répartition de perçages", await p2.title());
+  const choisi = (await p2.locator("tr[aria-selected='true']").innerText()).replace(/\s+/g, " ");
+  verif("3000 mm, bords 50 : entraxe 580 choisi d'office", /580/.test(choisi), choisi);
+  await p2.screenshot({ path: `${OUT}/check-entraxe-rond.png` });
+  await p2.locator("#L").fill("500"); await p2.locator("#ds").fill("400"); await p2.waitForTimeout(300);
+  verif("Bords trop grands : champ designe", (await p2.locator("#ds").getAttribute("aria-invalid")) === "true" && await p2.getByText(/dépassent la longueur/).first().isVisible());
+  await p2.screenshot({ path: `${OUT}/check-champ-fautif.png` });
+  await p2.getByRole("tab", { name: /entraxe fixe/i }).click(); await p2.waitForTimeout(300);
+  const t0 = Date.now();
+  await p2.locator("#L2").fill("3000"); await p2.locator("#E").fill("0.01"); await p2.waitForTimeout(500);
+  verif("Entraxe 0,01 mm : la page reste fluide (< 10 s)", Date.now() - t0 < 10000, `${Date.now() - t0} ms`);
+  verif("Entraxe 0,01 mm : cotes limitees a 200", await p2.getByText(/et .* autres/).first().isVisible());
+  await c2.close();
+} catch (e) { verif("Deroulement des quick wins", false, e.message.split("\n")[0]); }
 await browser.close();
 writeFileSync(`${OUT}/checkup.txt`, lignes.join("\n"));
 console.log(lignes.join("\n"));

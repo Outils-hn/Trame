@@ -23,6 +23,8 @@ import {
   fromIntervalRows,
   fromPitchRows,
   parsePieces,
+  champsInvalides,
+  indexPlusRond,
   type Mode,
 } from "@/lib/trame-calc";
 import {
@@ -38,7 +40,7 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Trame ·" },
+      { title: "Trame · Répartition de perçages" },
       {
         name: "description",
         content:
@@ -60,6 +62,7 @@ function NumberField({
   disabled,
   suffix = "mm",
   step = "0.1",
+  error,
 }: {
   id: string;
   label: string;
@@ -68,6 +71,8 @@ function NumberField({
   disabled?: boolean;
   suffix?: string;
   step?: string;
+  /** Raison du refus : contour rouge et message sous le champ. */
+  error?: string;
 }) {
   return (
     <div className="space-y-1.5">
@@ -82,16 +87,19 @@ function NumberField({
           step={step}
           value={value}
           disabled={disabled}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-erreur` : undefined}
           onChange={(e) => {
             const v = e.target.value;
             onChange(v === "" ? NaN : parseFloat(v));
           }}
-          className="h-11 pr-12 text-right text-base tabular-nums"
+          className={"h-11 pr-12 text-right text-base tabular-nums" + (error ? " border-destructive focus-visible:ring-destructive" : "")}
         />
         <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted-foreground">
           {suffix}
         </span>
       </div>
+      {error && <p id={`${id}-erreur`} className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }
@@ -205,6 +213,9 @@ function TrameApp() {
     [parsed3, autoRives3, Ds3, effectiveDe3, Emax, riveMin3, sameEnd3, integers],
   );
   const isMulti = mode === "maxpitch" && multi3;
+  // Champs a corriger : contour rouge + raison sous le champ, au lieu d'un message general
+  const erreurs = champsInvalides(mode, { L, Ds, De: effectiveDe, maxIntervals, L2, E, symmetric, Dstart, minEdge2, L3, Ds3, De3: effectiveDe3, Emax, autoRives3, riveMin3, multi3 });
+  const premiereErreur = Object.values(erreurs)[0];
 
   const applyHistory = (p: HistoryParams) => {
     setMode((p.mode as Mode) ?? "intervals");
@@ -307,6 +318,7 @@ function TrameApp() {
           <TabsList className="grid h-auto w-full grid-cols-3 rounded-xl bg-muted p-1 sm:w-auto sm:inline-grid">
 
             <TabsTrigger
+              aria-controls="trame-panneau"
               value="intervals"
               className="h-9 rounded-lg px-4 text-[13px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
@@ -314,6 +326,7 @@ function TrameApp() {
               <span className="hidden sm:inline">Par nombre d'intervalles</span>
             </TabsTrigger>
             <TabsTrigger
+              aria-controls="trame-panneau"
               value="pitch"
               className="h-9 rounded-lg px-4 text-[13px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
@@ -321,6 +334,7 @@ function TrameApp() {
               <span className="hidden sm:inline">Par entraxe fixe</span>
             </TabsTrigger>
             <TabsTrigger
+              aria-controls="trame-panneau"
               value="maxpitch"
               className="h-9 rounded-lg px-4 text-[13px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
@@ -330,7 +344,8 @@ function TrameApp() {
           </TabsList>
         </Tabs>
 
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
+        {/* Panneau des onglets (les onglets n'ont pas de contenu Radix : on les relie ici, pour l'accessibilite) */}
+        <div id="trame-panneau" role="tabpanel" className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
           {/* Paramètres */}
           <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
             
@@ -345,12 +360,13 @@ function TrameApp() {
                   </div>
 
                   <div className="space-y-4">
-                    <NumberField id="L" label="Longueur totale (L)" value={isFinite(L) ? L : ""} onChange={setL} />
+                    <NumberField error={erreurs["L"]} id="L" label="Longueur totale (L)" value={isFinite(L) ? L : ""} onChange={setL} />
 
                     <div className="grid grid-cols-2 gap-3">
-                      <NumberField id="ds" label="Distance au bord début" value={isFinite(Ds) ? Ds : ""} onChange={setDs} />
+                      <NumberField error={erreurs["ds"]} id="ds" label="Distance au bord début" value={isFinite(Ds) ? Ds : ""} onChange={setDs} />
                       <NumberField
                         id="de"
+                        error={erreurs["de"]}
                         label="Distance au bord fin"
                         value={sameEnd ? (isFinite(Ds) ? Ds : "") : isFinite(De) ? De : ""}
                         onChange={setDe}
@@ -370,6 +386,7 @@ function TrameApp() {
                   <div className="space-y-4">
                     <NumberField
                       id="pm"
+                      error={erreurs["pm"]}
                       label="Intervalles max"
                       value={isFinite(maxIntervals) ? maxIntervals : ""}
                       onChange={setMaxIntervals}
@@ -394,8 +411,8 @@ function TrameApp() {
                   </div>
 
                   <div className="space-y-4">
-                    <NumberField id="L2" label="Longueur totale (L)" value={isFinite(L2) ? L2 : ""} onChange={setL2} />
-                    <NumberField id="E" label="Entraxe imposé (E)" value={isFinite(E) ? E : ""} onChange={setE} />
+                    <NumberField error={erreurs["L2"]} id="L2" label="Longueur totale (L)" value={isFinite(L2) ? L2 : ""} onChange={setL2} />
+                    <NumberField error={erreurs["E"]} id="E" label="Entraxe imposé (E)" value={isFinite(E) ? E : ""} onChange={setE} />
 
                     <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
                       <span className="text-xs font-medium text-foreground">Distances au bord identiques</span>
@@ -405,6 +422,7 @@ function TrameApp() {
                     {!symmetric && (
                       <NumberField
                         id="dstart"
+                        error={erreurs["dstart"]}
                         label="Distance au bord début"
                         value={isFinite(Dstart) ? Dstart : ""}
                         onChange={setDstart}
@@ -413,6 +431,7 @@ function TrameApp() {
 
                     <NumberField
                       id="minedge2"
+                      error={erreurs["minedge2"]}
                       label="Distance au bord minimale"
                       value={isFinite(minEdge2) ? minEdge2 : ""}
                       onChange={setMinEdge2}
@@ -473,14 +492,15 @@ function TrameApp() {
                         </p>
                       </div>
                     ) : (
-                      <NumberField id="L3" label="Longueur totale (L)" value={isFinite(L3) ? L3 : ""} onChange={setL3} />
+                      <NumberField error={erreurs["L3"]} id="L3" label="Longueur totale (L)" value={isFinite(L3) ? L3 : ""} onChange={setL3} />
                     )}
 
                     {!autoRives3 && (
                       <div className="grid grid-cols-2 gap-3">
-                        <NumberField id="ds3" label="Distance au bord début" value={isFinite(Ds3) ? Ds3 : ""} onChange={setDs3} />
+                        <NumberField error={erreurs["ds3"]} id="ds3" label="Distance au bord début" value={isFinite(Ds3) ? Ds3 : ""} onChange={setDs3} />
                         <NumberField
                           id="de3"
+                          error={erreurs["de3"]}
                           label="Distance au bord fin"
                           value={sameEnd3 ? (isFinite(Ds3) ? Ds3 : "") : isFinite(De3) ? De3 : ""}
                           onChange={setDe3}
@@ -496,6 +516,7 @@ function TrameApp() {
 
                     <NumberField
                       id="emax"
+                      error={erreurs["emax"]}
                       label="Entraxe maximum"
                       value={isFinite(Emax) ? Emax : ""}
                       onChange={setEmax}
@@ -511,6 +532,7 @@ function TrameApp() {
                     {autoRives3 && (
                       <NumberField
                         id="rivemin3"
+                        error={erreurs["rivemin3"]}
                         label="Distance au bord minimale"
                         value={isFinite(riveMin3) ? riveMin3 : ""}
                         onChange={setRiveMin3}
@@ -561,6 +583,7 @@ function TrameApp() {
               copy={copy}
               copiedIdx={copiedIdx}
               recommendFirst={mode === "maxpitch" && !isMulti}
+              defaultIndex={mode === "intervals" ? indexPlusRond(fromIntervalRows(intervalsData.rows, Ds, effectiveDe)) : 0}
               notice={
                 isMulti && multiData.failed.length > 0
                   ? `Sans solution avec ces paramètres : ${multiData.failed
@@ -586,8 +609,10 @@ function TrameApp() {
                     onShowDecimals={() => setIntegers(false)}
                   />
                 ) : (
-                  <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
-                    Saisissez des valeurs valides pour voir les répartitions.
+                  <div role="alert" className="rounded-xl border border-dashed border-destructive/40 bg-card p-10 text-center text-sm text-muted-foreground">
+                    {premiereErreur
+                      ? <>Corrigez le champ en rouge : <b className="font-semibold text-destructive">{premiereErreur}</b>.</>
+                      : "Aucune répartition possible avec ces valeurs."}
                   </div>
                 )
               }

@@ -19,6 +19,7 @@ export function ResultsView({
   copiedIdx,
   notice,
   recommendFirst,
+  defaultIndex = 0,
 }: {
   title: string;
   options: DrillOption[];
@@ -31,12 +32,16 @@ export function ResultsView({
   notice?: ReactNode;
   /** Badge "conseillé" sur la premiere ligne (le moins de percages sous l'entraxe max). */
   recommendFirst?: boolean;
+  /** Ligne choisie d'office (ex. l'entraxe le plus rond). */
+  defaultIndex?: number;
 }) {
-  const [selected, setSelected] = useState(0);
-  // Si la liste raccourcit (nouvelles valeurs), on reste sur une ligne existante.
+  const [selected, setSelected] = useState(defaultIndex);
+  // Nouvelles valeurs saisies (autres entraxes) : on revient sur la ligne choisie d'office.
+  const signature = options.map((o) => `${o.pitch}|${o.N}`).join(";");
   useEffect(() => {
-    if (selected >= options.length) setSelected(0);
-  }, [options.length, selected]);
+    setSelected(Math.min(defaultIndex, Math.max(0, options.length - 1)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature]);
 
   if (!options.length) return <>{empty}</>;
   const sel = options[Math.min(selected, options.length - 1)]!;
@@ -145,11 +150,18 @@ export function ResultsView({
           <div className="min-w-0 flex-1">
             <div className="mb-1 text-[11px] font-semibold text-muted-foreground">Cotes cumulées depuis le bord de début (mm)</div>
             <div className="flex flex-wrap gap-1.5 text-sm tabular-nums">
-              {sel.positions.map((p, i) => (
+              {/* Au-dela de 200 cotes, on n'affiche que les premieres (sinon la page se fige) ;
+                  « Copier les cotes » copie toujours la liste complete. */}
+              {sel.positions.slice(0, MAX_COTES).map((p, i) => (
                 <span key={i} className="rounded-md border border-border bg-background px-2 py-0.5 font-mono text-[13px]">
                   {fmt(p, 1)}
                 </span>
               ))}
+              {sel.positions.length > MAX_COTES && (
+                <span className="px-2 py-0.5 text-[13px] text-muted-foreground">
+                  … et {fmt(sel.positions.length - MAX_COTES, 0)} autres (toutes copiées avec « Copier les cotes »)
+                </span>
+              )}
             </div>
           </div>
           <Button
@@ -189,6 +201,9 @@ export function ResultsView({
     </div>
   );
 }
+
+/** Nombre maximum de cotes affichees en puces. */
+const MAX_COTES = 200;
 
 /** Valeurs a coller : chasse fixe, sans ligature (sinon "<>" devient un losange). */
 const codeCls = "rounded border border-border bg-background px-1.5 py-0.5 font-mono text-foreground [font-variant-ligatures:none]";
