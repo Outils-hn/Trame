@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAutoRiveRows, buildIntervalRows, buildMaxPitchRows, buildMultiPieceOptions, buildPitchRows, cadPitch, chainText, fromIntervalRows, fromPitchRows, parsePieces, piecesTable } from "./trame-calc";
+import { buildAutoRiveRows, champsInvalides, indexPlusRond, buildIntervalRows, buildMaxPitchRows, buildMultiPieceOptions, buildPitchRows, cadPitch, chainText, fromIntervalRows, fromPitchRows, parsePieces, piecesTable } from "./trame-calc";
 
 const close = (a: number, b: number) => Math.abs(a - b) < 1e-9;
 
@@ -182,5 +182,35 @@ describe("collage : separateurs suisses", () => {
   it("apostrophe droite et typographique", () => {
     const { pieces } = parsePieces("A\t3'094\nB\t3’094\nC\t3 094");
     expect(pieces.map((p) => p.length)).toEqual([3094, 3094, 3094]);
+  });
+});
+
+describe("quick wins : saisies a corriger", () => {
+  const base = { L: 3000, Ds: 50, De: 50, maxIntervals: 5, L2: 3000, E: 100, symmetric: true, Dstart: 50, minEdge2: 30, L3: 3000, Ds3: 50, De3: 50, Emax: 300, autoRives3: false, riveMin3: 30, multi3: false };
+  it("valeurs normales : rien a corriger", () => {
+    for (const m of ["intervals", "pitch", "maxpitch"] as const) expect(champsInvalides(m, base)).toEqual({});
+  });
+  it("le champ fautif est designe avec sa raison", () => {
+    expect(champsInvalides("intervals", { ...base, L: -3000 }).L).toMatch(/supérieure à 0/);
+    expect(champsInvalides("intervals", { ...base, L: 500, Ds: 400, De: 400 }).ds).toMatch(/dépassent/);
+    expect(champsInvalides("intervals", { ...base, maxIntervals: 2.5 }).pm).toMatch(/entier/);
+    expect(champsInvalides("pitch", { ...base, E: 0 }).E).toMatch(/supérieure à 0/);
+    expect(champsInvalides("maxpitch", { ...base, Emax: -300 }).emax).toMatch(/supérieure à 0/);
+    expect(champsInvalides("intervals", { ...base, L: NaN }).L).toBe("Champ vide");
+  });
+  it("collage : une longueur vide n'est plus lue comme une piece de 2 mm", () => {
+    const { pieces, ignored } = parsePieces("A1\t3000\nB2\t\nB3\t-50");
+    expect(pieces).toEqual([{ mark: "A1", length: 3000 }]);
+    expect(ignored).toBe(2);
+  });
+});
+
+describe("repartition selectionnee d'office : l'entraxe le plus rond", () => {
+  it("3000 mm, bords 50 : 580 mm (5 intervalles) plutot que 2 900 (1 intervalle)", () => {
+    const opts = [2900, 1450, 966.667, 725, 580].map((pitch, i) => ({ pitch, N: i + 1 }));
+    expect(indexPlusRond(opts)).toBe(4);
+  });
+  it("un entraxe multiple de 10 l'emporte sur un multiple de 5", () => {
+    expect(indexPlusRond([{ pitch: 600, N: 4 }, { pitch: 485, N: 5 }])).toBe(0);
   });
 });

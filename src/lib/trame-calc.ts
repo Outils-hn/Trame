@@ -328,6 +328,10 @@ export function parsePieces(text: string): { pieces: PieceInput[]; ignored: numb
     if (cells.length > 1) {
       length = parseLen(cells[cells.length - 1]!);
       mark = cells[0]!;
+    } else if (/\t|;/.test(raw)) {
+      // Colonnes collees depuis Excel mais longueur vide (« B2 <tab> ») : ligne ignoree,
+      // sinon « B2 » serait lu comme une piece « B » de 2 mm.
+      length = NaN;
     } else {
       const m = line.match(/^(.*?)[\s:=]*(\d+(?:[.,]\d+)?)\s*(?:mm)?$/i);
       if (m) {
@@ -393,4 +397,68 @@ export function piecesTable(options: DrillOption[]): string {
  */
 export function chainText(N: number, pitch: number): string {
   return `${N} x ${cadNumber(Number(pitch.toFixed(1))).replace(".", ",")} = <>`;
+}
+
+/** Champs a corriger pour le mode affiche : identifiant du champ -> raison. Vide si tout est valable. */
+export function champsInvalides(mode: Mode, v: {
+  L: number; Ds: number; De: number; maxIntervals: number;
+  L2: number; E: number; symmetric: boolean; Dstart: number; minEdge2: number;
+  L3: number; Ds3: number; De3: number; Emax: number; autoRives3: boolean; riveMin3: number; multi3: boolean;
+}): Record<string, string> {
+  const e: Record<string, string> = {};
+  const vide = (n: number) => !Number.isFinite(n);
+  const longueur = (id: string, n: number) => {
+    if (vide(n)) e[id] = "Champ vide";
+    else if (n <= 0) e[id] = "Doit être supérieure à 0";
+  };
+  const bord = (id: string, n: number) => {
+    if (vide(n)) e[id] = "Champ vide";
+    else if (n < 0) e[id] = "Ne peut pas être négative";
+  };
+  if (mode === "intervals") {
+    longueur("L", v.L);
+    bord("ds", v.Ds);
+    bord("de", v.De);
+    if (vide(v.maxIntervals)) e.pm = "Champ vide";
+    else if (v.maxIntervals < 1) e.pm = "Au moins 1 intervalle";
+    else if (!Number.isInteger(v.maxIntervals)) e.pm = "Nombre entier attendu";
+    if (!e.L && !e.ds && !e.de && v.Ds + v.De >= v.L) e.ds = `Les distances au bord (${fmt(v.Ds + v.De)} mm) dépassent la longueur`;
+  } else if (mode === "pitch") {
+    longueur("L2", v.L2);
+    longueur("E", v.E);
+    if (!e.L2 && !e.E && v.E > v.L2) e.E = "Plus grand que la longueur totale";
+    if (!v.symmetric) {
+      bord("dstart", v.Dstart);
+      if (!e.dstart && !e.L2 && v.Dstart >= v.L2) e.dstart = "Dépasse la longueur totale";
+    }
+    bord("minedge2", v.minEdge2);
+  } else {
+    if (!v.multi3) longueur("L3", v.L3);
+    longueur("emax", v.Emax);
+    if (v.autoRives3) bord("rivemin3", v.riveMin3);
+    else {
+      bord("ds3", v.Ds3);
+      bord("de3", v.De3);
+      if (!v.multi3 && !e.L3 && !e.ds3 && !e.de3 && v.Ds3 + v.De3 >= v.L3) e.ds3 = `Les distances au bord (${fmt(v.Ds3 + v.De3)} mm) dépassent la longueur`;
+    }
+  }
+  return e;
+}
+
+/**
+ * Repartition selectionnee d'office (mode « nombre d'intervalles ») : l'entraxe le plus rond
+ * (multiple de 10, puis de 5, puis entier), et a egalite celle qui a le plus d'intervalles.
+ */
+export function indexPlusRond(options: { pitch: number; N: number }[]): number {
+  const rang = (p: number) => {
+    const r = Math.round(p * 1000) / 1000;
+    if (!Number.isInteger(r)) return 0;
+    return r % 10 === 0 ? 3 : r % 5 === 0 ? 2 : 1;
+  };
+  let best = 0;
+  options.forEach((o, i) => {
+    const b = options[best]!;
+    if (rang(o.pitch) > rang(b.pitch) || (rang(o.pitch) === rang(b.pitch) && o.N > b.N)) best = i;
+  });
+  return best;
 }
