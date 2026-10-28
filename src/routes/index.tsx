@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SelecteurApplis } from "@/components/trame/SelecteurApplis";
 import { useEffect, useMemo, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -284,7 +285,7 @@ function TrameApp() {
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-2.5">
             <TrameMark />
-            <h1 className="text-[17px] font-semibold leading-none tracking-tight text-foreground">Trame</h1>
+            <SelecteurApplis />
             <span className="sr-only">Répartition de perçages</span>
           </div>
           <div className="flex items-center gap-2">
