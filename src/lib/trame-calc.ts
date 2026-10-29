@@ -26,10 +26,11 @@ export const MAX_INTERVALS = 500;
 export function fmt(n: number, d = 1) {
   if (!isFinite(n)) return "—";
   const cleaned = Number(n.toFixed(d));
+  // Format suisse de la famille d'applis : apostrophe pour les milliers (« 2'737,5 »)
   return cleaned.toLocaleString("fr-FR", {
     minimumFractionDigits: 0,
     maximumFractionDigits: d,
-  });
+  }).replace(/[\s\u00a0\u202f]/g, "'");
 }
 
 export function buildIntervalRows(

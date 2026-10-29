@@ -23,7 +23,7 @@ try {
   verif("Mode retenu apres rechargement", /entraxe fixe/i.test(ongletActif ?? ""), ongletActif ?? "");
   verif("Curseur dans la longueur du mode", await page.evaluate(() => document.activeElement?.id === "L2"));
   await page.getByRole("tab", { name: /intervalles/i }).click(); await page.waitForTimeout(300);
-  const L = (await page.locator("#L").inputValue()).replace(/[\s\u00a0\u202f]/g, "");
+  const L = (await page.locator("#L").inputValue()).replace(/[\s\u00a0\u202f']/g, "");
   verif("Longueur retenue apres rechargement", L === "2500", `lu : ${L}`);
   await page.getByRole("button", { name: "Basculer le thème" }).click(); await page.waitForTimeout(200);
   await page.reload({ waitUntil: "networkidle" });
@@ -54,7 +54,7 @@ try {
   verif("Entraxe 0,01 mm : cotes limitees a 200", await p2.getByText(/et .* autres/).first().isVisible());
   await p2.getByRole("tab", { name: /intervalles/i }).click(); await p2.waitForTimeout(300);
   await p2.locator("#L").fill("2737.5"); await p2.keyboard.press("Tab"); await p2.waitForTimeout(200);
-  verif("Saisie : « 2737.5 » affiche « 2 737,5 »", (await p2.locator("#L").inputValue()).replace(/[\u00a0\u202f]/g, " ") === "2 737,5", await p2.locator("#L").inputValue());
+  verif("Saisie : « 2737.5 » affiche « 2'737,5 »", (await p2.locator("#L").inputValue())=== "2'737,5", await p2.locator("#L").inputValue());
   await p2.locator("#ds").fill("50"); await p2.locator("#L").fill("3'000"); await p2.waitForTimeout(300);
   verif("Saisie : apostrophe suisse acceptee (3'000)", /580/.test(await p2.locator("tr[aria-selected='true']").innerText()));
   // Clavier dans le tableau : Tab jusqu'a la ligne choisie, fleche haut, Entree copie les cotes

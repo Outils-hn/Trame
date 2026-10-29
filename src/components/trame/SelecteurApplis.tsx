@@ -2,12 +2,13 @@ import { Check, ChevronDown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 /**
- * Les trois applis de la famille : de simples liens vers leurs adresses publiees.
+ * Les applis de la famille : de simples liens vers leurs adresses publiees.
  * Chaque appli reste independante (ses donnees restent sur son propre site).
  */
 const APPLIS = [
   { nom: "Format", role: "Débit de panneaux", url: "https://format-hn.lovable.app", couleur: "#FF4D00" },
   { nom: "Linear", role: "Mise en barre", url: "https://linear-hn.lovable.app", couleur: "#2B50FF" },
+  { nom: "Masse", role: "Poids des éléments", url: "https://masse-hn.lovable.app", couleur: "#9A4A3A" },
   { nom: "Trame", role: "Répartition de perçages", url: "https://trame-hn.lovable.app", couleur: "#0E9F6E" },
 ] as const;
 
