@@ -374,7 +374,7 @@ function TrameApp() {
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Paramètres</h2>
+                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Paramètres</h2>
                     <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       Entrée
                     </span>
@@ -403,7 +403,7 @@ function TrameApp() {
                 </section>
 
                 <section className="rounded-xl border border-border bg-card p-5">
-                  <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Contrainte façade</h2>
+                  <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Contrainte façade</h2>
                   <div className="space-y-4">
                     <NumberField
                       id="pm"
@@ -425,7 +425,7 @@ function TrameApp() {
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Paramètres</h2>
+                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Paramètres</h2>
                     <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       Entraxe fixe
                     </span>
@@ -464,7 +464,7 @@ function TrameApp() {
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Paramètres</h2>
+                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Paramètres</h2>
                     <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                       Entraxe max
                     </span>
@@ -563,7 +563,7 @@ function TrameApp() {
                 </section>
 
                 <section className="rounded-xl border border-border bg-card p-5">
-                  <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">Options</h2>
+                  <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Options</h2>
                   <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
                     <span className="text-xs font-medium text-foreground">Mesures entières uniquement</span>
                     <Switch checked={integers} onCheckedChange={setIntegers} />
