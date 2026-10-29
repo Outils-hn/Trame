@@ -27,7 +27,8 @@ export function SelecteurApplis() {
           <DropdownMenuItem key={a.nom} asChild>
             <a href={a.url} className="flex items-center gap-2.5">
               <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: a.couleur }} />
-              <span className="font-medium">{a.nom}</span>
+              {/* Largeur fixe : les descriptions commencent toutes au meme endroit */}
+              <span className="w-14 shrink-0 font-medium">{a.nom}</span>
               <span className="text-xs text-muted-foreground">{a.role}</span>
               {a.nom === ACTUELLE && <Check className="ml-auto h-3.5 w-3.5" />}
             </a>
