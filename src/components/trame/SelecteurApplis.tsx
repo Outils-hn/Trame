@@ -7,8 +7,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
  */
 const APPLIS = [
   { nom: "Format", role: "Débit de panneaux", url: "https://format-hn.lovable.app", couleur: "#FF4D00" },
+  { nom: "Index", role: "Fiches techniques", url: "https://index-hn.lovable.app", couleur: "#6D4AFF" },
   { nom: "Linear", role: "Mise en barre", url: "https://linear-hn.lovable.app", couleur: "#2B50FF" },
   { nom: "Masse", role: "Poids des éléments", url: "https://masse-hn.lovable.app", couleur: "#9A4A3A" },
+  { nom: "Strate", role: "Épaisseurs d'isolation", url: "https://hnaegellen-hub.github.io/Strate/", couleur: "#D4A20B" },
   { nom: "Trame", role: "Répartition de perçages", url: "https://trame-hn.lovable.app", couleur: "#0E9F6E" },
 ] as const;
 
@@ -21,7 +23,7 @@ export function SelecteurApplis() {
         <h1 className="text-[17px] font-semibold leading-none tracking-tight text-foreground">{ACTUELLE}</h1>
         <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[240px]">
+      <DropdownMenuContent align="start" className="min-w-[260px]">
         <DropdownMenuLabel className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Mes outils</DropdownMenuLabel>
         {APPLIS.map((a) => (
           <DropdownMenuItem key={a.nom} asChild>
