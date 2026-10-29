@@ -1,0 +1,18 @@
+OK     Curseur dans la longueur a l'ouverture
+OK     Diagnostic : longueur tapee (champ « 2500 », memoire « 2500 », focus L)
+OK     Diagnostic : memoire apres changement d'onglet / apres rechargement (2500 / 2500)
+OK     Mode retenu apres rechargement (Entraxe fixePar entraxe fixe)
+OK     Curseur dans la longueur du mode
+OK     Longueur retenue apres rechargement (lu : 2500)
+OK     Mode sombre retenu apres rechargement
+OK     Sauvegarde complete : reglages inclus (22 cles)
+OK     Titre de l'onglet (Trame · Répartition de perçages)
+OK     3000 mm, bords 50 : entraxe 580 choisi d'office (5 6 50 580 50 mm ronds)
+OK     Bords trop grands : champ designe
+OK     Entraxe 0,01 mm : la page reste fluide (< 10 s) (1243 ms)
+OK     Entraxe 0,01 mm : cotes limitees a 200
+OK     Saisie : « 2737.5 » affiche « 2'737,5 » (2'737,5)
+OK     Saisie : apostrophe suisse acceptee (3'000)
+OK     Clavier : la ligne choisie est atteignable avec Tab
+OK     Clavier : fleche haut change de repartition (4 5 50 725 50 mm ronds)
+OK     Clavier : Entree copie les cotes (50; 775; 1500; 2225; 2950)
