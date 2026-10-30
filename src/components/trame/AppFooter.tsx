@@ -1,3 +1,4 @@
+import { LienRetour } from "./LienRetour";
 import { useState } from "react";
 import { BackupLink, BackupReminder } from "@/components/BackupControls";
 import { BACKUP_CONFIG } from "@/lib/backup-config";
@@ -21,7 +22,7 @@ export function AppFooter() {
         >
           Conçu par {APP_AUTHOR}
         </button>{" "}
-        · {APP_YEAR} · <BackupLink cfg={BACKUP_CONFIG} appName={APP_NAME} />
+        · {APP_YEAR} · <BackupLink cfg={BACKUP_CONFIG} appName={APP_NAME} /> · <LienRetour app="Trame" version={APP_VERSION} />
       </p>
       <BackupReminder cfg={BACKUP_CONFIG} />
       <Dialog open={open} onOpenChange={setOpen}>
