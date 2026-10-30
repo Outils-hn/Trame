@@ -16,10 +16,10 @@ export function HistoryButton() {
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+      className="bandeau-btn"
       aria-label="Ouvrir l'historique des calculs"
     >
-      <History className="size-4" />
+      <History />
       Historique
       {entries.length > 0 && (
         <span className="rounded bg-[var(--color-trame)] px-1.5 py-0.5 text-[10px] font-bold text-white">

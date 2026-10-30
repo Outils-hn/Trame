@@ -211,3 +211,29 @@ input[type="number"] {
 }
 body { border-top: 3px solid var(--app); }
 [role="tab"][data-state="active"] { box-shadow: inset 0 -2px 0 var(--app), 0 1px 2px rgb(0 0 0 / 0.06); }
+
+/* ===== Bandeau commun de la famille (identique dans toutes les applis) =====
+   56 px de haut, fond papier, filet de couleur en haut (body) et trait fin en bas.
+   Largeur commune : 1'440 px centres avec 32 px de marge, contenu aligne grace a « .page ». */
+.bandeau { position: sticky; top: 0; z-index: 30; background: var(--background); border-bottom: 1px solid var(--border); }
+.bandeau-in { max-width: 1440px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; gap: 24px; }
+.bandeau-marque { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.bandeau-nav { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.bandeau-onglet { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; font-size: 14px; line-height: 20px; color: var(--muted-foreground); text-decoration: none; white-space: nowrap; background: none; border: 0; cursor: pointer; }
+.bandeau-onglet:hover { color: var(--foreground); }
+.bandeau-onglet[aria-current="page"], .bandeau-onglet.actif { background: var(--muted); color: var(--foreground); font-weight: 500; box-shadow: inset 0 -2px 0 var(--app); }
+.bandeau-droite { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.bandeau-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.bandeau-btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 1px solid var(--input); border-radius: 6px; background: var(--card); color: var(--foreground); font-size: 13px; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; text-decoration: none; }
+.bandeau-btn:hover { background: var(--muted); }
+.bandeau-btn:disabled, .bandeau-btn[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+.bandeau-btn.primaire { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+.bandeau-btn.primaire:hover { opacity: 0.88; }
+.bandeau-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.bandeau-icone { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 6px; background: none; color: var(--muted-foreground); cursor: pointer; }
+.bandeau-icone:hover { background: var(--muted); color: var(--foreground); }
+.bandeau-icone svg { width: 16px; height: 16px; }
+.bandeau-statut { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; color: var(--muted-foreground); white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.bandeau-statut.ouvert { border-color: var(--app); color: var(--app-ink); }
+.bandeau-marque > svg:first-child { width: 22px; height: 22px; }
+.page { width: 100%; max-width: 1440px; margin-left: auto; margin-right: auto; padding-left: 32px; padding-right: 32px; }

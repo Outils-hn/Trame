@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Bandeau } from "@/components/trame/Bandeau";
 import { SelecteurApplis } from "@/components/trame/SelecteurApplis";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
@@ -313,28 +314,22 @@ function TrameApp() {
   return (
     <div className="min-h-screen text-foreground">
       <Toaster richColors position="top-right" />
-      <header className="border-b border-border bg-background">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-3.5 sm:px-6">
-          <div className="flex items-center gap-2.5">
-            <TrameMark />
-            <SelecteurApplis />
-            <span className="sr-only">Répartition de perçages</span>
-          </div>
-          <div className="flex items-center gap-2">
-          <HistoryButton />
-          <button
-            onClick={() => setDark((d) => !d)}
-            className="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Basculer le thème"
-          >
-            {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+      <Bandeau
+        marque={<>
+          <TrameMark />
+          <SelecteurApplis />
+          <span className="sr-only">Répartition de perçages</span>
+        </>}
+        actions={<HistoryButton />}
+        theme={
+          <button onClick={() => setDark((d) => !d)} className="bandeau-icone" aria-label="Basculer le thème">
+            {dark ? <Sun /> : <Moon />}
           </button>
-          </div>
-        </div>
-      </header>
+        }
+      />
       <HistoryPanel />
 
-      <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
+      <main className="page py-6 sm:py-8">
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">
           <TabsList className="grid h-auto w-full grid-cols-3 rounded-xl bg-muted p-1 sm:w-auto sm:inline-grid">
 
