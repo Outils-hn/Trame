@@ -2,6 +2,10 @@
 
 Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et fenêtre « À propos » le lisent).
 
+## 3.3 — 31 octobre 2026
+
+- Adresse de Trame dans le sélecteur d'applis : `https://outils-hn.github.io/Trame/` (publiée sur GitHub Pages) à la place de l'adresse Lovable.
+
 ## 3.2 — 31 octobre 2026
 
 - Pages « Page introuvable » et « Cette page ne s'est pas chargée » traduites en français.
