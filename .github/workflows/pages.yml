@@ -20,12 +20,11 @@ concurrency:
 
 env:
   PAGES_BASE: /Trame/
-  NITRO_PRESET: node-server
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
