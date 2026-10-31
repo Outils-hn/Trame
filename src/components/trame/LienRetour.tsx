@@ -2,7 +2,7 @@
  * « Suggestion / bug » : ouvre la page Idées & bugs de l'Accueil (nouvel onglet), formulaire pre-rempli
  * avec le nom de l'appli, sa version et la page en cours. L'equipe y voit aussi ce qui est deja signale.
  */
-export const ACCUEIL_URL = "https://hnaegellen-hub.github.io/Accueil-hn/";
+export const ACCUEIL_URL = "https://outils-hn.github.io/";
 
 export function LienRetour({ app, version, className }: { app: string; version: string; className?: string }) {
   const lien = () => `${ACCUEIL_URL}?app=${encodeURIComponent(app)}&v=${encodeURIComponent(version)}&page=${encodeURIComponent(window.location.pathname)}`;

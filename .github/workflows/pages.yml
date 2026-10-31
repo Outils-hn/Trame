@@ -1,0 +1,71 @@
+# Publication sur GitHub Pages : https://outils-hn.github.io/Trame/
+# - Sur chaque branche / PR : on construit la version statique pour verifier qu'elle passe (rien n'est publie).
+# - Sur main : meme construction, puis deploiement.
+# Prerequis (une seule fois, cote GitHub) : depot public + Settings > Pages > Source = « GitHub Actions ».
+name: Pages
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PAGES_BASE: /Trame/
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - name: Construction statique (SPA, sous-dossier /Trame/)
+        # En cas d'echec, les 60 dernieres lignes sont affichees en annotation
+        run: |
+          set -o pipefail
+          NO_COLOR=1 bun run build 2>&1 | tee build-output.txt || { echo "::error title=Build::$(tr '\r' '\n' < build-output.txt | sed 's/\x1b\[[0-9;?]*[A-Za-z]//g' | grep -v '^\s*$' | tail -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
+      - name: Contenu de la sortie (diagnostic)
+        if: always()
+        run: echo "::notice title=Sortie::$(find .output -maxdepth 3 -not -path '*/node_modules/*' 2>/dev/null | head -50 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"
+      - name: Preparer le site (page d'entree + repli 404)
+        run: |
+          set -e
+          OUT=.output/public
+          if [ ! -d "$OUT" ]; then
+            echo "::error title=Pages::Dossier $OUT introuvable apres le build. Contenu :"; ls -la .output dist 2>/dev/null || true; exit 1
+          fi
+          # En mode SPA, TanStack Start ecrit la page « coque » dans _shell.html
+          if [ -f "$OUT/_shell.html" ] && [ ! -f "$OUT/index.html" ]; then cp "$OUT/_shell.html" "$OUT/index.html"; fi
+          if [ ! -f "$OUT/index.html" ]; then
+            echo "::error title=Pages::Ni index.html ni _shell.html dans $OUT. Contenu :"; find "$OUT" -maxdepth 2 | head -40; exit 1
+          fi
+          # GitHub Pages n'a pas de reecriture : tout chemin inconnu retombe sur 404.html = la coque de l'appli
+          cp "$OUT/index.html" "$OUT/404.html"
+          touch "$OUT/.nojekyll"
+          # Controle : la page d'entree doit pointer vers /Trame/ (sinon le base n'a pas ete pris en compte)
+          grep -q "/Trame/" "$OUT/index.html" || { echo "::error title=Pages::index.html ne reference pas /Trame/ : base non appliquee"; head -c 1500 "$OUT/index.html"; exit 1; }
+          find "$OUT" -maxdepth 2 | head -40
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .output/public
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - id: deploiement
+        uses: actions/deploy-pages@v4
