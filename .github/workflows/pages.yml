@@ -34,7 +34,7 @@ jobs:
         # En cas d'echec, les 60 dernieres lignes sont affichees en annotation
         run: |
           set -o pipefail
-          bun run build 2>&1 | tee build-output.txt || { echo "::error title=Build::$(grep -v '^\s*$' build-output.txt | tail -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
+          NO_COLOR=1 bun run build 2>&1 | tee build-output.txt || { echo "::error title=Build::$(tr '\r' '\n' < build-output.txt | sed 's/\x1b\[[0-9;?]*[A-Za-z]//g' | grep -v '^\s*$' | tail -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
       - name: Preparer le site (page d'entree + repli 404)
         run: |
           set -e
