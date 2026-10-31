@@ -7,12 +7,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
  * Chaque appli reste independante (ses donnees restent sur son propre site).
  */
 const APPLIS = [
-  { nom: "Access", role: "Annuaire fournisseurs", url: "https://access-hn.lovable.app", couleur: "#C2255C" },
-  { nom: "Check", role: "Notes & tâches", url: "https://check-hn.lovable.app", couleur: "#4338CA" },
-  { nom: "Format", role: "Débit de panneaux", url: "https://format-hn.lovable.app", couleur: "#FF4D00" },
-  { nom: "Index", role: "Fiches techniques", url: "https://index-hn.lovable.app", couleur: "#6D4AFF" },
-  { nom: "Linear", role: "Mise en barre", url: "https://linear-hn.lovable.app", couleur: "#2B50FF" },
-  { nom: "Masse", role: "Poids des éléments", url: "https://masse-hn.lovable.app", couleur: "#9A4A3A" },
+  { nom: "Access", role: "Annuaire fournisseurs", url: "https://outils-hn.github.io/Access/", couleur: "#C2255C" },
+  { nom: "Check", role: "Notes & tâches", url: "https://outils-hn.github.io/Check/", couleur: "#4338CA" },
+  { nom: "Format", role: "Débit de panneaux", url: "https://outils-hn.github.io/Format/", couleur: "#FF4D00" },
+  { nom: "Index", role: "Fiches techniques", url: "https://outils-hn.github.io/Index/", couleur: "#6D4AFF" },
+  { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF" },
+  { nom: "Masse", role: "Poids des éléments", url: "https://outils-hn.github.io/Masse/", couleur: "#9A4A3A" },
   { nom: "Strate", role: "Épaisseurs d'isolation", url: "https://outils-hn.github.io/Strate/", couleur: "#D4A20B" },
   { nom: "Trame", role: "Répartition de perçages", url: "https://outils-hn.github.io/Trame/", couleur: "#0E9F6E" },
 ] as const;

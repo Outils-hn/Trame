@@ -2,6 +2,10 @@
 
 Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et fenêtre « À propos » le lisent).
 
+## 3.4 — 31 octobre 2026
+
+- Toutes les applis sont maintenant sur GitHub Pages : le sélecteur d'applis pointe vers `https://outils-hn.github.io/<Appli>/` à la place des adresses Lovable.
+
 ## 3.3 — 31 octobre 2026
 
 - Adresse de Trame dans le sélecteur d'applis : `https://outils-hn.github.io/Trame/` (publiée sur GitHub Pages) à la place de l'adresse Lovable.

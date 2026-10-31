@@ -64,7 +64,7 @@ Ajoute un bouton de bascule Thème Clair / Thème Sombre en haut à droite de l'
 
 This project was built with [Lovable](https://lovable.dev).
 
-**Live app**: https://trame-hn.lovable.app
+**Live app**: https://outils-hn.github.io/Trame/
 
 ## Build with Lovable
 
