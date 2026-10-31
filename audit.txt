@@ -1,0 +1,336 @@
+# Constats
+
+# Erreurs navigateur
+aucune
+
+# Metriques
+{
+  "mesures:bureau": {
+    "titre": "Trame · Répartition de perçages",
+    "lang": "fr",
+    "viewportMeta": true,
+    "h1": 1,
+    "h2": 3,
+    "debordementHorizontal": false,
+    "largeurDoc": 1440,
+    "largeurFenetre": 1440,
+    "champs": 4,
+    "champsSansEtiquette": [],
+    "interactifs": 14,
+    "sansNom": [
+      "<button type=\"button\" role=\"switch\" aria-checked=\"true\" data-state=\"checked\" value=\"on\" class=\"peer ",
+      "<button type=\"button\" role=\"switch\" aria-checked=\"false\" data-state=\"unchecked\" value=\"on\" class=\"pe"
+    ],
+    "cibles_sous_24px": 6,
+    "taillesTexte": {
+      "10": 5,
+      "11": 11,
+      "12": 26,
+      "13": 10,
+      "14": 28,
+      "16": 1,
+      "17": 1,
+      "24": 1,
+      "52": 1
+    },
+    "tailleMin": 10,
+    "octetsTransferes": 640901,
+    "octetsJS": 554023,
+    "nbRequetes": 4,
+    "domContentLoaded": 87,
+    "load": 110,
+    "chargement_ms": 1507
+  },
+  "axe:bureau": [
+    {
+      "regle": "color-contrast",
+      "impact": "serious",
+      "aide": "Elements must meet minimum color contrast ratio thresholds",
+      "occurrences": 14,
+      "exemple": "<td class=\"px-4 py-2.5 text-right font-semibold tabular-nums text-[var(--color-trame)]\">2'900</td>",
+      "cible": ".hover\\:bg-muted\\/50.border-border\\/60.last\\:border-0:nth-child(1) > .text-\\[var\\(--color-trame\\)\\].font-semibold"
+    },
+    {
+      "regle": "empty-table-header",
+      "impact": "minor",
+      "aide": "Table header text should not be empty",
+      "occurrences": 1,
+      "exemple": "<th class=\"px-4 py-2.5 text-left\"></th>",
+      "cible": "th:nth-child(6)"
+    },
+    {
+      "regle": "label-content-name-mismatch",
+      "impact": "serious",
+      "aide": "Elements must have their visible text as part of their accessible name",
+      "occurrences": 1,
+      "exemple": "<button type=\"button\" id=\"radix-_r_0_\" aria-haspopup=\"menu\" aria-expanded=\"false\" data-state=\"closed\" class=\"flex items-center gap-1 rounded",
+      "cible": "#radix-_r_0_"
+    }
+  ],
+  "focus:bureau": {
+    "total": 24,
+    "sansIndicateur": 0,
+    "exemples": []
+  },
+  "intervalles:vide": {
+    "champ": "",
+    "invalide": "true",
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Champ vide Distance au bord début mm Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Intervalles max int. Mesures entières uniquement ",
+    "lignes": 0
+  },
+  "intervalles:zero": {
+    "champ": "0",
+    "invalide": "true",
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Doit être supérieure à 0 Distance au bord début mm Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Intervalles max int. Mesures entièr",
+    "lignes": 0
+  },
+  "intervalles:negatif": {
+    "champ": "-500",
+    "invalide": "true",
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Doit être supérieure à 0 Distance au bord début mm Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Intervalles max int. Mesures entièr",
+    "lignes": 0
+  },
+  "intervalles:texte": {
+    "champ": "abc",
+    "invalide": "true",
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Champ vide Distance au bord début mm Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Intervalles max int. Mesures entières uniquement ",
+    "lignes": 0
+  },
+  "intervalles:absurde": {
+    "champ": "1'000'000'000'000",
+    "invalide": null,
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Distance au bord début mm Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Intervalles max int. Mesures entières uniquement RÉPARTITION",
+    "lignes": 5
+  },
+  "intervalles:tres-petit": {
+    "champ": "0,4",
+    "invalide": null,
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Distance au bord début mm Les distances au bord (100 mm) dépassent la longueur Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Interva",
+    "lignes": 0
+  },
+  "intervalles:virgule": {
+    "champ": "2'737,5",
+    "invalide": null,
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Distance au bord début mm Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Intervalles max int. Mesures entières uniquement RÉPARTITION",
+    "lignes": 5
+  },
+  "intervalles:tout-colle": {
+    "champ": "3 000 mm",
+    "invalide": "true",
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Champ vide Distance au bord début mm Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Intervalles max int. Mesures entières uniquement ",
+    "lignes": 0
+  },
+  "bords-trop-grands": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Distance au bord début mm Les distances au bord (3'200 mm) dépassent la longueur Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Intervalles max int. Mesures entières uniquem",
+  "bords-zero": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRÉE Longueur totale (L) mm Distance au bord début mm Distance au bord fin mm Distances au bord identiques CONTRAINTE FAÇADE Intervalles max int. Mesures entières uniquement RÉPARTITIONS POSSIBLES 5 possibilités · cliquez une",
+  "fixe:zero": {
+    "ms": 510,
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRAXE FIXE Longueur totale (L) mm Entraxe imposé (E) mm Doit être supérieure à 0 Distances au bord identiques Distance au bord minimale mm Corrigez le champ en rouge : Doit être supérieure à 0. Cotes en millimètres · cumulées"
+  },
+  "fixe:plus-grand-que-L": {
+    "ms": 508,
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRAXE FIXE Longueur totale (L) mm Entraxe imposé (E) mm Plus grand que la longueur totale Distances au bord identiques Distance au bord minimale mm Corrigez le champ en rouge : Plus grand que la longueur totale. Cotes en mill"
+  },
+  "fixe:minuscule": {
+    "ms": 544,
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRAXE FIXE Longueur totale (L) mm Entraxe imposé (E) mm Distances au bord identiques Distance au bord minimale mm RÉPARTITION 2 possibilités · cliquez une ligne pour le détail Intervalles Perçages Bord début Entraxe Bord fin "
+  },
+  "fixe:decimal": {
+    "ms": 514,
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRAXE FIXE Longueur totale (L) mm Entraxe imposé (E) mm Distances au bord identiques Distance au bord minimale mm RÉPARTITION 2 possibilités · cliquez une ligne pour le détail Intervalles Perçages Bord début Entraxe Bord fin "
+  },
+  "max:800-pieces": {
+    "ms": 6113,
+    "apercu": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRAXE MAX Une pièce Plusieurs pièces Repère / Longueur — une pièce par ligne Collez deux colonnes depuis Excel ou tapez « A1 "
+  },
+  "max:lignes-fausses": "Par nombre d'intervalles Par entraxe fixe Par entraxe maximum PARAMÈTRES ENTRAXE MAX Une pièce Plusieurs pièces Repère / Longueur — une pièce par ligne Collez deux colonnes depuis Excel ou tapez « A1 3000 ». 3 pièces lues · 1 ligne ignorée Distance au bord début mm Distance au bord fin mm Distances au bord identiques Entraxe maximum mm Calculer les distances au bord automatiquement OPTIONS Mesures",
+  "historique": "Close Historique des calculs Les 10 derniers calculs copiés ou exportés. Un clic recharge les paramètres. Aucun calcul enregistré pour le moment. Copiez ou exportez une répartition pour l'ajouter ici.",
+  "retour-navigateur": "about:blank",
+  "mesures:mobile": {
+    "titre": "Trame · Répartition de perçages",
+    "lang": "fr",
+    "viewportMeta": true,
+    "h1": 1,
+    "h2": 3,
+    "debordementHorizontal": false,
+    "largeurDoc": 390,
+    "largeurFenetre": 390,
+    "champs": 4,
+    "champsSansEtiquette": [],
+    "interactifs": 14,
+    "sansNom": [
+      "<button type=\"button\" role=\"switch\" aria-checked=\"true\" data-state=\"checked\" value=\"on\" class=\"peer ",
+      "<button type=\"button\" role=\"switch\" aria-checked=\"false\" data-state=\"unchecked\" value=\"on\" class=\"pe"
+    ],
+    "cibles_sous_24px": 6,
+    "taillesTexte": {
+      "10": 5,
+      "11": 11,
+      "12": 26,
+      "13": 10,
+      "14": 28,
+      "16": 1,
+      "17": 1,
+      "24": 1,
+      "52": 1
+    },
+    "tailleMin": 10,
+    "octetsTransferes": 640901,
+    "octetsJS": 554023,
+    "nbRequetes": 4,
+    "domContentLoaded": 57,
+    "load": 73,
+    "chargement_ms": 1457
+  },
+  "axe:mobile": [
+    {
+      "regle": "color-contrast",
+      "impact": "serious",
+      "aide": "Elements must meet minimum color contrast ratio thresholds",
+      "occurrences": 14,
+      "exemple": "<td class=\"px-4 py-2.5 text-right font-semibold tabular-nums text-[var(--color-trame)]\">2'900</td>",
+      "cible": ".hover\\:bg-muted\\/50.border-border\\/60.last\\:border-0:nth-child(1) > .text-\\[var\\(--color-trame\\)\\].font-semibold"
+    },
+    {
+      "regle": "empty-table-header",
+      "impact": "minor",
+      "aide": "Table header text should not be empty",
+      "occurrences": 1,
+      "exemple": "<th class=\"px-4 py-2.5 text-left\"></th>",
+      "cible": "th:nth-child(6)"
+    },
+    {
+      "regle": "label-content-name-mismatch",
+      "impact": "serious",
+      "aide": "Elements must have their visible text as part of their accessible name",
+      "occurrences": 1,
+      "exemple": "<button type=\"button\" id=\"radix-_r_0_\" aria-haspopup=\"menu\" aria-expanded=\"false\" data-state=\"closed\" class=\"flex items-center gap-1 rounded",
+      "cible": "#radix-_r_0_"
+    }
+  ],
+  "mesures:tablette": {
+    "titre": "Trame · Répartition de perçages",
+    "lang": "fr",
+    "viewportMeta": true,
+    "h1": 1,
+    "h2": 3,
+    "debordementHorizontal": false,
+    "largeurDoc": 768,
+    "largeurFenetre": 768,
+    "champs": 4,
+    "champsSansEtiquette": [],
+    "interactifs": 14,
+    "sansNom": [
+      "<button type=\"button\" role=\"switch\" aria-checked=\"true\" data-state=\"checked\" value=\"on\" class=\"peer ",
+      "<button type=\"button\" role=\"switch\" aria-checked=\"false\" data-state=\"unchecked\" value=\"on\" class=\"pe"
+    ],
+    "cibles_sous_24px": 6,
+    "taillesTexte": {
+      "10": 5,
+      "11": 11,
+      "12": 26,
+      "13": 10,
+      "14": 28,
+      "16": 1,
+      "17": 1,
+      "24": 1,
+      "52": 1
+    },
+    "tailleMin": 10,
+    "octetsTransferes": 640901,
+    "octetsJS": 554023,
+    "nbRequetes": 4,
+    "domContentLoaded": 57,
+    "load": 74,
+    "chargement_ms": 1460
+  },
+  "axe:tablette": [
+    {
+      "regle": "color-contrast",
+      "impact": "serious",
+      "aide": "Elements must meet minimum color contrast ratio thresholds",
+      "occurrences": 14,
+      "exemple": "<td class=\"px-4 py-2.5 text-right font-semibold tabular-nums text-[var(--color-trame)]\">2'900</td>",
+      "cible": ".hover\\:bg-muted\\/50.border-border\\/60.last\\:border-0:nth-child(1) > .text-\\[var\\(--color-trame\\)\\].font-semibold"
+    },
+    {
+      "regle": "empty-table-header",
+      "impact": "minor",
+      "aide": "Table header text should not be empty",
+      "occurrences": 1,
+      "exemple": "<th class=\"px-4 py-2.5 text-left\"></th>",
+      "cible": "th:nth-child(6)"
+    },
+    {
+      "regle": "label-content-name-mismatch",
+      "impact": "serious",
+      "aide": "Elements must have their visible text as part of their accessible name",
+      "occurrences": 1,
+      "exemple": "<button type=\"button\" id=\"radix-_r_0_\" aria-haspopup=\"menu\" aria-expanded=\"false\" data-state=\"closed\" class=\"flex items-center gap-1 rounded",
+      "cible": "#radix-_r_0_"
+    }
+  ],
+  "axe:sombre": [
+    {
+      "regle": "color-contrast",
+      "impact": "serious",
+      "aide": "Elements must meet minimum color contrast ratio thresholds",
+      "occurrences": 14,
+      "exemple": "<td class=\"px-4 py-2.5 text-right font-semibold tabular-nums text-[var(--color-trame)]\">2'900</td>",
+      "cible": ".hover\\:bg-muted\\/50.border-border\\/60.last\\:border-0:nth-child(1) > .text-\\[var\\(--color-trame\\)\\].font-semibold"
+    },
+    {
+      "regle": "empty-table-header",
+      "impact": "minor",
+      "aide": "Table header text should not be empty",
+      "occurrences": 1,
+      "exemple": "<th class=\"px-4 py-2.5 text-left\"></th>",
+      "cible": "th:nth-child(6)"
+    },
+    {
+      "regle": "label-content-name-mismatch",
+      "impact": "serious",
+      "aide": "Elements must have their visible text as part of their accessible name",
+      "occurrences": 1,
+      "exemple": "<button type=\"button\" id=\"radix-_r_0_\" aria-haspopup=\"menu\" aria-expanded=\"false\" data-state=\"closed\" class=\"flex items-center gap-1 rounded",
+      "cible": "#radix-_r_0_"
+    }
+  ],
+  "mesures:zoom200": {
+    "titre": "Trame · Répartition de perçages",
+    "lang": "fr",
+    "viewportMeta": true,
+    "h1": 1,
+    "h2": 3,
+    "debordementHorizontal": false,
+    "largeurDoc": 720,
+    "largeurFenetre": 720,
+    "champs": 4,
+    "champsSansEtiquette": [],
+    "interactifs": 14,
+    "sansNom": [
+      "<button type=\"button\" role=\"switch\" aria-checked=\"true\" data-state=\"checked\" value=\"on\" class=\"peer ",
+      "<button type=\"button\" role=\"switch\" aria-checked=\"false\" data-state=\"unchecked\" value=\"on\" class=\"pe"
+    ],
+    "cibles_sous_24px": 6,
+    "taillesTexte": {
+      "10": 5,
+      "11": 11,
+      "12": 26,
+      "13": 10,
+      "14": 28,
+      "16": 1,
+      "17": 1,
+      "24": 1,
+      "52": 1
+    },
+    "tailleMin": 10,
+    "octetsTransferes": 640901,
+    "octetsJS": 554023,
+    "nbRequetes": 4,
+    "domContentLoaded": 59,
+    "load": 74,
+    "chargement_ms": 1445
+  },
+  "tabs-jusqu-au-tableau": 5,
+  "tabs-jusqu-a-copier": 1
+}
