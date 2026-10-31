@@ -10,6 +10,8 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // Sous-dossier de publication (GitHub Pages : « /Trame/ ») ; « / » partout ailleurs
+    basepath: import.meta.env.BASE_URL.replace(/\/+$/, "") || "/",
   });
 
   return router;
