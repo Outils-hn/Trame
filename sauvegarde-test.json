@@ -1,0 +1,30 @@
+{
+  "app": "trame",
+  "kind": "sauvegarde-complete",
+  "version": 1,
+  "createdAt": "2026-10-31T21:21:47.088Z",
+  "data": {
+    "trame:etat:De": "50",
+    "trame:etat:De3": "50",
+    "trame:etat:Ds": "50",
+    "trame:etat:Ds3": "50",
+    "trame:etat:Dstart": "50",
+    "trame:etat:E": "100",
+    "trame:etat:Emax": "300",
+    "trame:etat:L": "2500",
+    "trame:etat:L2": "3000",
+    "trame:etat:L3": "3000",
+    "trame:etat:autoRives3": "false",
+    "trame:etat:dark": "true",
+    "trame:etat:integers": "false",
+    "trame:etat:maxIntervals": "5",
+    "trame:etat:minEdge2": "30",
+    "trame:etat:mode": "\"intervals\"",
+    "trame:etat:multi3": "false",
+    "trame:etat:pieces3": "\"A1\\t3000\\nA2\\t2450\\nA3\\t1830\"",
+    "trame:etat:riveMin3": "30",
+    "trame:etat:sameEnd": "true",
+    "trame:etat:sameEnd3": "true",
+    "trame:etat:symmetric": "true"
+  }
+}
