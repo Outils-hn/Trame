@@ -31,7 +31,10 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install
       - name: Construction statique (SPA, sous-dossier /Trame/)
-        run: bun run build
+        # En cas d'echec, les 60 dernieres lignes sont affichees en annotation
+        run: |
+          set -o pipefail
+          bun run build 2>&1 | tee build-output.txt || { echo "::error title=Build::$(grep -v '^\s*$' build-output.txt | tail -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
       - name: Preparer le site (page d'entree + repli 404)
         run: |
           set -e
