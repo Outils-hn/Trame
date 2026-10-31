@@ -16,8 +16,12 @@ jobs:
       - run: bun add -d playwright@1.48.2 @axe-core/playwright && bunx playwright install --with-deps chromium
       - name: Lancer l'appli et auditer
         run: |
-          (bun run dev --port 8080 --host 127.0.0.1 > dev.log 2>&1 &)
-          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8080/ >/dev/null && break; sleep 2; done
+          NO_COLOR=1 bun run build
+          cp .output/public/_shell.html .output/public/index.html
+          cp .output/public/index.html .output/public/404.html
+          (node e2e/serve.mjs .output/public 8080 > serve.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8080/ >/dev/null && break; sleep 1; done
+          mkdir -p out
           node e2e/audit.mjs out || echo "audit termine avec erreur" > out/ERREUR.txt
       - name: Publier
         run: |
