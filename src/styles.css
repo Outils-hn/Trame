@@ -237,3 +237,18 @@ body { border-top: 3px solid var(--app); }
 .bandeau-statut.ouvert { border-color: var(--app); color: var(--app-ink); }
 .bandeau-marque > svg:first-child { width: 22px; height: 22px; }
 .page { width: 100%; max-width: 1440px; margin-left: auto; margin-right: auto; padding-left: 32px; padding-right: 32px; }
+
+/* ===== Telephone ===== */
+@media (max-width: 640px) {
+  .bandeau-in { padding: 0 12px; gap: 8px; }
+  .bandeau-marque { gap: 6px; }
+  .bandeau-nav { flex: 1 1 0; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .bandeau-droite { flex-shrink: 0; }
+  .bandeau-statut { display: none; }
+  .bandeau-btn { height: 40px; }
+  .bandeau-icone { width: 40px; height: 40px; }
+  .bandeau-onglet { min-height: 40px; }
+  .bandeau-marque button, .bandeau-marque a { min-height: 40px; }
+  .copy-btn { min-height: 40px; min-width: 40px; justify-content: center; }
+  main label:has([role="switch"]) { min-height: 44px; }
+}

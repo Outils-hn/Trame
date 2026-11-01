@@ -22,7 +22,7 @@ export function HistoryButton() {
       <History />
       Historique
       {entries.length > 0 && (
-        <span className="rounded bg-[var(--color-trame)] px-1.5 py-0.5 text-[10px] font-bold text-white">
+        <span className="rounded bg-[var(--app-fill)] px-1.5 py-0.5 text-xs font-bold text-white">
           {entries.length}
         </span>
       )}
@@ -63,7 +63,7 @@ export function HistoryPanel() {
                   <span className="block truncate text-xs font-semibold text-foreground">
                     {e.summary}
                   </span>
-                  <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
                     {e.moduleLabel} · {timeAgo(e.ts)}
                   </span>
                 </span>

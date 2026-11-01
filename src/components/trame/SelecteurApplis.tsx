@@ -27,7 +27,7 @@ export function SelecteurApplis() {
         <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[260px]">
-        <DropdownMenuLabel className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Mes outils</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">Mes outils</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <a href={ACCUEIL_URL} className="flex items-center gap-2.5">
             {/* Pastille aux couleurs de la famille */}

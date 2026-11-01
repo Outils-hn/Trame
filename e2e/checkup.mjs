@@ -51,7 +51,7 @@ try {
   const t0 = Date.now();
   await p2.locator("#L2").fill("3000"); await p2.locator("#E").fill("0.01"); await p2.waitForTimeout(500);
   verif("Entraxe 0,01 mm : la page reste fluide (< 10 s)", Date.now() - t0 < 10000, `${Date.now() - t0} ms`);
-  verif("Entraxe 0,01 mm : cotes limitees a 200", await p2.getByText(/et .* autres/).first().isVisible());
+  verif("Entraxe 0,01 mm : refuse avec un message (plus de 500 percages)", await p2.getByText(/Entraxe trop petit/).first().isVisible());
   await p2.getByRole("tab", { name: /intervalles/i }).click(); await p2.waitForTimeout(300);
   await p2.locator("#L").fill("2737.5"); await p2.keyboard.press("Tab"); await p2.waitForTimeout(200);
   verif("Saisie : « 2737.5 » affiche « 2'737,5 »", (await p2.locator("#L").inputValue())=== "2'737,5", await p2.locator("#L").inputValue());
@@ -69,6 +69,33 @@ try {
   verif("Clavier : Entree copie les cotes", /^50; /.test(await p2.evaluate(() => navigator.clipboard.readText())), await p2.evaluate(() => navigator.clipboard.readText()));
   await c2.close();
 } catch (e) { verif("Deroulement des quick wins", false, e.message.split("\n")[0]); }
+// Audit 3.7 : saisies absurdes et « mm » toleres ; telephone 390 px
+try {
+  const c3 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const p3 = await c3.newPage();
+  await p3.goto(BASE, { waitUntil: "networkidle" }); await p3.waitForTimeout(500);
+  await p3.locator("#L").fill("3 000 mm"); await p3.waitForTimeout(300);
+  verif("Longueur « 3 000 mm » acceptee", (await p3.locator("#L-erreur").count()) === 0 && (await p3.getByText(/Intervalles/).count()) > 0);
+  await p3.locator("#L").fill("1000000000000"); await p3.waitForTimeout(300);
+  verif("Longueur absurde refusee avec un message", /Trop grande/.test((await p3.locator("#L-erreur").textContent().catch(() => "")) ?? ""));
+  await p3.locator("#L").fill("abc"); await p3.waitForTimeout(300);
+  verif("Texte illisible : message exact", /Saisissez un nombre/.test((await p3.locator("#L-erreur").textContent().catch(() => "")) ?? ""));
+  await p3.getByRole("tab", { name: /entraxe fixe/i }).click(); await p3.waitForTimeout(300);
+  await p3.locator("#L2").fill("3000"); await p3.locator("#E").fill("0,01"); await p3.waitForTimeout(300);
+  verif("Entraxe 0,01 : refuse, pas de resultat faux", /Entraxe trop petit/.test((await p3.locator("#E-erreur").textContent().catch(() => "")) ?? ""));
+  await c3.close();
+  const cm = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const pm = await cm.newPage();
+  await pm.goto(BASE, { waitUntil: "networkidle" }); await pm.waitForTimeout(500);
+  const sortie = await pm.evaluate(() => ({
+    debord: document.documentElement.scrollWidth - window.innerWidth,
+    petits: [...document.querySelectorAll("header button, header a, main button")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 36 || r.width < 36) && e.getAttribute("role") !== "switch" && !e.closest("footer"); }).map((e) => (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 22)),
+  }));
+  verif("Telephone : pas de debordement horizontal", sortie.debord <= 0, `${sortie.debord} px`);
+  verif("Telephone : boutons assez grands", sortie.petits.length === 0, sortie.petits.join(", "));
+  await pm.screenshot({ path: `${OUT}/50-telephone.png` });
+  await cm.close();
+} catch (e) { verif("Audit 3.7", false, e.message.split("\n").slice(0, 5).join(" | ")); }
 await browser.close();
 writeFileSync(`${OUT}/checkup.txt`, lignes.join("\n"));
 console.log(lignes.join("\n"));

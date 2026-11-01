@@ -57,7 +57,7 @@ export const Route = createFileRoute("/")({
 
 /** Lecture d'une saisie : virgule ou point, espaces et apostrophes suisses acceptes (« 2'737,5 »). */
 function lireNombre(v: string): number {
-  const c = v.replace(/[\s\u00a0\u202f'\u2019\u2018]/g, "").replace(",", ".");
+  const c = v.trim().replace(/\s*mm$/i, "").replace(/[\s\u00a0\u202f'\u2019\u2018]/g, "").replace(",", ".");
   return c === "" || !/^-?\d*\.?\d+$/.test(c) ? NaN : Number(c);
 }
 
@@ -121,7 +121,7 @@ function ChampTrame({
           {suffix}
         </span>
       </div>
-      {error && <p id={`${id}-erreur`} className="text-xs text-destructive">{error}</p>}
+      {error && <p id={`${id}-erreur`} className="text-xs text-destructive">{error === "Champ vide" && texte.trim() !== "" ? "Saisissez un nombre, par exemple 3000" : error}</p>}
     </div>
   );
 }
@@ -371,8 +371,8 @@ function TrameApp() {
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Paramètres</h2>
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Paramètres</h2>
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       Entrée
                     </span>
                   </div>
@@ -400,7 +400,7 @@ function TrameApp() {
                 </section>
 
                 <section className="rounded-xl border border-border bg-card p-5">
-                  <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Contrainte façade</h2>
+                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Contrainte façade</h2>
                   <div className="space-y-4">
                     <NumberField
                       id="pm"
@@ -422,8 +422,8 @@ function TrameApp() {
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Paramètres</h2>
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Paramètres</h2>
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       Entraxe fixe
                     </span>
                   </div>
@@ -461,8 +461,8 @@ function TrameApp() {
               <>
                 <section className="rounded-xl border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Paramètres</h2>
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Paramètres</h2>
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       Entraxe max
                     </span>
                   </div>
@@ -501,12 +501,12 @@ function TrameApp() {
                           placeholder={"A1\t3000\nA2\t2450"}
                           className="font-mono text-sm tabular-nums"
                         />
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           Collez deux colonnes depuis Excel ou tapez « A1 3000 ».{" "}
                           {parsed3.pieces.length} pièce{parsed3.pieces.length > 1 ? "s" : ""} lue
                           {parsed3.pieces.length > 1 ? "s" : ""}
                           {parsed3.ignored > 0 &&
-                            ` · ${parsed3.ignored} ligne${parsed3.ignored > 1 ? "s" : ""} ignorée${parsed3.ignored > 1 ? "s" : ""}`}
+                            ` · ${parsed3.ignored} ligne${parsed3.ignored > 1 ? "s" : ""} ignorée${parsed3.ignored > 1 ? "s" : ""} (n° ${parsed3.ignoredLines.slice(0, 8).join(", ")}${parsed3.ignoredLines.length > 8 ? "…" : ""})`}
                         </p>
                       </div>
                     ) : (
@@ -560,7 +560,7 @@ function TrameApp() {
                 </section>
 
                 <section className="rounded-xl border border-border bg-card p-5">
-                  <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Options</h2>
+                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--app-ink)]">Options</h2>
                   <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
                     <span className="text-xs font-medium text-foreground">Mesures entières uniquement</span>
                     <Switch checked={integers} onCheckedChange={setIntegers} />
@@ -638,7 +638,7 @@ function TrameApp() {
           </section>
         </div>
 
-        <p className="mt-10 border-t border-border pt-4 text-center text-[11px] text-muted-foreground">
+        <p className="mt-10 border-t border-border pt-4 text-center text-xs text-muted-foreground">
           <span className="rounded-md bg-background px-2 py-0.5">Cotes en millimètres · cumulées depuis le bord de départ</span>
         </p>
         <AppFooter />
