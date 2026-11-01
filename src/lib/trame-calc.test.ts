@@ -214,3 +214,24 @@ describe("repartition selectionnee d'office : l'entraxe le plus rond", () => {
     expect(indexPlusRond([{ pitch: 600, N: 4 }, { pitch: 485, N: 5 }])).toBe(0);
   });
 });
+
+describe("garde-fous (audit)", () => {
+  it("entraxe fixe : trop de percages = pas de resultat", () => {
+    expect(buildPitchRows(3000, 0.01, true, 0, false)).toEqual([]);
+    expect(buildPitchRows(3000, 100, true, 0, false).length).toBeGreaterThan(0);
+  });
+  it("entraxe maxi minuscule : pas de resultat", () => {
+    expect(buildMaxPitchRows(3000, 50, 50, 0.001, false).rows).toEqual([]);
+  });
+  it("champsInvalides : entraxe trop petit et longueur trop grande", () => {
+    const base = { L: 3000, Ds: 50, De: 50, maxIntervals: 5, L2: 3000, E: 0.01, symmetric: true, Dstart: 0, minEdge2: 0, L3: 3000, Ds3: 50, De3: 50, Emax: 600, autoRives3: false, riveMin3: 0, multi3: false };
+    expect(champsInvalides("pitch", base).E).toMatch(/Entraxe trop petit/);
+    expect(champsInvalides("intervals", { ...base, L: 1e12 }).L).toMatch(/Trop grande/);
+  });
+  it("parsePieces : negatif ignore, numeros de ligne donnes", () => {
+    const r = parsePieces("A1 3000\nA3 -5\nA2 abc\nA4\t2450");
+    expect(r.pieces.map((p) => p.mark)).toEqual(["A1", "A4"]);
+    expect(r.ignored).toBe(2);
+    expect(r.ignoredLines).toEqual([2, 3]);
+  });
+});

@@ -4,6 +4,14 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.7 — 1er novembre 2026
+
+- Nouveauté : Trame refuse maintenant les saisies absurdes (entraxe minuscule, longueur de plusieurs kilomètres), accepte « 3 000 mm » avec l'unité, et dit quelles lignes de la liste de pièces sont ignorées.
+- Entraxe fixe et entraxe maxi : plus de 500 perçages ou intervalles est refusé avec un message, au lieu d'afficher un résultat faux (« 294001 perçages, 0 mm »).
+- Longueur limitée à 100'000 mm ; message « Saisissez un nombre, par exemple 3000 » pour un texte illisible (au lieu de « Champ vide »).
+- Liste de pièces : une longueur négative (« A3 -5 ») est ignorée au lieu d'être lue comme une pièce « A3 - » de 5 mm ; les numéros des lignes ignorées sont affichés.
+- Textes de 12 px minimum, pastille de l'historique plus contrastée, colonne d'option nommée pour les lecteurs d'écran, boutons de copie et bandeau plus grands sur téléphone.
+
 ## 3.6 — 1er novembre 2026
 
 - Nouveauté : le mode clair ou sombre que tu choisis dans une appli est repris dans toutes les autres.

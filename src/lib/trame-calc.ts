@@ -22,6 +22,8 @@ export interface PitchRow {
 
 /** Garde-fou : nombre d'intervalles maximum examine (evite de figer la page sur une saisie aberrante). */
 export const MAX_INTERVALS = 500;
+/** Longueur maximale acceptee (mm) : au-dela, c'est presque sûrement une erreur de saisie. */
+export const MAX_LONGUEUR = 100000;
 
 export function fmt(n: number, d = 1) {
   if (!isFinite(n)) return "—";
@@ -73,6 +75,8 @@ export function buildPitchRows(
   minEdge = 0,
 ): PitchRow[] {
   if (!isFinite(L) || !isFinite(E) || L <= 0 || E <= 0) return [];
+  // Plus de MAX_INTERVALS perçages : saisie aberrante (entraxe 0,01 mm), pas de resultat plutot qu'un faux
+  if (L / E > MAX_INTERVALS) return [];
   // Distance au bord minimale : aucun percage plus pres du bord que cette valeur.
   const m = isFinite(minEdge) && minEdge > 0 ? minEdge : 0;
   const rows: PitchRow[] = [];
@@ -143,6 +147,7 @@ export function buildMaxPitchRows(
     return { rows: [], Lu, Nmin: 0 };
   }
   const Nmin = Math.max(1, Math.ceil(Lu / Emax));
+  if (Nmin > MAX_INTERVALS) return { rows: [], Lu, Nmin: 0 };
   const rows: IntervalRow[] = [];
   const integerDs = Number.isInteger(Ds);
   const integerLu = Number.isInteger(Lu);
@@ -317,10 +322,13 @@ const parseLen = (s: string) => {
  * ou tapee a la main ("A1 2450", "A1;2450", ou juste "2450"). La longueur est la derniere
  * cellule ; les lignes illisibles (en-tetes...) sont comptees comme ignorees.
  */
-export function parsePieces(text: string): { pieces: PieceInput[]; ignored: number } {
+export function parsePieces(text: string): { pieces: PieceInput[]; ignored: number; ignoredLines: number[] } {
   const pieces: PieceInput[] = [];
   let ignored = 0;
-  for (const raw of text.split(/\r?\n/)) {
+  const ignoredLines: number[] = [];
+  const lignes = text.split(/\r?\n/);
+  for (let k = 0; k < lignes.length; k++) {
+    const raw = lignes[k]!;
     const line = raw.trim();
     if (!line) continue;
     let mark = "";
@@ -340,13 +348,16 @@ export function parsePieces(text: string): { pieces: PieceInput[]; ignored: numb
         mark = m[1]!.trim();
       }
     }
-    if (!(length > 0)) {
+    // Longueur negative (« A3 -5 ») : refusee, pas lue comme une piece « A3 - » de 5 mm
+    const negative = /(^|[\s:=;\t])-\s*\d+(?:[.,]\d+)?\s*(?:mm)?$/i.test(line);
+    if (!(length > 0) || negative) {
       ignored++;
+      ignoredLines.push(k + 1);
       continue;
     }
     pieces.push({ mark: mark || `P${pieces.length + 1}`, length });
   }
-  return { pieces, ignored };
+  return { pieces, ignored, ignoredLines };
 }
 
 export interface MultiParams {
@@ -411,6 +422,7 @@ export function champsInvalides(mode: Mode, v: {
   const longueur = (id: string, n: number) => {
     if (vide(n)) e[id] = "Champ vide";
     else if (n <= 0) e[id] = "Doit être supérieure à 0";
+    else if (n > MAX_LONGUEUR) e[id] = `Trop grande (maximum ${fmt(MAX_LONGUEUR, 0)} mm)`;
   };
   const bord = (id: string, n: number) => {
     if (vide(n)) e[id] = "Champ vide";
@@ -428,6 +440,7 @@ export function champsInvalides(mode: Mode, v: {
     longueur("L2", v.L2);
     longueur("E", v.E);
     if (!e.L2 && !e.E && v.E > v.L2) e.E = "Plus grand que la longueur totale";
+    else if (!e.L2 && !e.E && v.L2 / v.E > MAX_INTERVALS) e.E = `Entraxe trop petit : plus de ${MAX_INTERVALS} perçages`;
     if (!v.symmetric) {
       bord("dstart", v.Dstart);
       if (!e.dstart && !e.L2 && v.Dstart >= v.L2) e.dstart = "Dépasse la longueur totale";
@@ -436,6 +449,7 @@ export function champsInvalides(mode: Mode, v: {
   } else {
     if (!v.multi3) longueur("L3", v.L3);
     longueur("emax", v.Emax);
+    if (!v.multi3 && !e.L3 && !e.emax && v.L3 / v.Emax > MAX_INTERVALS) e.emax = `Entraxe maxi trop petit : plus de ${MAX_INTERVALS} intervalles`;
     if (v.autoRives3) bord("rivemin3", v.riveMin3);
     else {
       bord("ds3", v.Ds3);

@@ -68,7 +68,7 @@ export function ResultsView({
     <div className="space-y-5">
       <div>
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">{title}</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground">{title}</h2>
           <div className="flex items-center gap-3">
             {/* Fond leger : les points du fond ne passent pas derriere le texte */}
             <span className="rounded-md bg-background px-2 py-0.5 text-xs text-muted-foreground">
@@ -95,7 +95,7 @@ export function ResultsView({
                 <th className="px-4 py-2.5 text-right">Bord début</th>
                 <th className="px-4 py-2.5 text-right">Entraxe</th>
                 <th className="px-4 py-2.5 text-right">Bord fin</th>
-                <th className="px-4 py-2.5 text-left">{showNotes ? "Option" : ""}</th>
+                <th className="px-4 py-2.5 text-left">{showNotes ? "Option" : <span className="sr-only">Option</span>}</th>
               </tr>
             </thead>
             <tbody onKeyDown={auClavier}>
@@ -125,12 +125,12 @@ export function ResultsView({
                     <td className="px-4 py-2.5 text-left">
                       <div className="flex flex-wrap items-center gap-2">
                         {recommendFirst && i === 0 && (
-                          <span className="rounded-full bg-[var(--color-trame)] px-2 py-0.5 text-[10px] font-semibold text-white dark:text-zinc-950">
+                          <span className="rounded-full bg-[var(--color-trame)] px-2 py-0.5 text-xs font-semibold text-white dark:text-zinc-950">
                             conseillé
                           </span>
                         )}
                         {o.round && (
-                          <span className="rounded-full border border-[var(--color-trame)]/40 px-2 py-0.5 text-[10px] font-medium text-[var(--color-trame)]">
+                          <span className="rounded-full border border-[var(--color-trame)]/40 px-2 py-0.5 text-xs font-medium text-[var(--color-trame)]">
                             mm ronds
                           </span>
                         )}
@@ -149,7 +149,7 @@ export function ResultsView({
       <section className="rounded-xl border border-border bg-card p-5">
         {/* Repartition choisie (style Epure) : l'entraxe en grand, le reste en dessous */}
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
             {multi ? `${sel.mark} · ${fmt(total)} mm` : "Répartition choisie"}
           </p>
           <p className="mt-2 text-[52px] font-semibold leading-none tracking-[-0.04em] tabular-nums">
@@ -164,7 +164,7 @@ export function ResultsView({
 
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <div className="mb-1 text-[11px] font-semibold text-muted-foreground">Cotes cumulées depuis le bord de début (mm)</div>
+            <div className="mb-1 text-xs font-semibold text-muted-foreground">Cotes cumulées depuis le bord de début (mm)</div>
             <div className="flex flex-wrap gap-1.5 text-sm tabular-nums">
               {/* Au-dela de 200 cotes, on n'affiche que les premieres (sinon la page se fige) ;
                   « Copier les cotes » copie toujours la liste complete. */}
@@ -200,7 +200,7 @@ export function ResultsView({
               <CopyButton text={cadPitch(sel.pitch)} done={`${cadPitch(sel.pitch)} copié`} title="Copier la saisie AutoCAD">
                 <Copy className="size-3.5" />
               </CopyButton>
-              <span className="text-[11px]">&lt;90 pour une pièce verticale</span>
+              <span className="text-xs">&lt;90 pour une pièce verticale</span>
             </span>
             {sel.N > 1 && (
               <span className="inline-flex flex-wrap items-center gap-2">
@@ -242,7 +242,7 @@ function CopyButton({ text, done, title, children }: { text: string; done: strin
           toast.error("Impossible de copier");
         }
       }}
-      className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground transition-colors hover:border-[var(--color-trame)] hover:text-[var(--color-trame)]"
+      className="copy-btn inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground transition-colors hover:border-[var(--color-trame)] hover:text-[var(--color-trame)]"
     >
       {ok ? <Check className="size-3.5" /> : children}
     </button>
@@ -265,7 +265,7 @@ function BarSchema({ positions, total, N, pitch }: { positions: number[]; total:
     const fits = X(b) - X(a) >= txt.length * 7 + 10;
     const x = fits ? (X(a) + X(b)) / 2 : side === "start" ? X(a) - 8 : X(b) + 8;
     const anchor = fits ? "middle" : side === "start" ? "end" : "start";
-    return <text x={x} y={yChain - 5} textAnchor={anchor} className="fill-foreground text-[11px] tabular-nums">{txt}</text>;
+    return <text x={x} y={yChain - 5} textAnchor={anchor} className="fill-foreground text-xs tabular-nums">{txt}</text>;
   };
   return (
     <svg viewBox={`0 0 ${W} 104`} className="mt-4 w-full" role="img" aria-label="Schéma des perçages coté">
@@ -277,14 +277,14 @@ function BarSchema({ positions, total, N, pitch }: { positions: number[]; total:
       <rect x={x0} y={yBar - 10} width={x1 - x0} height={20} rx={3} className="fill-muted stroke-border" />
       {positions.length <= 80
         ? positions.map((p, i) => <circle key={i} cx={X(p)} cy={yBar} r={3.5} className="fill-foreground" />)
-        : <text x={W / 2} y={yBar + 4} textAnchor="middle" className="fill-muted-foreground text-[11px]">{positions.length} perçages</text>}
+        : <text x={W / 2} y={yBar + 4} textAnchor="middle" className="fill-muted-foreground text-xs">{positions.length} perçages</text>}
 
       {/* cotes en chaine */}
       <line x1={X(0)} y1={yChain} x2={X(total)} y2={yChain} className="stroke-foreground" strokeWidth={0.8} />
       {ticks.map((v, i) => <g key={i}>{tick(X(v), yChain)}</g>)}
       {edgeLabel(0, first, first, "start")}
       {positions.length > 1 && (
-        <text x={(X(first) + X(last)) / 2} y={yChain - 5} textAnchor="middle" className="fill-[var(--color-trame)] text-[11px] font-semibold tabular-nums">
+        <text x={(X(first) + X(last)) / 2} y={yChain - 5} textAnchor="middle" className="fill-[var(--color-trame)] text-xs font-semibold tabular-nums">
           {N > 1 ? `${N} × ${fmt(pitch)} = ${fmt(last - first)}` : fmt(last - first)}
         </text>
       )}
@@ -294,7 +294,7 @@ function BarSchema({ positions, total, N, pitch }: { positions: number[]; total:
       <line x1={X(0)} y1={yTotal} x2={X(total)} y2={yTotal} className="stroke-foreground" strokeWidth={0.8} />
       {tick(X(0), yTotal)}
       {tick(X(total), yTotal)}
-      <text x={W / 2} y={yTotal - 5} textAnchor="middle" className="fill-foreground text-[11px] font-semibold tabular-nums">{fmt(total)}</text>
+      <text x={W / 2} y={yTotal - 5} textAnchor="middle" className="fill-foreground text-xs font-semibold tabular-nums">{fmt(total)}</text>
     </svg>
   );
 }
