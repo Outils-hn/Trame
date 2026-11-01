@@ -100,10 +100,10 @@ function ChampTrame({
   }, [value]);
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-xs font-medium text-muted-foreground">
+      <Label htmlFor={id} className={"text-xs font-medium text-muted-foreground" + (aide ? " flex items-center" : "")}>
         {label}
         {aide && (
-          <Aide nom={label} texte={aide} className="ml-2 inline-grid h-6 w-6 place-items-center border border-border align-middle text-[11px] font-semibold leading-none text-muted-foreground hover:text-foreground">
+          <Aide nom={label} texte={aide} className="ml-1.5 inline-grid h-5 w-5 place-items-center border border-border align-middle text-[11px] font-semibold leading-none text-muted-foreground hover:text-foreground">
             ?
           </Aide>
         )}
