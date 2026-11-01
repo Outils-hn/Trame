@@ -4,6 +4,10 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.8.1 — 1er novembre 2026
+
+- Nouveauté : le « ? » d'aide à côté d'« Intervalles max » est un peu plus grand, avec plus d'air autour du point d'interrogation.
+
 ## 3.8 — 1er novembre 2026
 
 - Nouveauté : de petites aides expliquent maintenant « Intervalles max », « conseillé » et « mm ronds » : un clic sur le « ? » ou sur la pastille ouvre une courte explication (fonctionne aussi sur téléphone).

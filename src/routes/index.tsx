@@ -103,7 +103,7 @@ function ChampTrame({
       <Label htmlFor={id} className="text-xs font-medium text-muted-foreground">
         {label}
         {aide && (
-          <Aide nom={label} texte={aide} className="ml-1.5 inline-grid h-5 w-5 place-items-center border border-border align-middle text-[11px] font-semibold text-muted-foreground hover:text-foreground">
+          <Aide nom={label} texte={aide} className="ml-2 inline-grid h-6 w-6 place-items-center border border-border align-middle text-[11px] font-semibold leading-none text-muted-foreground hover:text-foreground">
             ?
           </Aide>
         )}
