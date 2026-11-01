@@ -111,8 +111,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-// Mode sombre applique avant l'affichage (evite un flash blanc) : meme valeur que celle retenue par l'appli
-const themeInitScript = `(function(){try{if(localStorage.getItem('trame:etat:dark')==='true'){document.documentElement.classList.add('dark');}}catch(e){}})();`;
+// Mode sombre applique avant l'affichage (evite un flash blanc) : le reglage commun aux applis (outils-theme) passe d'abord, puis la valeur retenue par Trame
+const themeInitScript = `(function(){try{var c=localStorage.getItem('outils-theme');if(c==='dark'||c==='light')localStorage.setItem('trame:etat:dark',c==='dark'?'true':'false');if(localStorage.getItem('trame:etat:dark')==='true'){document.documentElement.classList.add('dark');}}catch(e){}})();`;
 
 function RootShell({ children }: { children: ReactNode }) {
   return (

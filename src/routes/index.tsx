@@ -194,6 +194,8 @@ function TrameApp() {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
+    // Reglage commun a toutes les applis (meme site) : le choix clair / sombre suit d'une appli a l'autre.
+    try { window.localStorage.setItem("outils-theme", dark ? "dark" : "light"); } catch { /* stockage bloque */ }
   }, [dark]);
 
   // Curseur directement dans la longueur du mode choisi : on tape sans cliquer
