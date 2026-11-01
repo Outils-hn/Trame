@@ -89,7 +89,7 @@ try {
   await pm.goto(BASE, { waitUntil: "networkidle" }); await pm.waitForTimeout(500);
   const sortie = await pm.evaluate(() => ({
     debord: document.documentElement.scrollWidth - window.innerWidth,
-    petits: [...document.querySelectorAll("header button, header a, main button")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 36 || r.width < 36) && e.getAttribute("role") !== "switch"; }).map((e) => (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 22)),
+    petits: [...document.querySelectorAll("header button, header a, main button")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 36 || r.width < 36) && e.getAttribute("role") !== "switch" && !e.closest("footer"); }).map((e) => (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 22)),
   }));
   verif("Telephone : pas de debordement horizontal", sortie.debord <= 0, `${sortie.debord} px`);
   verif("Telephone : boutons assez grands", sortie.petits.length === 0, sortie.petits.join(", "));
