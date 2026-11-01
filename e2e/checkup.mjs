@@ -101,6 +101,8 @@ try {
   const c4 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const p4 = await c4.newPage();
   await p4.goto(BASE, { waitUntil: "networkidle" }); await p4.waitForTimeout(500);
+  const ecart = await p4.evaluate(() => document.querySelector("#pm").getBoundingClientRect().top - document.querySelector('button[aria-label="Aide : Intervalles max"]').getBoundingClientRect().bottom);
+  verif("Aide « Intervalles max » : le rond ne touche pas le champ (>= 3 px)", ecart >= 3, `${Math.round(ecart)} px`);
   await p4.getByRole("button", { name: "Aide : Intervalles max" }).click(); await p4.waitForTimeout(300);
   verif("Aide « Intervalles max » : s'ouvre au clic", await p4.getByText(/Nombre maximum de segments/).isVisible());
   await p4.keyboard.press("Escape"); await p4.waitForTimeout(200);
