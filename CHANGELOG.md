@@ -4,6 +4,11 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.8 — 1er novembre 2026
+
+- Nouveauté : de petites aides expliquent maintenant « Intervalles max », « conseillé » et « mm ronds » : un clic sur le « ? » ou sur la pastille ouvre une courte explication (fonctionne aussi sur téléphone).
+- Les aides s'ouvrent au clic ou à Entrée et se ferment avec Échap ; cliquer sur une pastille ne change pas la répartition choisie.
+
 ## 3.7 — 1er novembre 2026
 
 - Nouveauté : Trame refuse maintenant les saisies absurdes (entraxe minuscule, longueur de plusieurs kilomètres), accepte « 3 000 mm » avec l'unité, et dit quelles lignes de la liste de pièces sont ignorées.

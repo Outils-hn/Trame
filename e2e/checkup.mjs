@@ -96,6 +96,30 @@ try {
   await pm.screenshot({ path: `${OUT}/50-telephone.png` });
   await cm.close();
 } catch (e) { verif("Audit 3.7", false, e.message.split("\n").slice(0, 5).join(" | ")); }
+// 3.8 : petites aides qui s'ouvrent au clic (« ? », « conseillé », « mm ronds »)
+try {
+  const c4 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const p4 = await c4.newPage();
+  await p4.goto(BASE, { waitUntil: "networkidle" }); await p4.waitForTimeout(500);
+  await p4.getByRole("button", { name: "Aide : Intervalles max" }).click(); await p4.waitForTimeout(300);
+  verif("Aide « Intervalles max » : s'ouvre au clic", await p4.getByText(/Nombre maximum de segments/).isVisible());
+  await p4.keyboard.press("Escape"); await p4.waitForTimeout(200);
+  verif("Aide « Intervalles max » : Echap la ferme", (await p4.getByText(/Nombre maximum de segments/).count()) === 0);
+  await p4.getByRole("tab", { name: /entraxe maximum/i }).click(); await p4.waitForTimeout(300);
+  await p4.locator("#L3").fill("3000"); await p4.locator("#emax").fill("500"); await p4.waitForTimeout(400);
+  const choisieAvant = await p4.locator("tr[aria-selected='true']").innerText().catch(() => "");
+  const conseille = p4.getByRole("button", { name: "Aide : Conseillé" }).first();
+  verif("Pastille « conseillé » : aide disponible", (await conseille.count()) > 0);
+  if (await conseille.count()) {
+    await conseille.click(); await p4.waitForTimeout(300);
+    verif("Aide « conseillé » : s'ouvre au clic", await p4.getByText(/le moins de perçages/).isVisible());
+    await p4.keyboard.press("Escape"); await p4.waitForTimeout(200);
+    const choisieApres = await p4.locator("tr[aria-selected='true']").innerText().catch(() => "");
+    verif("Aide « conseillé » : ne change pas la ligne choisie", choisieAvant === choisieApres, `${choisieAvant} / ${choisieApres}`);
+  }
+  await p4.screenshot({ path: `${OUT}/51-aides.png` });
+  await c4.close();
+} catch (e) { verif("Aides 3.8", false, e.message.split("\n").slice(0, 3).join(" | ")); }
 await browser.close();
 writeFileSync(`${OUT}/checkup.txt`, lignes.join("\n"));
 console.log(lignes.join("\n"));

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Aide } from "@/components/trame/Aide";
 import { Bandeau } from "@/components/trame/Bandeau";
 import { SelecteurApplis } from "@/components/trame/SelecteurApplis";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -75,6 +76,7 @@ function ChampTrame({
   disabled,
   suffix = "mm",
   error,
+  aide,
 }: {
   id: string;
   label: string;
@@ -85,6 +87,8 @@ function ChampTrame({
   step?: string;
   /** Raison du refus : contour rouge et message sous le champ. */
   error?: string;
+  /** Petite aide « ? » à côté du libellé. */
+  aide?: string;
 }) {
   // Meme format que les resultats : « 3 000 », « 2 737,5 » ; le texte tape est garde pendant la saisie
   const afficher = (v: number | "") => (v === "" || !Number.isFinite(v) ? "" : fmt(v, 3));
@@ -98,6 +102,11 @@ function ChampTrame({
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-xs font-medium text-muted-foreground">
         {label}
+        {aide && (
+          <Aide nom={label} texte={aide} className="ml-1.5 inline-grid h-5 w-5 place-items-center border border-border align-middle text-[11px] font-semibold text-muted-foreground hover:text-foreground">
+            ?
+          </Aide>
+        )}
       </Label>
       <div className="relative">
         <Input
@@ -406,6 +415,7 @@ function TrameApp() {
                       id="pm"
                       error={erreurs["pm"]}
                       label="Intervalles max"
+                      aide="Nombre maximum de segments entre deux perçages côte à côte. Plus il est bas, moins il y a de perçages : à régler selon la contrainte de la façade."
                       value={isFinite(maxIntervals) ? maxIntervals : ""}
                       onChange={setMaxIntervals}
                       suffix="int."

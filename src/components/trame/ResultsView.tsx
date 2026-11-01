@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { Aide } from "./Aide";
 import { Check, ClipboardList, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -125,14 +126,18 @@ export function ResultsView({
                     <td className="px-4 py-2.5 text-left">
                       <div className="flex flex-wrap items-center gap-2">
                         {recommendFirst && i === 0 && (
-                          <span className="rounded-full bg-[var(--color-trame)] px-2 py-0.5 text-xs font-semibold text-white dark:text-zinc-950">
-                            conseillé
-                          </span>
+                          <Aide nom="Conseillé" texte="La répartition avec le moins de perçages qui reste sous l'entraxe maximum demandé.">
+                            <span className="inline-block rounded-full bg-[var(--color-trame)] px-2 py-0.5 text-xs font-semibold text-white dark:text-zinc-950">
+                              conseillé
+                            </span>
+                          </Aide>
                         )}
                         {o.round && (
-                          <span className="rounded-full border border-[var(--color-trame)]/40 px-2 py-0.5 text-xs font-medium text-[var(--color-trame)]">
-                            mm ronds
-                          </span>
+                          <Aide nom="mm ronds" texte="L'entraxe tombe sur un nombre entier de millimètres : facile à tracer et à percer, sans décimales.">
+                            <span className="inline-block rounded-full border border-[var(--color-trame)]/40 px-2 py-0.5 text-xs font-medium text-[var(--color-trame)]">
+                              mm ronds
+                            </span>
+                          </Aide>
                         )}
                         {o.note && <span className="text-xs text-muted-foreground">{o.note}</span>}
                       </div>
