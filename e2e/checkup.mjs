@@ -51,7 +51,7 @@ try {
   const t0 = Date.now();
   await p2.locator("#L2").fill("3000"); await p2.locator("#E").fill("0.01"); await p2.waitForTimeout(500);
   verif("Entraxe 0,01 mm : la page reste fluide (< 10 s)", Date.now() - t0 < 10000, `${Date.now() - t0} ms`);
-  verif("Entraxe 0,01 mm : cotes limitees a 200", await p2.getByText(/et .* autres/).first().isVisible());
+  verif("Entraxe 0,01 mm : refuse avec un message (plus de 500 percages)", await p2.getByText(/Entraxe trop petit/).first().isVisible());
   await p2.getByRole("tab", { name: /intervalles/i }).click(); await p2.waitForTimeout(300);
   await p2.locator("#L").fill("2737.5"); await p2.keyboard.press("Tab"); await p2.waitForTimeout(200);
   verif("Saisie : « 2737.5 » affiche « 2'737,5 »", (await p2.locator("#L").inputValue())=== "2'737,5", await p2.locator("#L").inputValue());
