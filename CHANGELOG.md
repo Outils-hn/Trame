@@ -4,6 +4,10 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.11 — 4 novembre 2026
+
+- Nouveauté : sans compte, on ne peut plus exporter ni importer de fichier JSON (sauvegarde complète) : un message invite à se connecter avec son compte Index. Les exports PDF et Excel gardent leurs 3 essais gratuits.
+
 ## 3.10 — 4 novembre 2026
 
 - Nouveauté : le bandeau affiche seulement l'adresse email quand on est connecté (sans « Connecté · »), comme dans toutes les autres applis.

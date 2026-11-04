@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Download, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { autoriserExport } from "@/components/Compte";
+import { jsonPermis } from "@/components/Compte";
+import { lireSession } from "@/lib/compte";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   backupFileName, browserStore, buildBackup, daysSinceBackup, markBackupDone, needsReminder,
@@ -60,7 +61,7 @@ export function BackupLink({ cfg, appName }: { cfg: BackupConfig; appName: strin
   }, [open]);
 
   const save = async () => {
-    if (!(await autoriserExport(() => setOpen(false)))) return;
+    if (!jsonPermis()) return;
     if (downloadBackup(cfg)) {
       setMessage({ text: "Sauvegarde téléchargée. Rangez le fichier en lieu sûr (dossier réseau, clé USB…).", error: false });
       refresh();
@@ -72,7 +73,7 @@ export function BackupLink({ cfg, appName }: { cfg: BackupConfig; appName: strin
   const pick = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = ""; // permet de rechoisir le meme fichier
-    if (!file) return;
+    if (!file || !jsonPermis()) return;
     const result = parseBackup(await file.text(), cfg);
     if (!result.ok) { setPending(null); setMessage({ text: result.error, error: true }); return; }
     setMessage(null);
@@ -128,7 +129,7 @@ export function BackupLink({ cfg, appName }: { cfg: BackupConfig; appName: strin
           ) : (
             <div className="flex flex-wrap gap-2">
               <Button onClick={save}><Download className="mr-2 h-4 w-4" />Télécharger la sauvegarde</Button>
-              <Button variant="outline" onClick={() => input.current?.click()}>
+              <Button variant="outline" onClick={() => { if (jsonPermis()) input.current?.click(); }}>
                 <Upload className="mr-2 h-4 w-4" />Restaurer…
               </Button>
               <input ref={input} type="file" accept=".json,application/json" className="hidden" onChange={pick} />
@@ -154,7 +155,7 @@ export function BackupReminder({ cfg, className = "bottom-4" }: { cfg: BackupCon
 
   useEffect(() => {
     const store = browserStore();
-    if (!store) return;
+    if (!store || !lireSession()) return; // sans compte, pas de sauvegarde JSON : pas de rappel
     setShow(needsReminder(store, cfg));
     setDays(daysSinceBackup(store, cfg));
     // eslint-disable-next-line react-hooks/exhaustive-deps
