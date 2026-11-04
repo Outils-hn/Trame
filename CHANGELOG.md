@@ -4,6 +4,11 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.9 — 4 novembre 2026
+
+- Nouveauté : « Se connecter » est maintenant en haut de la page, comme dans Index ; se connecter dans une appli connecte toutes les autres.
+- Nouveauté : sans compte, Trame reste utilisable (saisie, calcul, historique local) et offre 3 copies / exports de découverte (cotes, tableau, sauvegarde). Ensuite, ils demandent de se connecter avec son compte Index.
+
 ## 3.8.2 — 1er novembre 2026
 
 - Nouveauté : le « ? » d'aide à côté d'« Intervalles max » ne touche plus le champ en dessous ; il retrouve sa taille d'origine.

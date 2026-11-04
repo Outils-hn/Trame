@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Aide } from "@/components/trame/Aide";
 import { Bandeau } from "@/components/trame/Bandeau";
+import { CompteBandeau, ConnexionDialog, autoriserExport } from "@/components/Compte";
 import { SelecteurApplis } from "@/components/trame/SelecteurApplis";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
@@ -304,6 +305,7 @@ function TrameApp() {
 
   const copy = async (positions: number[], idx: number, label: string, useIntegers: boolean) => {
     const txt = positions.map((p) => (useIntegers ? String(p) : fmt(p, 1).replace(/[\s']/g, ""))).join("; ");
+    if (!(await autoriserExport())) return;
     try {
       await navigator.clipboard.writeText(txt);
       setCopiedIdx(idx);
@@ -332,6 +334,7 @@ function TrameApp() {
           <span className="sr-only">Répartition de perçages</span>
         </>}
         actions={<HistoryButton />}
+        statut={<CompteBandeau />}
         theme={
           <button onClick={() => setDark((d) => !d)} className="bandeau-icone" aria-label="Basculer le thème">
             {dark ? <Sun /> : <Moon />}
@@ -339,6 +342,7 @@ function TrameApp() {
         }
       />
       <HistoryPanel />
+      <ConnexionDialog />
 
       <main className="page py-6 sm:py-8">
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="mb-6">

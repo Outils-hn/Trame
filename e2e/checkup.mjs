@@ -122,6 +122,37 @@ try {
   await p4.screenshot({ path: `${OUT}/51-aides.png` });
   await c4.close();
 } catch (e) { verif("Aides 3.8", false, e.message.split("\n").slice(0, 3).join(" | ")); }
+// Comptes : « Se connecter » en haut de page, 3 exports gratuits, puis connexion demandee (sauvegarde)
+try {
+  const c9 = await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true });
+  await c9.route(/supabase\.co/, async (route) => {
+    const url = route.request().url();
+    if (url.includes("/auth/v1/token")) {
+      const b = JSON.parse(route.request().postData() || "{}");
+      if (b.password !== "bon") return route.fulfill({ status: 400, json: { error: "invalid_grant", error_description: "Invalid login credentials" } });
+      const b64 = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
+      return route.fulfill({ json: { access_token: `${b64({ alg: "HS256" })}.${b64({ sub: "u1", exp: 4102444800 })}.x`, token_type: "bearer", expires_in: 3600, refresh_token: "r", user: { id: "u1", email: "hugo@test.fr" } } });
+    }
+    return route.fulfill({ json: true });
+  });
+  const p9 = await c9.newPage();
+  await p9.addInitScript(() => { if (!sessionStorage.getItem("s9")) { localStorage.setItem("outils.trame.exports", "3"); sessionStorage.setItem("s9", "1"); } });
+  await p9.goto(BASE, { waitUntil: "networkidle" }); await p9.waitForTimeout(500);
+  verif("Bandeau : « Lecture seule » + Se connecter en haut de page", await p9.getByRole("banner").getByText("Lecture seule").isVisible() && await p9.getByRole("banner").getByRole("button", { name: "Se connecter" }).isVisible());
+  await p9.getByRole("button", { name: /^Sauvegarde$/ }).click(); await p9.waitForTimeout(300);
+  await p9.getByRole("button", { name: /Télécharger la sauvegarde/ }).click(); await p9.waitForTimeout(500);
+  verif("Apres 3 exports : la connexion est demandee", await p9.getByRole("heading", { name: "Connexion" }).isVisible());
+  await p9.getByLabel("Email").fill("hugo@test.fr"); await p9.getByLabel("Mot de passe").fill("mauvais");
+  await p9.getByRole("button", { name: "Se connecter" }).last().click(); await p9.waitForTimeout(500);
+  verif("Mauvais mot de passe : message clair", await p9.getByRole("alert").getByText("Email ou mot de passe incorrect.").isVisible());
+  await p9.getByLabel("Mot de passe").fill("bon");
+  const [dl9] = await Promise.all([p9.waitForEvent("download", { timeout: 8000 }).catch(() => null), p9.getByRole("button", { name: "Se connecter" }).last().click()]);
+  verif("Apres connexion : la sauvegarde part", !!dl9);
+  verif("Bandeau : « Connecté · email »", await p9.getByRole("banner").getByText("Connecté · hugo@test.fr").isVisible());
+  await p9.getByRole("banner").getByRole("button", { name: "Se déconnecter" }).click(); await p9.waitForTimeout(300);
+  verif("Deconnexion : retour en lecture seule", await p9.getByRole("banner").getByText("Lecture seule").isVisible());
+  await c9.close();
+} catch (e) { verif("Deroulement des comptes", false, e.message.split("\n")[0]); }
 await browser.close();
 writeFileSync(`${OUT}/checkup.txt`, lignes.join("\n"));
 console.log(lignes.join("\n"));

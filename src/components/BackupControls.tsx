@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Download, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { autoriserExport } from "@/components/Compte";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   backupFileName, browserStore, buildBackup, daysSinceBackup, markBackupDone, needsReminder,
@@ -58,7 +59,8 @@ export function BackupLink({ cfg, appName }: { cfg: BackupConfig; appName: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const save = () => {
+  const save = async () => {
+    if (!(await autoriserExport(() => setOpen(false)))) return;
     if (downloadBackup(cfg)) {
       setMessage({ text: "Sauvegarde téléchargée. Rangez le fichier en lieu sûr (dossier réseau, clé USB…).", error: false });
       refresh();
