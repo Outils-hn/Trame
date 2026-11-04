@@ -85,6 +85,13 @@ export function CompteBandeau() {
 const EXPORTS_LIBRES = 3;
 const CLE_EXPORTS = "outils.trame.exports";
 
+/** Fichier JSON (sauvegarde, projet, bibliotheque) : export ET import reserves aux comptes connectes. */
+export function jsonPermis(): boolean {
+  if (lireSession()) return true;
+  toast.message("Fichier JSON : compte requis", { description: "Sans compte, on ne peut ni exporter ni importer de fichier JSON. Connecte-toi avec ton compte Index." });
+  return false;
+}
+
 /**
  * Exports (PDF, Excel, copies, .json) : libres pour un compte connecte ; sans compte, 3 exports pour
  * decouvrir l'appli, puis la connexion est demandee. Incitation seulement (compteur dans le navigateur).
