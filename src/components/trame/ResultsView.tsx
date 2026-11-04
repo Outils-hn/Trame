@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { autoriserExport } from "@/components/Compte";
 import { Aide } from "./Aide";
 import { Check, ClipboardList, Copy } from "lucide-react";
 import { toast } from "sonner";
@@ -238,6 +239,7 @@ function CopyButton({ text, done, title, children }: { text: string; done: strin
       title={title}
       aria-label={title}
       onClick={async () => {
+        if (!(await autoriserExport())) return;
         try {
           await navigator.clipboard.writeText(text);
           setOk(true);
