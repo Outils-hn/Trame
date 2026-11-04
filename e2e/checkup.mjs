@@ -149,7 +149,7 @@ try {
   const [dl9] = await Promise.all([p9.waitForEvent("download", { timeout: 8000 }).catch(() => null), p9.getByRole("button", { name: "Se connecter" }).last().click()]);
   verif("Apres connexion : la sauvegarde part", !!dl9);
   await p9.waitForTimeout(700);
-  verif("Bandeau : « Connecté · email »", await p9.getByRole("banner").getByText("Connecté · hugo@test.fr").isVisible());
+  verif("Bandeau : email seul", await p9.getByRole("banner").getByText("hugo@test.fr", { exact: true }).isVisible());
   await p9.getByRole("banner").getByRole("button", { name: "Se déconnecter" }).click(); await p9.waitForTimeout(300);
   verif("Deconnexion : retour en lecture seule", await p9.getByRole("banner").getByText("Lecture seule").isVisible());
   await c9.close();
