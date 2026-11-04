@@ -64,13 +64,13 @@ export function ConnexionDialog() {
   );
 }
 
-/** Etat du compte dans le bandeau : « Lecture seule » + Se connecter, ou « Connecté · email » + Se déconnecter. */
+/** Etat du compte dans le bandeau : « Lecture seule » + Se connecter, ou email seul + Se déconnecter. */
 export function CompteBandeau() {
   const c = useCompte();
   return c.connecte ? (
     <>
       <span className={c.valide === false ? "bandeau-statut" : "bandeau-statut ouvert"} title={c.email}>
-        {c.valide === false ? "Compte à valider · lecture seule" : `Connecté · ${c.email}`}
+        {c.valide === false ? "Compte à valider · lecture seule" : c.email}
       </span>
       <button className="bandeau-btn" aria-label="Se déconnecter" onClick={deconnexion}><LogOut /><span className="max-sm:hidden">Se déconnecter</span></button>
     </>
