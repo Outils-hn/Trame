@@ -4,6 +4,10 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.14 — 7 novembre 2026
+
+- Correction : le texte de l'écran de connexion est raccourci pour tenir sur une ligne.
+
 ## 3.13 — 7 novembre 2026
 
 - Nouveauté : le menu des applis propose maintenant Joint (dilatation et joints) et Membrane (étanchéité).
