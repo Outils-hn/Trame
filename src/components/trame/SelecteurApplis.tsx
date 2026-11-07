@@ -19,7 +19,7 @@ const APPLIS = [
 ] as const;
 
 // Joint : appli en preparation, visible seulement pour le concepteur (drapeau laisse par l'Accueil, meme site pour toutes les applis).
-const JOINT = { nom: "Joint", role: "Espace entre deux éléments", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285" } as const;
+const JOINT = { nom: "Joint", role: "Dilatation et joints", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285" } as const;
 function useApplis() {
   const [apercu, setApercu] = useState(false);
   useEffect(() => {
