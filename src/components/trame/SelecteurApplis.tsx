@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { ACCUEIL_URL } from "./LienRetour";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -12,27 +11,19 @@ const APPLIS = [
   { nom: "Check", role: "Notes & tâches", url: "https://outils-hn.github.io/Check/", couleur: "#4338CA" },
   { nom: "Format", role: "Débit de panneaux", url: "https://outils-hn.github.io/Format/", couleur: "#FF4D00" },
   { nom: "Index", role: "Fiches techniques", url: "https://outils-hn.github.io/Index/", couleur: "#6D4AFF" },
+  { nom: "Joint", role: "Dilatation et joints", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285" },
   { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF" },
   { nom: "Masse", role: "Poids des éléments", url: "https://outils-hn.github.io/Masse/", couleur: "#9A4A3A" },
+  { nom: "Membrane", role: "Étanchéité", url: "https://outils-hn.github.io/Membrane/", couleur: "#B45309" },
   { nom: "Strate", role: "Épaisseurs d'isolation", url: "https://outils-hn.github.io/Strate/", couleur: "#D4A20B" },
   { nom: "Trame", role: "Répartition de perçages", url: "https://outils-hn.github.io/Trame/", couleur: "#0E9F6E" },
 ] as const;
-
-// Joint : appli en preparation, visible seulement pour le concepteur (drapeau laisse par l'Accueil, meme site pour toutes les applis).
-const JOINT = { nom: "Joint", role: "Dilatation et joints", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285" } as const;
-function useApplis() {
-  const [apercu, setApercu] = useState(false);
-  useEffect(() => {
-    try { setApercu(localStorage.getItem("outils-apercu") === "1"); } catch { /* stockage bloque */ }
-  }, []);
-  return apercu ? [...APPLIS, JOINT].sort((a, b) => a.nom.localeCompare(b.nom)) : APPLIS;
-}
 
 
 const ACTUELLE = "Trame";
 
 export function SelecteurApplis() {
-  const applis = useApplis();
+  const applis = APPLIS;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-1 py-0.5 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/30" aria-label="Changer d'application">
@@ -45,7 +36,7 @@ export function SelecteurApplis() {
           <a href={ACCUEIL_URL} className="flex items-center gap-2.5">
             {/* Pastille aux couleurs de la famille */}
             <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: "conic-gradient(#C2255C 0 25%, #6D4AFF 0 50%, #0E9F6E 0 75%, #FF4D00 0)" }} />
-            <span className="w-14 shrink-0 font-medium">Accueil</span>
+            <span className="w-[4.5rem] shrink-0 font-medium">Accueil</span>
             <span className="text-xs text-muted-foreground">Toutes les applis, idées &amp; bugs</span>
           </a>
         </DropdownMenuItem>
@@ -55,7 +46,7 @@ export function SelecteurApplis() {
             <a href={a.url} className="flex items-center gap-2.5">
               <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: a.couleur }} />
               {/* Largeur fixe : les descriptions commencent toutes au meme endroit */}
-              <span className="w-14 shrink-0 font-medium">{a.nom}</span>
+              <span className="w-[4.5rem] shrink-0 font-medium">{a.nom}</span>
               <span className="text-xs text-muted-foreground">{a.role}</span>
               {a.nom === ACTUELLE && <Check className="ml-auto h-3.5 w-3.5" />}
             </a>
