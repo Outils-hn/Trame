@@ -39,7 +39,7 @@ export function ConnexionDialog() {
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>Connexion</DialogTitle>
-          <DialogDescription>Avec votre compte Index : mêmes email et mot de passe. La connexion vaut pour toutes les applis.</DialogDescription>
+          <DialogDescription>Votre compte Index, valable partout.</DialogDescription>
         </DialogHeader>
         <form id="form-connexion" className="space-y-3" onSubmit={(e) => { e.preventDefault(); void valider(); }}>
           <div className="space-y-1.5">
@@ -53,7 +53,8 @@ export function ConnexionDialog() {
           {erreur && <p role="alert" className="text-sm text-destructive">{erreur}</p>}
         </form>
         <p className="text-xs text-muted-foreground">
-          Pas encore de compte ? <a className={lien} href={`${INDEX_URL}/auth`} target="_blank" rel="noopener noreferrer">Créer un compte dans Index</a> (un collègue doit ensuite le valider).
+          <span className="block">Pas encore de compte ? <a className={lien} href={`${INDEX_URL}/auth`} target="_blank" rel="noopener noreferrer">Créer un compte dans Index</a>.</span>
+          <span className="block">Un collègue doit ensuite le valider.</span>
         </p>
         <DialogFooter>
           <Button variant="ghost" onClick={() => fermer(false)}>Annuler</Button>
