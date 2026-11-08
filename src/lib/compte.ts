@@ -2,10 +2,10 @@
 // cle de stockage). Pas de bibliotheque Supabase ici : trois appels simples a l'API d'authentification.
 import { useEffect, useState } from "react";
 // Adresse et cle PUBLIQUE du projet Supabase d'Index (faite pour etre visible dans une page web)
-const SUPABASE_URL = "https://ngfzwfbraqkdcocdcmib.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZnp3ZmJyYXFrZGNvY2RjbWliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2Mzg2NTcsImV4cCI6MjA5NTIxNDY1N30.Ikovcm4eWkLvPO_PvkI8C8DJebBT011Rz87k_EYFdbU";
+const SUPABASE_URL = "https://dtxgvwaqjmmffiiohika.supabase.co";
+const SUPABASE_KEY = "sb_publishable_yEWGxFFSLTE1lJRXnFUmpg_dMwa6LxW";
 
-export const CLE_SESSION = "sb-ngfzwfbraqkdcocdcmib-auth-token";
+export const CLE_SESSION = "sb-dtxgvwaqjmmffiiohika-auth-token";
 export const INDEX_URL = "https://outils-hn.github.io/Index";
 const EVENT = "outils-compte";
 
