@@ -25,9 +25,26 @@ export const MAX_INTERVALS = 500;
 /** Longueur maximale acceptee (mm) : au-dela, c'est presque sûrement une erreur de saisie. */
 export const MAX_LONGUEUR = 100000;
 
+/**
+ * Lit un nombre ecrit a la francaise, a la suisse ou a l'anglaise : « 1250,5 », « 1'250.5 », « 1.250,5 », « 1,250.5 ».
+ * Avec point ET virgule, le dernier est la decimale. Plusieurs virgules ou plusieurs points seuls (« 1,2,3 », « 12..5 »)
+ * ou une notation comme « 1e3 » : NaN, jamais un nombre devine. Meme regle dans toutes les applis.
+ */
+export function lireNombreCommun(s: string): number {
+  let t = (s ?? "").replace(/[\s\u00a0\u202f'\u2019\u2018]/g, "");
+  const nbV = (t.match(/,/g) ?? []).length, nbP = (t.match(/\./g) ?? []).length;
+  if (nbV && nbP) {
+    const dec = t.lastIndexOf(",") > t.lastIndexOf(".") ? "," : ".";
+    if ((dec === "," ? nbV : nbP) > 1) return NaN;
+    t = t.split(dec === "," ? "." : ",").join("").replace(",", ".");
+  } else if (nbV > 1 || nbP > 1) return NaN;
+  else t = t.replace(",", ".");
+  return t !== "" && /^-?\d*\.?\d+$/.test(t) ? Number(t) : NaN;
+}
+
 export function fmt(n: number, d = 1) {
   if (!isFinite(n)) return "—";
-  const cleaned = Number(n.toFixed(d));
+  const cleaned = Number(n.toFixed(d)) || 0; // jamais « -0 »
   // Format suisse de la famille d'applis : apostrophe pour les milliers (« 2'737,5 »)
   return cleaned.toLocaleString("fr-FR", {
     minimumFractionDigits: 0,
@@ -313,8 +330,8 @@ export interface PieceInput {
 }
 
 const parseLen = (s: string) => {
-  const t = s.trim().replace(/\s*mm$/i, "").replace(/[\s\u00a0\u202f'\u2019\u2018]/g, "").replace(",", ".");
-  return /^\d+(\.\d+)?$/.test(t) ? Number(t) : NaN;
+  const n = lireNombreCommun(s.trim().replace(/\s*mm$/i, ""));
+  return n >= 0 ? n : NaN;
 };
 
 /**

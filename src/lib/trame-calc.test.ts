@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAutoRiveRows, champsInvalides, indexPlusRond, buildIntervalRows, buildMaxPitchRows, buildMultiPieceOptions, buildPitchRows, cadPitch, chainText, fromIntervalRows, fromPitchRows, parsePieces, piecesTable } from "./trame-calc";
+import { lireNombreCommun, fmt, buildAutoRiveRows, champsInvalides, indexPlusRond, buildIntervalRows, buildMaxPitchRows, buildMultiPieceOptions, buildPitchRows, cadPitch, chainText, fromIntervalRows, fromPitchRows, parsePieces, piecesTable } from "./trame-calc";
 
 const close = (a: number, b: number) => Math.abs(a - b) < 1e-9;
 
@@ -233,5 +233,18 @@ describe("garde-fous (audit)", () => {
     expect(r.pieces.map((p) => p.mark)).toEqual(["A1", "A4"]);
     expect(r.ignored).toBe(2);
     expect(r.ignoredLines).toEqual([2, 3]);
+  });
+});
+
+describe("lecture et affichage communs des nombres", () => {
+  it("lit les formats suisse, français, anglais et refuse les ambigus", () => {
+    expect(lireNombreCommun("1.250,5")).toBe(1250.5);
+    expect(lireNombreCommun("1,250.5")).toBe(1250.5);
+    expect(lireNombreCommun("2'737,5")).toBe(2737.5);
+    for (const s of ["12..5", "1,2,3", "1.250,5,2", "1e3", "0x1F", ""]) expect(Number.isNaN(lireNombreCommun(s))).toBe(true);
+  });
+  it("n'affiche jamais -0", () => {
+    expect(fmt(-0.001, 1)).toBe("0");
+    expect(fmt(2737.5, 1)).toBe("2'737,5");
   });
 });

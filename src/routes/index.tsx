@@ -23,6 +23,7 @@ import {
   buildMultiPieceOptions,
   buildPitchRows,
   fmt,
+  lireNombreCommun,
   fromIntervalRows,
   fromPitchRows,
   parsePieces,
@@ -59,8 +60,7 @@ export const Route = createFileRoute("/")({
 
 /** Lecture d'une saisie : virgule ou point, espaces et apostrophes suisses acceptes (« 2'737,5 »). */
 function lireNombre(v: string): number {
-  const c = v.trim().replace(/\s*mm$/i, "").replace(/[\s\u00a0\u202f'\u2019\u2018]/g, "").replace(",", ".");
-  return c === "" || !/^-?\d*\.?\d+$/.test(c) ? NaN : Number(c);
+  return lireNombreCommun(v.trim().replace(/\s*mm$/i, ""));
 }
 
 /** Un champ par identifiant : en changeant de mode, React ne reutilise pas le champ d'un autre
