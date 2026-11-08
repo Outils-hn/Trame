@@ -28,7 +28,7 @@ try {
   await page.getByRole("button", { name: "Basculer le thème" }).click(); await page.waitForTimeout(200);
   await page.reload({ waitUntil: "networkidle" });
   verif("Mode sombre retenu apres rechargement", await page.evaluate(() => document.documentElement.classList.contains("dark")));
-  await page.evaluate(() => localStorage.setItem("sb-ngfzwfbraqkdcocdcmib-auth-token", JSON.stringify({ access_token: "a", refresh_token: "r", expires_at: 4102444800, user: { id: "u1", email: "hugo@test.fr" } })));
+  await page.evaluate(() => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "a", refresh_token: "r", expires_at: 4102444800, user: { id: "u1", email: "hugo@test.fr" } })));
   await page.reload({ waitUntil: "networkidle" });
   await page.getByRole("button", { name: /^Sauvegarde$/ }).click();
   const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: /Télécharger la sauvegarde/ }).click()]);
