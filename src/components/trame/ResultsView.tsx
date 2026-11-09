@@ -86,7 +86,7 @@ export function ResultsView({
             )}
           </div>
         </div>
-        <div className="overflow-x-auto rounded-xl border border-border bg-card">
+        <div className="defile-x overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full text-sm" role="grid" aria-label={`${title} : flèches haut et bas pour choisir, Entrée pour copier les cotes`}>
             <thead className="border-b border-foreground text-[12px] font-medium text-muted-foreground">
               <tr>

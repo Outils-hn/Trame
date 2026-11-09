@@ -258,3 +258,13 @@ body { border-top: 3px solid var(--app); }
   footer a, footer button { position: relative; }
   footer a::after, footer button::after { content: ""; position: absolute; inset: -14px -8px; }
 }
+
+/* Tableau qui défile de côté : une ombre douce au bord indique qu'il reste des colonnes à voir (s'efface quand on est au bout) */
+.defile-x {
+  background:
+    linear-gradient(to right, var(--card) 30%, transparent) left center / 40px 100% no-repeat local,
+    linear-gradient(to left, var(--card) 30%, transparent) right center / 40px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.22), transparent) left center / 14px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.22), transparent) right center / 14px 100% no-repeat scroll,
+    var(--card);
+}
