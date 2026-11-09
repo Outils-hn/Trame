@@ -77,6 +77,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
+      { name: "theme-color", content: "#0E9F6E" },
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Trame ·" },
@@ -93,6 +94,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cfdbc60f-83c5-43bb-ad6a-755b20cf05bb/id-preview-0c632311--73d21248-f65c-4f0a-a35c-84bd6abdcd99.lovable.app-1781780789749.png" },
     ],
     links: [
+      { rel: "manifest", href: `${import.meta.env.BASE_URL}manifest.webmanifest` },
+      { rel: "apple-touch-icon", href: `${import.meta.env.BASE_URL}icone-192.png` },
       {
         rel: "stylesheet",
         href: appCss,
@@ -114,12 +117,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 // Mode sombre applique avant l'affichage (evite un flash blanc) : le reglage commun aux applis (outils-theme) passe d'abord, puis la valeur retenue par Trame
 const themeInitScript = `(function(){try{var c=localStorage.getItem('outils-theme');if(c==='dark'||c==='light')localStorage.setItem('trame:etat:dark',c==='dark'?'true':'false');if(localStorage.getItem('trame:etat:dark')==='true'){document.documentElement.classList.add('dark');}}catch(e){}})();`;
 
+// Hors ligne : la copie de l'appli est gardee sur le poste (voir public/sw.js). Pas de copie pendant les tests automatiques.
+const horsLigneScript = `(function(){try{if(!("serviceWorker" in navigator)||location.protocol==="file:")return;if(navigator.webdriver&&!localStorage.getItem("test-hors-ligne"))return;addEventListener("load",function(){navigator.serviceWorker.register("${import.meta.env.BASE_URL}sw.js").then(function(){return navigator.serviceWorker.ready}).then(function(r){var v=performance.getEntriesByType("resource").map(function(x){return x.name}).filter(function(u){return u.indexOf(location.origin)===0||/fonts\\.(googleapis|gstatic)\\.com/.test(u)});if(r.active)r.active.postMessage({precache:v})}).catch(function(){})})}catch(e){}})();`;
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: horsLigneScript }} />
       </head>
       <body>
         {children}
