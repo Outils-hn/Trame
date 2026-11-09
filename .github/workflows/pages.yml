@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
       - run: bun install
       - name: Construction statique (SPA, sous-dossier /Trame/)
@@ -55,7 +55,7 @@ jobs:
           # Controle : la page d'entree doit pointer vers /Trame/ (sinon le base n'a pas ete pris en compte)
           grep -q "/Trame/" "$OUT/index.html" || { echo "::error title=Pages::index.html ne reference pas /Trame/ : base non appliquee"; head -c 1500 "$OUT/index.html"; exit 1; }
           find "$OUT" -maxdepth 2 | head -40
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: .output/public
 
@@ -68,4 +68,4 @@ jobs:
       url: ${{ steps.deploiement.outputs.page_url }}
     steps:
       - id: deploiement
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
