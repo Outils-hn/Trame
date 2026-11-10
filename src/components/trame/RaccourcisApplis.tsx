@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 export interface Raccourci { touches: string[]; texte: string }
 
 const COMMUNS: Raccourci[] = [
-  { touches: ["Ctrl", "K"], texte: "Rechercher dans toutes les applis (ouvre l'Accueil)" },
+  { touches: ["Ctrl", "K"], texte: "Rechercher dans toutes les applis" },
   { touches: ["Échap"], texte: "Fermer une fenêtre ou un menu" },
   { touches: ["Entrée"], texte: "Valider la fenêtre ou le champ en cours" },
   { touches: ["Tab"], texte: "Champ suivant (Maj + Tab : précédent)" },
