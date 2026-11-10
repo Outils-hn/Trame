@@ -1,4 +1,5 @@
-import { Check, ChevronDown } from "lucide-react";
+import { useEffect } from "react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { ACCUEIL_URL } from "./LienRetour";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -22,7 +23,20 @@ const APPLIS = [
 
 const ACTUELLE = "Trame";
 
+/** Ctrl+K : ouvre la recherche de l'Accueil dans un autre onglet (on ne quitte pas ce qu'on est en train de faire). */
+const RECHERCHE_URL = "https://outils-hn.github.io/#recherche";
+function useRaccourciRecherche() {
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); window.open(RECHERCHE_URL, "outils-accueil"); }
+    };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, []);
+}
+
 export function SelecteurApplis() {
+  useRaccourciRecherche();
   const applis = APPLIS;
   return (
     <DropdownMenu>
@@ -38,6 +52,13 @@ export function SelecteurApplis() {
             <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: "conic-gradient(#C2255C 0 25%, #6D4AFF 0 50%, #0E9F6E 0 75%, #FF4D00 0)" }} />
             <span className="w-[4.5rem] shrink-0 font-medium">Accueil</span>
             <span className="text-xs text-muted-foreground">Toutes les applis, idées &amp; bugs</span>
+          </a>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <a href={RECHERCHE_URL} target="outils-accueil" className="flex items-center gap-2.5">
+            <Search className="h-2.5 w-2.5 text-muted-foreground" aria-hidden />
+            <span className="w-[4.5rem] shrink-0 font-medium">Rechercher</span>
+            <span className="text-xs text-muted-foreground">Dans toutes les applis · Ctrl K</span>
           </a>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
