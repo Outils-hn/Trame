@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 import type { ReactNode } from "react";
 
 /**
@@ -22,6 +23,16 @@ export function Bandeau({ marque, onglets, actions, statut, theme }: {
         <div className="bandeau-droite">
           {actions}
           {actions && statut ? <span className="bandeau-sep" aria-hidden="true" /> : null}
+          <button
+            type="button"
+            className="bandeau-btn !hidden sm:!inline-flex"
+            onClick={() => window.open("https://outils-hn.github.io/#recherche", "outils-accueil")}
+            aria-label="Recherche globale (Ctrl+K)"
+            title="Rechercher dans toutes les applis (Ctrl+K)"
+          >
+            <Search aria-hidden /> <span>Rechercher</span>
+            <kbd className="hidden rounded border border-border px-1 font-mono text-[10px] font-normal text-muted-foreground md:inline">Ctrl K</kbd>
+          </button>
           {statut}
           {theme}
         </div>

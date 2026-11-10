@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, Search, Keyboard } from "lucide-react";
+import { Check, ChevronDown, Keyboard } from "lucide-react";
 import { RaccourcisApplis, useToucheAide } from "./RaccourcisApplis";
 import { ACCUEIL_URL } from "./LienRetour";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -56,13 +56,6 @@ export function SelecteurApplis() {
             <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: "conic-gradient(#C2255C 0 25%, #6D4AFF 0 50%, #0E9F6E 0 75%, #FF4D00 0)" }} />
             <span className="w-[4.5rem] shrink-0 font-medium">Accueil</span>
             <span className="text-xs text-muted-foreground">Toutes les applis, idées &amp; bugs</span>
-          </a>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <a href={RECHERCHE_URL} target="outils-accueil" className="flex items-center gap-2.5">
-            <span className="flex h-2.5 w-2.5 shrink-0 items-center justify-center"><Search className="!size-4 shrink-0 text-muted-foreground" aria-hidden /></span>
-            <span className="w-[4.5rem] shrink-0 font-medium">Rechercher</span>
-            <span className="text-xs text-muted-foreground">Dans toutes les applis · Ctrl K</span>
           </a>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
