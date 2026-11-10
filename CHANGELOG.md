@@ -4,6 +4,10 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.31 — 10 novembre 2026
+
+- Nouveauté : le logo en haut à gauche de l'appli est maintenant le même que sur l'Accueil (pastille de couleur et pictogramme).
+
 ## 3.30 — 10 novembre 2026
 
 - Nouveauté : chaque appli a maintenant son logo comme icône d'onglet et d'écran d'accueil, le même que sur l'Accueil.
