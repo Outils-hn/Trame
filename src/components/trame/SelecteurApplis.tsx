@@ -56,7 +56,7 @@ export function SelecteurApplis() {
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <a href={RECHERCHE_URL} target="outils-accueil" className="flex items-center gap-2.5">
-            <Search className="h-2.5 w-2.5 text-muted-foreground" aria-hidden />
+            <span className="flex h-2.5 w-2.5 shrink-0 items-center justify-center"><Search className="!size-4 shrink-0 text-muted-foreground" aria-hidden /></span>
             <span className="w-[4.5rem] shrink-0 font-medium">Rechercher</span>
             <span className="text-xs text-muted-foreground">Dans toutes les applis · Ctrl K</span>
           </a>
