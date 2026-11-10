@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { CloudDownload, History, RotateCcw, Share2, Trash2 } from "lucide-react";
 import { chantierAccueil } from "@/lib/chantier-accueil";
-import { chantierDe, lire, lister, monId, partager, retirer, type CalculBase } from "@/lib/calculs-base";
+import { chantierDe, corbeille, lire, lister, restaurer, monId, partager, retirer, type CalculBase } from "@/lib/calculs-base";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -39,11 +39,21 @@ export function HistoryPanel() {
   const { open, setOpen, entries, clear, restore } = useTrameHistory();
   const [base, setBase] = useState<CalculBase[] | null>(null);
   const [charge, setCharge] = useState(false);
+  const [corb, setCorb] = useState<CalculBase[] | null>(null);
   const numero = chantierDe(chantierAccueil()).numero;
   const erreur = (e: unknown, d: string) => toast.error(e instanceof Error ? e.message : d);
   const actualiser = async (tous: boolean) => {
     setCharge(true);
     try { setBase(await lister(tous ? "" : numero)); } catch (e) { erreur(e, "Lecture impossible"); } finally { setCharge(false); }
+  };
+
+  const ouvrirCorbeille = async () => {
+    setCharge(true);
+    try { setCorb(await corbeille()); } catch (e) { erreur(e, "Lecture impossible"); } finally { setCharge(false); }
+  };
+  const remettre = async (id: string) => {
+    try { await restaurer(id); setCorb((l) => l && l.filter((x) => x.id !== id)); toast.success("Calcul restauré"); if (base) void actualiser(!numero); }
+    catch (e) { erreur(e, "Restauration impossible"); }
   };
 
   return (
@@ -63,7 +73,20 @@ export function HistoryPanel() {
               <CloudDownload className="size-3.5" /> {numero ? `Chantier ${numero}` : "Tous"}
             </Button>
             {numero && <Button variant="ghost" size="sm" disabled={charge} onClick={() => void actualiser(true)}>Tous</Button>}
+            <Button variant="ghost" size="sm" disabled={charge} onClick={() => (corb ? setCorb(null) : void ouvrirCorbeille())}>Corbeille</Button>
           </div>
+          {corb && (
+            <ul className="mt-2 space-y-1 rounded border border-dashed border-border p-2">
+              <li className="text-xs text-muted-foreground">Corbeille : vos calculs retirés depuis moins de 30 jours.</li>
+              {corb.length === 0 && <li className="py-1 text-center text-xs text-muted-foreground">Corbeille vide.</li>}
+              {corb.map((c) => (
+                <li key={c.id} className="flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate text-xs">{c.nom || "Sans nom"}</span>
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => void remettre(c.id)}><RotateCcw className="size-3.5" /> Restaurer</Button>
+                </li>
+              ))}
+            </ul>
+          )}
           {base && (
             <ul className="mt-2 space-y-1">
               {base.length === 0 && <li className="py-2 text-center text-xs text-muted-foreground">Rien de partagé pour l'instant.</li>}

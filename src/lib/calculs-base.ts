@@ -11,7 +11,7 @@ const CLE_LIENS = "trame:base-ids";
 
 export interface CalculBase {
   id: string; nom: string; chantier_numero: string; chantier_nom: string;
-  auteur: string; auteur_email: string; updated_at: string; donnees?: HistoryEntry;
+  auteur: string; auteur_email: string; updated_at: string; supprime_le?: string | null; donnees?: HistoryEntry;
 }
 
 /** Numero et nom du chantier : ceux du texte (« 24-118 · Nom » ou « 24-118 Nom »), sinon ceux choisis dans l'Accueil. */
@@ -72,6 +72,16 @@ export async function lire(id: string): Promise<CalculBase | null> {
 /** Corbeille (30 jours) : seul l'auteur peut. */
 export async function retirer(id: string): Promise<void> {
   await appel(`?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ supprime_le: new Date().toISOString() }) });
+}
+
+/** Mes calculs retires depuis moins de 30 jours (la base les efface ensuite). */
+export async function corbeille(): Promise<CalculBase[]> {
+  const depuis = new Date(Date.now() - 30 * 864e5).toISOString();
+  return (await appel(`?app=eq.${APP}&auteur=eq.${monId()}&supprime_le=gte.${encodeURIComponent(depuis)}&select=id,nom,chantier_numero,chantier_nom,auteur,auteur_email,updated_at,supprime_le&order=supprime_le.desc&limit=50`)) as CalculBase[];
+}
+
+export async function restaurer(id: string): Promise<void> {
+  await appel(`?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ supprime_le: null }) });
 }
 
 export const monId = (): string => lireSession()?.user?.id ?? "";
