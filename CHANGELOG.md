@@ -4,6 +4,10 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.22 — 10 novembre 2026
+
+- Nouveauté : dans « Historique », l'icône Partager enregistre le calcul sur la base commune : l'équipe le voit dans le dossier du chantier et peut le rouvrir depuis n'importe quel ordinateur.
+
 ## 3.21 — 10 novembre 2026
 
 - Nouveauté : dans le menu des applis, la ligne « Rechercher » est alignée avec les autres.

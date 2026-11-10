@@ -1,3 +1,5 @@
+import { lire as lireCalculBase } from "@/lib/calculs-base";
+import { toast } from "sonner";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 export type TrameModuleKey = "standard" | "reinforced" | "obstacle" | "panel" | "expansion";
@@ -97,6 +99,17 @@ export function TrameHistoryProvider({
   );
 
   const consume = useCallback(() => setPending(null), []);
+
+  // Lien direct depuis l'Accueil : Trame/?calcul=<id>
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("calcul");
+    if (!id) return;
+    history.replaceState(null, "", window.location.pathname + window.location.hash);
+    void lireCalculBase(id)
+      .then((c) => (c?.donnees?.params ? restore(c.donnees) : toast.error("Calcul introuvable (supprimé ou non accessible).")))
+      .catch((e) => toast.error(e instanceof Error ? e.message : "Ouverture impossible"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const value = useMemo(
     () => ({ entries, open, setOpen, save, clear, restore, pending, consume }),
