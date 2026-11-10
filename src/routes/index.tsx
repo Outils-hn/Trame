@@ -721,14 +721,9 @@ function HexWireframe({ className }: { className?: string }) {
   );
 }
 
-/** Logo « Trame » (style Epure) : une piece et ses percages, celui du milieu en vert. */
+/** Logo « Trame » : pastille verte et sa grille de percages (meme logo que sur l'Accueil). */
 function TrameMark() {
   return (
-    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
-      <rect x="1" y="7" width="20" height="8" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-foreground" />
-      <circle cx="5" cy="11" r="1.6" fill="currentColor" className="text-foreground" />
-      <circle cx="11" cy="11" r="1.6" fill="var(--color-trame)" />
-      <circle cx="17" cy="11" r="1.6" fill="currentColor" className="text-foreground" />
-    </svg>
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.5" fill="#0E9F6E"/><g transform="translate(4.56 4.56) scale(.62)" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><g fill="#fff" stroke="none"><circle cx="6" cy="6" r="1.8"/><circle cx="12" cy="6" r="1.8"/><circle cx="18" cy="6" r="1.8"/><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/><circle cx="6" cy="18" r="1.8"/><circle cx="12" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></g></g></svg>
   );
 }

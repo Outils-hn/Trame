@@ -1,6 +1,7 @@
 // Compte Index : meme connexion que Index, Masse et les autres applis (meme site, meme
 // cle de stockage). Pas de bibliotheque Supabase ici : trois appels simples a l'API d'authentification.
 import { useEffect, useState } from "react";
+import { nomAffiche } from "./nom-affiche";
 // Adresse et cle PUBLIQUE du projet Supabase d'Index (faite pour etre visible dans une page web)
 const SUPABASE_URL = "https://dtxgvwaqjmmffiiohika.supabase.co";
 const SUPABASE_KEY = "sb_publishable_yEWGxFFSLTE1lJRXnFUmpg_dMwa6LxW";
@@ -9,7 +10,7 @@ export const CLE_SESSION = "sb-dtxgvwaqjmmffiiohika-auth-token";
 export const INDEX_URL = "https://outils-hn.github.io/Index";
 const EVENT = "outils-compte";
 
-export interface Session { access_token: string; refresh_token: string; expires_at?: number; user?: { id: string; email?: string } }
+export interface Session { access_token: string; refresh_token: string; expires_at?: number; user?: { id: string; email?: string; user_metadata?: Record<string, unknown> } }
 
 export function lireSession(): Session | null {
   try { const v = localStorage.getItem(CLE_SESSION); const s = v ? (JSON.parse(v) as Session) : null; return s?.access_token ? s : null; } catch { return null; }
@@ -79,6 +80,6 @@ export function useCompte() {
     setValide(null);
     if (uid) void compteValide().then(setValide);
   }, [uid]);
-  return { connecte: !!s, email: s?.user?.email ?? "", valide };
+  return { connecte: !!s, email: s?.user?.email ?? "", nom: nomAffiche(s?.user), valide };
 }
 
