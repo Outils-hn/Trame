@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, PencilLine, Search, Keyboard } from "lucide-react";
+import { Check, ChevronDown, Search, Keyboard } from "lucide-react";
 import { RaccourcisApplis, useToucheAide } from "./RaccourcisApplis";
 import { ACCUEIL_URL } from "./LienRetour";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -26,14 +26,6 @@ const ACTUELLE = "Trame";
 
 /** Ctrl+K : ouvre la recherche de l'Accueil dans un autre onglet (on ne quitte pas ce qu'on est en train de faire). */
 const RECHERCHE_URL = "https://outils-hn.github.io/#recherche";
-/** « Noter dans Check » : ouvre Check dans un autre onglet, note deja commencee par le numero du chantier choisi dans l'Accueil. */
-function lienNoter(): string {
-  const base = "https://outils-hn.github.io/Check/";
-  try {
-    const n = String(JSON.parse(localStorage.getItem("outils-chantier-info") ?? "null")?.numero ?? "").trim();
-    return n ? `${base}?noter=${encodeURIComponent(`#${n} `)}` : base;
-  } catch { return base; }
-}
 function useRaccourciRecherche() {
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
@@ -71,13 +63,6 @@ export function SelecteurApplis() {
             <span className="flex h-2.5 w-2.5 shrink-0 items-center justify-center"><Search className="!size-4 shrink-0 text-muted-foreground" aria-hidden /></span>
             <span className="w-[4.5rem] shrink-0 font-medium">Rechercher</span>
             <span className="text-xs text-muted-foreground">Dans toutes les applis · Ctrl K</span>
-          </a>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <a href={lienNoter()} target="outils-check" className="flex items-center gap-2.5">
-            <span className="flex h-2.5 w-2.5 shrink-0 items-center justify-center"><PencilLine className="!size-4 shrink-0 text-muted-foreground" aria-hidden /></span>
-            <span className="w-[4.5rem] shrink-0 font-medium">Noter</span>
-            <span className="text-xs text-muted-foreground">Dans Check · avec le chantier</span>
           </a>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

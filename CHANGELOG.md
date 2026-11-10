@@ -4,6 +4,10 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.27 — 10 novembre 2026
+
+- Retrait de la ligne « Noter » du menu des applis (menu plus léger). Les boutons « Noter dans Check » des fiches, fournisseurs et éléments restent.
+
 ## 3.26 — 10 novembre 2026
 
 - Nouveauté : la touche ? (ou « Raccourcis » en bas du menu des applis) affiche les raccourcis clavier de l'appli. Les icônes Rechercher et Noter du menu de Joint, Membrane et Strate sont maintenant comme dans les autres applis.
