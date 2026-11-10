@@ -4,6 +4,10 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.24 — 10 novembre 2026
+
+- Nouveauté : « Base commune » a une Corbeille : vous retrouvez vos calculs retirés depuis moins de 30 jours et vous pouvez les restaurer.
+
 ## 3.23 — 10 novembre 2026
 
 - Nouveauté : un calcul partagé se range dans le chantier choisi dans l'Accueil quand son nom ne contient pas de numéro, au lieu de tomber dans « Tous ».
