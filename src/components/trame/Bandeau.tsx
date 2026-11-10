@@ -25,12 +25,12 @@ export function Bandeau({ marque, onglets, actions, statut, theme }: {
           {actions && statut ? <span className="bandeau-sep" aria-hidden="true" /> : null}
           <button
             type="button"
-            className="bandeau-btn"
+            className="bandeau-btn !hidden sm:!inline-flex"
             onClick={() => window.open("https://outils-hn.github.io/#recherche", "outils-accueil")}
-            aria-label="Rechercher dans toutes les applis (Ctrl+K)"
+            aria-label="Recherche globale (Ctrl+K)"
             title="Rechercher dans toutes les applis (Ctrl+K)"
           >
-            <Search aria-hidden /> <span className="hidden sm:inline">Rechercher</span>
+            <Search aria-hidden /> <span>Rechercher</span>
             <kbd className="hidden rounded border border-border px-1 font-mono text-[10px] font-normal text-muted-foreground md:inline">Ctrl K</kbd>
           </button>
           {statut}
