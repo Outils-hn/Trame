@@ -14,14 +14,16 @@ export interface CalculBase {
   auteur: string; auteur_email: string; updated_at: string; donnees?: HistoryEntry;
 }
 
-/** Numero et nom du chantier : ceux choisis dans l'Accueil, sinon ceux du texte « 24-118 · Nom ». */
+/** Numero et nom du chantier : ceux du texte (« 24-118 · Nom » ou « 24-118 Nom »), sinon ceux choisis dans l'Accueil. */
 export function chantierDe(texte: string, lire: (c: string) => string | null = (c) => localStorage.getItem(c)): { numero: string; nom: string } {
   const [n, ...reste] = texte.split(" · ");
-  if (reste.length) return { numero: n.trim(), nom: reste.join(" · ").trim() };
+  if (reste.length) return { numero: (n ?? "").trim(), nom: reste.join(" · ").trim() };
+  const m = /^\s*#?(\d{2}-\d{2,4})\b[\s\-–:]*(.*)$/.exec(texte);
+  if (m) return { numero: m[1] ?? "", nom: (m[2] ?? "").trim() };
   try {
     const i = JSON.parse(lire(CLE_CHANTIER_ACCUEIL) ?? "null");
     const numero = String(i?.numero ?? "").trim(), nom = String(i?.nom ?? "").trim();
-    if (numero && (!texte.trim() || texte.trim() === nom)) return { numero, nom: nom || texte.trim() };
+    if (numero) return { numero, nom: texte.trim() || nom };
   } catch { /* rien */ }
   return { numero: "", nom: texte.trim() };
 }
