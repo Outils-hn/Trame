@@ -126,6 +126,8 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
+        {/* Compte obligatoire : sans compte valide, renvoi vers l'Accueil (garde commune a toutes les applis) */}
+        <script src="https://outils-hn.github.io/garde.js" />
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: horsLigneScript }} />
