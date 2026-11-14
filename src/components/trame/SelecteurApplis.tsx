@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { Check, ChevronDown, Keyboard } from "lucide-react";
-import { RaccourcisApplis, useToucheAide } from "./RaccourcisApplis";
+import { useEffect } from "react";
+import { Check, ChevronDown } from "lucide-react";
 import { ACCUEIL_URL } from "./LienRetour";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -38,11 +37,8 @@ function useRaccourciRecherche() {
 
 export function SelecteurApplis() {
   useRaccourciRecherche();
-  const [raccourcis, setRaccourcis] = useState(false);
-  useToucheAide(() => setRaccourcis(true));
   const applis = APPLIS;
   return (
-    <>
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-1 rounded-md px-1 py-0.5 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/30" aria-label="Changer d'application">
         <h1 className="text-[17px] font-semibold leading-none tracking-tight text-foreground">{ACTUELLE}</h1>
@@ -70,15 +66,7 @@ export function SelecteurApplis() {
             </a>
           </DropdownMenuItem>
         ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => setRaccourcis(true)} className="flex items-center gap-2.5">
-          <span className="flex h-2.5 w-2.5 shrink-0 items-center justify-center"><Keyboard className="!size-4 shrink-0 text-muted-foreground" aria-hidden /></span>
-          <span className="w-[4.5rem] shrink-0 font-medium">Raccourcis</span>
-          <span className="text-xs text-muted-foreground">Touches du clavier · ?</span>
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-    <RaccourcisApplis app="Trame" open={raccourcis} onOpenChange={setRaccourcis} />
-    </>
   );
 }
