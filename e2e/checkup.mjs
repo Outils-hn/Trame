@@ -140,7 +140,7 @@ try {
   const p9 = await c9.newPage();
   await p9.addInitScript(() => { if (!sessionStorage.getItem("s9")) { localStorage.setItem("outils.trame.exports", "3"); sessionStorage.setItem("s9", "1"); } });
   await p9.goto(BASE, { waitUntil: "networkidle" }); await p9.waitForTimeout(500);
-  verif("Bandeau : « Lecture seule » + Se connecter en haut de page", await p9.getByRole("banner").getByText("Lecture seule").isVisible() && await p9.getByRole("banner").getByRole("button", { name: "Se connecter" }).isVisible());
+  verif("Bandeau : « Se connecter » seul, plus de « Lecture seule »", !(await p9.getByRole("banner").getByText("Lecture seule").isVisible()) && await p9.getByRole("banner").getByRole("button", { name: "Se connecter" }).isVisible());
   await p9.getByRole("button", { name: /^Sauvegarde$/ }).click(); await p9.waitForTimeout(300);
   const [dl9a] = await Promise.all([p9.waitForEvent("download", { timeout: 1500 }).catch(() => null), p9.getByRole("button", { name: /Télécharger la sauvegarde/ }).click()]);
   await p9.waitForTimeout(300);
@@ -160,7 +160,7 @@ try {
   await p9.waitForTimeout(700);
   verif("Bandeau : email seul", await p9.getByRole("banner").getByText("hugo@test.fr", { exact: true }).isVisible());
   await p9.getByRole("banner").getByRole("button", { name: "Se déconnecter" }).click(); await p9.waitForTimeout(300);
-  verif("Deconnexion : retour en lecture seule", await p9.getByRole("banner").getByText("Lecture seule").isVisible());
+  verif("Deconnexion : retour au bouton Se connecter", await p9.getByRole("banner").getByRole("button", { name: "Se connecter" }).isVisible());
   await c9.close();
 } catch (e) { verif("Deroulement des comptes", false, e.message.split("\n")[0]); }
 // Hors ligne : apres une premiere visite, l'appli doit s'ouvrir sans reseau

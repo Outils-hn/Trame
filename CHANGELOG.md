@@ -4,6 +4,11 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.34 — 14 novembre 2026
+
+- Nouveauté : en bas de page, le lien « Conçu par… » devient « À propos » ; les noms (dont « Imaginé par Virgile G. ») sont dans la fenêtre qui s'ouvre. Les liens du pied de page ont partout la même présentation (soulignés au survol seulement).
+- Nouveauté : l'indication « Lecture seule » en haut de page disparaît.
+
 ## 3.33 — 14 novembre 2026
 
 - Nouveauté : « Raccourcis » quitte le sélecteur d'applis et passe en pied de page, comme dans Check. La touche ? ouvre toujours la liste.
