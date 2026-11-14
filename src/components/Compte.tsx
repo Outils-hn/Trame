@@ -77,7 +77,6 @@ export function CompteBandeau() {
     </>
   ) : (
     <>
-      <span className="bandeau-statut">Lecture seule</span>
       <button className="bandeau-btn" aria-label="Se connecter" onClick={() => void demanderConnexion()}><LogIn /><span className="max-sm:hidden">Se connecter</span></button>
     </>
   );
