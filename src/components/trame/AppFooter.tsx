@@ -1,4 +1,5 @@
 import { LienRetour } from "./LienRetour";
+import { RaccourcisApplis, useToucheAide } from "./RaccourcisApplis";
 import { useState } from "react";
 import { BackupLink, BackupReminder } from "@/components/BackupControls";
 import { BACKUP_CONFIG } from "@/lib/backup-config";
@@ -11,6 +12,8 @@ import { APP_AUTHOR, APP_NAME, APP_TAGLINE, APP_UPDATED, APP_VERSION, APP_YEAR }
  */
 export function AppFooter() {
   const [open, setOpen] = useState(false);
+  const [raccourcis, setRaccourcis] = useState(false);
+  useToucheAide(() => setRaccourcis(true));
   return (
     <footer className="py-4 text-center">
       <p className="inline-block rounded-md bg-background px-2 py-0.5 text-xs text-muted-foreground/60">
@@ -22,7 +25,8 @@ export function AppFooter() {
         >
           Conçu par {APP_AUTHOR}
         </button>{" "}
-        · {APP_YEAR} · <BackupLink cfg={BACKUP_CONFIG} appName={APP_NAME} /> · <LienRetour app="Trame" version={APP_VERSION} />
+        · {APP_YEAR} · <BackupLink cfg={BACKUP_CONFIG} appName={APP_NAME} /> · <button type="button" onClick={() => setRaccourcis(true)} className="text-inherit underline-offset-2 transition-colors hover:text-foreground hover:underline">Raccourcis</button>{" "}
+        · <LienRetour app="Trame" version={APP_VERSION} />
       </p>
       <BackupReminder cfg={BACKUP_CONFIG} />
       <Dialog open={open} onOpenChange={setOpen}>
@@ -49,6 +53,7 @@ export function AppFooter() {
           <p className="border-t border-border pt-3 text-xs text-muted-foreground">Dernière mise à jour : {APP_UPDATED}</p>
         </DialogContent>
       </Dialog>
+      <RaccourcisApplis app="Trame" open={raccourcis} onOpenChange={setRaccourcis} />
     </footer>
   );
 }
