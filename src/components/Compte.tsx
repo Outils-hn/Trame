@@ -82,9 +82,6 @@ export function CompteBandeau() {
   );
 }
 
-const EXPORTS_LIBRES = 3;
-const CLE_EXPORTS = "outils.trame.exports";
-
 /** Fichier JSON (sauvegarde, projet, bibliotheque) : export ET import reserves aux comptes connectes. */
 export function jsonPermis(): boolean {
   if (lireSession()) return true;
@@ -93,20 +90,12 @@ export function jsonPermis(): boolean {
 }
 
 /**
- * Exports (PDF, Excel, copies, .json) : libres pour un compte connecte ; sans compte, 3 exports pour
- * decouvrir l'appli, puis la connexion est demandee. Incitation seulement (compteur dans le navigateur).
+ * Exports (PDF, Excel, copies, .json) : reserves aux comptes connectes (l'appli est deja protegee par la garde commune,
+ * ceci est un filet de securite si la session disparait en cours d'utilisation). Sans compte, la connexion est demandee.
  * avantConnexion : ferme une fenetre deja ouverte pour laisser la place a la connexion.
  */
 export async function autoriserExport(avantConnexion?: () => void): Promise<boolean> {
   if (lireSession()) return true;
-  let faits = 0;
-  try { faits = Number(localStorage.getItem(CLE_EXPORTS)) || 0; } catch { /* stockage bloque */ }
-  if (faits < EXPORTS_LIBRES) {
-    try { localStorage.setItem(CLE_EXPORTS, String(faits + 1)); } catch { /* stockage bloque */ }
-    toast.message(`Export gratuit ${faits + 1}/${EXPORTS_LIBRES}`, { description: "Connecte-toi avec ton compte Index pour des exports illimités." });
-    return true;
-  }
-  toast.message("Connecte-toi pour exporter", { description: "Les 3 exports de découverte sont utilisés." });
   avantConnexion?.();
   return demanderConnexion();
 }
