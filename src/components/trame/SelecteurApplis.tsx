@@ -15,6 +15,7 @@ const APPLIS = [
   { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF" },
   { nom: "Format", role: "Débit de panneaux", url: "https://outils-hn.github.io/Format/", couleur: "#FF4D00" },
   { nom: "Joint", role: "Dilatation et joints", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285" },
+  { nom: "Maquette", role: "Maquettes IFC", url: "https://outils-hn.github.io/Maquette/", couleur: "#4D7C0F" },
   { nom: "Masse", role: "Poids des éléments", url: "https://outils-hn.github.io/Masse/", couleur: "#9A4A3A" },
   { nom: "Membrane", role: "Étanchéité", url: "https://outils-hn.github.io/Membrane/", couleur: "#B45309" },
   { nom: "Strate", role: "Épaisseurs d'isolation", url: "https://outils-hn.github.io/Strate/", couleur: "#D4A20B" },
