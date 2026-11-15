@@ -4,6 +4,10 @@ Le numéro de version se met à jour dans `src/lib/version.ts` (pied de page et 
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil.
 
+## 3.37 — 15 novembre 2026
+
+- Nouveauté : dans le menu des applis, Maquette passe en dernier.
+
 ## 3.36 — 15 novembre 2026
 
 - Nouveauté : les « 3 exports gratuits » sans compte disparaissent : l'appli étant réservée aux comptes de l'équipe, ils ne servaient plus. Si la session se perd en cours d'utilisation, la connexion est demandée avant d'exporter.
