@@ -61,6 +61,8 @@ try {
   verif("Saisie : apostrophe suisse acceptee (3'000)", /580/.test(await p2.locator("tr[aria-selected='true']").innerText()));
   // Clavier dans le tableau : Tab jusqu'a la ligne choisie, fleche haut, Entree copie les cotes
   await c2.grantPermissions(["clipboard-read", "clipboard-write"]);
+  // La copie des cotes est un export : elle demande un compte connecte (session simulee, retiree juste apres)
+  await p2.evaluate(() => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "a", refresh_token: "r", expires_at: 4102444800, user: { id: "u1", email: "hugo@test.fr" } })));
   let surLigne = false;
   for (let n = 0; n < 40 && !surLigne; n++) { await p2.keyboard.press("Tab"); surLigne = await p2.evaluate(() => document.activeElement?.tagName === "TR"); }
   verif("Clavier : la ligne choisie est atteignable avec Tab", surLigne);
@@ -69,6 +71,7 @@ try {
   verif("Clavier : fleche haut change de repartition", /^4 /.test(choisie), choisie);
   await p2.keyboard.press("Enter"); await p2.waitForTimeout(300);
   verif("Clavier : Entree copie les cotes", /^50; /.test(await p2.evaluate(() => navigator.clipboard.readText())), await p2.evaluate(() => navigator.clipboard.readText()));
+  await p2.evaluate(() => localStorage.removeItem("sb-dtxgvwaqjmmffiiohika-auth-token"));
   await c2.close();
 } catch (e) { verif("Deroulement des quick wins", false, e.message.split("\n")[0]); }
 // Audit 3.7 : saisies absurdes et « mm » toleres ; telephone 390 px
