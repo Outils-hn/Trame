@@ -2,6 +2,7 @@
 // Lance par .github/workflows/captures.yml ; resultat dans le dossier passe en argument.
 import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { detailsVisuels } from "./details.mjs";
 
 const BASE = process.env.APP_URL ?? "http://127.0.0.1:8080/";
 const OUT = process.argv[2] ?? "captures";
@@ -25,7 +26,8 @@ async function session(name, mobile, fn) {
   try { await fn(page); } catch (e) { errors.push(`[${name}] ${e.message.split("\n")[0]}`); }
   await ctx.close();
 }
-const shot = (page, file, full = true) => page.screenshot({ path: `${OUT}/${file}.png`, fullPage: full });
+const notes = [];
+const shot = async (page, file, full = true) => { await page.screenshot({ path: `${OUT}/${file}.png`, fullPage: full }); await detailsVisuels(page, file, notes); };
 const fill = async (page, id, v) => { await page.locator(`#${id}`).fill(String(v)); await page.waitForTimeout(400); };
 const tab = async (page, name) => { await page.getByRole("tab", { name }).click(); await page.waitForTimeout(600); };
 
@@ -56,5 +58,6 @@ await session("apropos", false, async (page) => {
   await shot(page, "09-a-propos", false);
 });
 await browser.close();
+writeFileSync(`${OUT}/details.txt`, notes.length ? notes.join("\n") : "aucune");
 writeFileSync(`${OUT}/erreurs.txt`, errors.length ? errors.join("\n") : "aucune");
 console.log(errors.length ? errors.join("\n") : "Captures OK, aucune erreur");
