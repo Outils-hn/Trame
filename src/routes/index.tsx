@@ -555,7 +555,7 @@ function TrameApp() {
                     />
 
                     <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-[var(--color-trame)]/40 bg-[var(--color-trame)]/5 px-3 py-2">
-                      <span className="text-xs font-medium text-foreground">
+                      <span className="text-pretty text-xs font-medium text-foreground">
                         Calculer les distances au bord automatiquement
                       </span>
                       <Switch checked={autoRives3} onCheckedChange={setAutoRives3} />
