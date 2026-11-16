@@ -153,6 +153,10 @@
 }
 
 @layer base {
+/* Coupes de ligne soignees : pas de mot isole en fin de phrase, titres equilibres */
+  p, li, dd, figcaption, .hint, .note, .vide { text-wrap: pretty; }
+  h1, h2, h3, h4 { text-wrap: balance; }
+
   * {
     border-color: var(--color-border);
   }
